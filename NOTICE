@@ -1,0 +1,12 @@
+uifiles
+Copyright (c) 2026 Jamie Thompson
+
+This product includes software developed by Vercel, Inc. as part of
+AI Elements (https://github.com/vercel/ai-elements), licensed under the
+Apache License, Version 2.0 (see LICENSE-ai-elements). Files derived from
+AI Elements live under registry/ai/ and carry a header comment naming the
+upstream file and the modifications made (ported from Radix UI to Base UI,
+dependencies re-pointed at the uifiles registry).
+
+Components under registry/ui/ that are forks of shadcn/ui
+(https://github.com/shadcn-ui/ui) are Copyright (c) 2023 shadcn, MIT License.

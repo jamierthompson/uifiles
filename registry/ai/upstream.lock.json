@@ -1,0 +1,97 @@
+{
+  "chain-of-thought": {
+    "source": "https://elements.ai-sdk.dev/api/registry/chain-of-thought.json",
+    "sha256": "5ccfddc925c98161c2508f63632380bb9976bfe95ffede4b9332451dcb6f0b70",
+    "fetchedAt": "2026-09-26"
+  },
+  "checkpoint": {
+    "source": "https://elements.ai-sdk.dev/api/registry/checkpoint.json",
+    "sha256": "c6c0aaf4123fc4fc69964170e8db22e149ca7d852d07961c411a8e41dca79f03",
+    "fetchedAt": "2026-09-26"
+  },
+  "code-block": {
+    "source": "https://elements.ai-sdk.dev/api/registry/code-block.json",
+    "sha256": "ebb49caa19633483de34b191552eb8d0a9b06266dc7180e1a357b45e74c510bf",
+    "fetchedAt": "2026-09-26"
+  },
+  "confirmation": {
+    "source": "https://elements.ai-sdk.dev/api/registry/confirmation.json",
+    "sha256": "68e5fa3bc8961531bfb4f6d004a01562047d0544e210256420c6f6c413337cea",
+    "fetchedAt": "2026-09-26"
+  },
+  "context": {
+    "source": "https://elements.ai-sdk.dev/api/registry/context.json",
+    "sha256": "ef122d0a025ad8d04e3fb38bc6ba6546bfe1e9f4aa27dd1d443758a743399c3b",
+    "fetchedAt": "2026-09-26"
+  },
+  "conversation": {
+    "source": "https://elements.ai-sdk.dev/api/registry/conversation.json",
+    "sha256": "ac2589ea88b2a231c049a639d150e01af4ecd3022677a53fc21f3c3e3af3b150",
+    "fetchedAt": "2026-09-26"
+  },
+  "image": {
+    "source": "https://elements.ai-sdk.dev/api/registry/image.json",
+    "sha256": "9360ca3e8945a64cc8d5c71a9304d7c8371d66f52b535f838bfe3ef3f55291ce",
+    "fetchedAt": "2026-09-26"
+  },
+  "inline-citation": {
+    "source": "https://elements.ai-sdk.dev/api/registry/inline-citation.json",
+    "sha256": "9aec10df2f14d1e6db58bfb6dec0232231031d029e2bb3e1dd5b44cbb667b047",
+    "fetchedAt": "2026-09-26"
+  },
+  "message": {
+    "source": "https://elements.ai-sdk.dev/api/registry/message.json",
+    "sha256": "db7d416e1515b8e3f39390119192bdd4f11647ed8bae92d1588726dc4227b568",
+    "fetchedAt": "2026-09-26"
+  },
+  "model-selector": {
+    "source": "https://elements.ai-sdk.dev/api/registry/model-selector.json",
+    "sha256": "a930f98418a227b3d460c77ef745276e12b94eb20af07fb65bddabba62aab065",
+    "fetchedAt": "2026-09-26"
+  },
+  "plan": {
+    "source": "https://elements.ai-sdk.dev/api/registry/plan.json",
+    "sha256": "97a210d4bba6868d0225273f296451454443791ef44bb7eba04f455b03f3589f",
+    "fetchedAt": "2026-09-26"
+  },
+  "prompt-input": {
+    "source": "https://elements.ai-sdk.dev/api/registry/prompt-input.json",
+    "sha256": "9402979f8ce84d58e889971370567a8f97f9940154862fa43c52c71f54a0ede2",
+    "fetchedAt": "2026-09-26"
+  },
+  "queue": {
+    "source": "https://elements.ai-sdk.dev/api/registry/queue.json",
+    "sha256": "6d46ac152f237f8f5618bd0fee754c2b97db572ac629246571be04e64ef061ac",
+    "fetchedAt": "2026-09-26"
+  },
+  "reasoning": {
+    "source": "https://elements.ai-sdk.dev/api/registry/reasoning.json",
+    "sha256": "f2047dec91f18c922c56c04edc53398d981ac43fa47be583703d9138fbdb03e8",
+    "fetchedAt": "2026-09-26"
+  },
+  "shimmer": {
+    "source": "https://elements.ai-sdk.dev/api/registry/shimmer.json",
+    "sha256": "24bcb9b1dd45d616bd50dc6500e9f414ccabf440efb249e8d92522344b9057d6",
+    "fetchedAt": "2026-09-26"
+  },
+  "sources": {
+    "source": "https://elements.ai-sdk.dev/api/registry/sources.json",
+    "sha256": "6fa3ca4cc72a87e3a5cc37d4004b0bb87ba8432c27a56fb442161d86de1939e7",
+    "fetchedAt": "2026-09-26"
+  },
+  "suggestion": {
+    "source": "https://elements.ai-sdk.dev/api/registry/suggestion.json",
+    "sha256": "4fbf7d90cac64b771dd4e0fa99d7099e4d102aed1249333ef4fcdf9456807a00",
+    "fetchedAt": "2026-09-26"
+  },
+  "task": {
+    "source": "https://elements.ai-sdk.dev/api/registry/task.json",
+    "sha256": "ecc83dc185a0b0fecba918adab5bfce14c712d72595be074ed8b428ca02d7efa",
+    "fetchedAt": "2026-09-26"
+  },
+  "tool": {
+    "source": "https://elements.ai-sdk.dev/api/registry/tool.json",
+    "sha256": "b142e6ab3889bb9e8462b5d9af55f7880082ed60f98f0d3234eabdafd3ab32ca",
+    "fetchedAt": "2026-09-26"
+  }
+}
