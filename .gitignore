@@ -34,3 +34,13 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# registry build output (built by `pnpm registry:build`; served from Vercel)
+/public/r/
+
+# tests
+/playwright-report/
+/test-results/
+
+# keep the env template
+!.env.example
