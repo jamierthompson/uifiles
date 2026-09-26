@@ -1,4 +1,49 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "chat",
+      "type": "registry:block",
+      "title": "Chat",
+      "description": "Complete AI chat block for AI SDK useChat: a MessageScroller transcript that follows streamed output and anchors each user turn, an Empty state with one-click Suggestions, user text in Bubbles, assistant parts rendered as Message Response (Streamdown markdown), Reasoning (collapsible thinking), Tool (tool-* and dynamic-tool calls with input and output) and file parts as Attachments, a shimmering Marker while a request is pending, and a Prompt Input composer with attachments and a submit button that becomes stop while streaming. Ships as a composable Chat component (plus ChatMessages, ChatMessage, ChatMessagePart, ChatToolPart, ChatAttachments, ChatEmpty, ChatThinkingMarker, ChatComposer exports), a scripted demo conversation built with @shadcn/helpers createChat that streams with no API key, and an app/chat page that wires them together. Use it to start a chatbot, assistant or agent UI, then replace the demo transport with your own route.",
+      "dependencies": [
+        "ai@^7",
+        "@ai-sdk/react@^4",
+        "@shadcn/helpers@^0.2",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "attachment",
+        "bubble",
+        "empty",
+        "marker",
+        "message",
+        "message-scroller",
+        "@uifiles/prompt-input",
+        "@uifiles/reasoning",
+        "@uifiles/response",
+        "@uifiles/suggestion",
+        "@uifiles/tool"
+      ],
+      "files": [
+        {
+          "path": "chat/components/blocks/chat.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/chat.tsx"
+        },
+        {
+          "path": "chat/lib/demo-conversation.ts",
+          "type": "registry:component",
+          "target": "lib/demo-conversation.ts"
+        },
+        {
+          "path": "chat/page.tsx",
+          "type": "registry:page",
+          "target": "app/chat/page.tsx"
+        }
+      ],
+      "docs": "The page installs at app/chat/page.tsx and streams a scripted conversation through @shadcn/helpers, so it works without an API key. To connect a model, replace `transport` in the page with `new DefaultChatTransport({ api: \"/api/chat\" })` from `ai` and add a route that returns `result.toUIMessageStreamResponse()`. Chat fills its parent: render it inside a height-constrained container (the page uses h-svh). Suggestions are submitted as-is when clicked. Streamdown needs `@source \"../node_modules/streamdown/dist/*.js\"` in your globals.css (see @uifiles/response).",
+      "categories": ["ai", "chat", "block"]
+    }
+  ]
 }
