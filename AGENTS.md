@@ -73,7 +73,14 @@ Use `pnpm` for everything (`pnpm add`, `pnpm dlx shadcn@latest ...`). Never `npm
   `http://localhost:3000/r/{name}.json`; after `pnpm registry:build` and `pnpm dev`, test an
   item with `pnpm dlx shadcn@latest add @uifiles/<name> --dry-run` from a scratch project.
 - **Each new component ships with** a registry entry, a browser test with axe
-  (`tests/browser`), and a description. Blocks also get a Playwright screenshot.
+  (`tests/browser`), a preview page under `app/preview/<name>/`, and a description. The
+  Playwright suite runs axe over every preview page, which catches page-level rules
+  (landmarks, heading order, focusable scroll regions) the component tests cannot.
+- **Render it before you call it done.** `pnpm registry:build && pnpm dev`, then open
+  `/preview/<name>`; server rendering and hydration are not exercised by the browser tests.
+- **shadcn `input-group` fades the whole group (`has-disabled:opacity-50`) when any
+  descendant is disabled**, including a disabled submit button. Do not disable
+  `PromptInputSubmit` to gate empty input; swallow empty submits instead (the chat block does).
 
 ## Tailwind CSS v4
 

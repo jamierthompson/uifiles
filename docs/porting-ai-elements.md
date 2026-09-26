@@ -119,8 +119,16 @@ Playwright can screenshot it later.
 main composition, assert something visible by role or text, run `axe.run(document.body)` and
 expect zero violations. Wrap the fixture in `<main>` (axe's `region` rule needs a landmark
 and the test page has none), and await enter animations before `axe.run`
-(`await Promise.all(document.getAnimations().map((a) => a.finished))`) so axe does not sample
-mid-fade colors. If the component needs interaction (open a collapsible, open a menu),
+so axe does not sample mid-fade colors:
+
+````ts
+await Promise.all(
+  document
+    .getAnimations()
+    .filter((a) => a.timeline === document.timeline) // scroll-driven ones never finish
+    .map((a) => a.finished),
+)
+``` If the component needs interaction (open a collapsible, open a menu),
 do it with `userEvent` from `vitest/browser` and assert the result. Import `@/app/globals.css`.
 
 ## 5. Verify
@@ -130,7 +138,7 @@ pnpm exec tsc --noEmit
 pnpm exec biome check registry/ai/<name>.tsx app/preview/<name> tests/browser/ai/<name>.test.tsx
 pnpm exec vitest run --project browser tests/browser/ai/<name>.test.tsx
 pnpm registry:validate
-```
+````
 
 Then update `registry/ai/upstream.lock.json` for the item and add it to `docs/plan.md` §5 if
 the resolution changed.

@@ -26,6 +26,9 @@ export default defineConfig({
       "@base-ui/react/dialog",
       "@base-ui/react/tooltip",
       "@base-ui/react/scroll-area",
+      "@shadcn/react/message-scroller",
+      "@shadcn/helpers/ai-sdk",
+      "@ai-sdk/react",
     ],
   },
   test: {

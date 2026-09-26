@@ -221,6 +221,10 @@ controlled prop pattern (or Base UI's `useControlled`); `@/lib/utils` → `cn`;
 registry dependency. Type-check against `ai@7` (types line up; runtime behaviour on v7 is
 **unverified** upstream).
 
+**Token departure (2026-09-26).** Light-mode `--muted-foreground` is `oklch(0.53 0 0)`; shadcn
+Nova ships `0.556`, which fails AA (4.34:1) for muted text on `bg-muted`, `bg-secondary` and
+`bg-accent`. Completed queue rows drop upstream's `/50` alpha for the same reason, and code highlighting uses shiki's `github-*-high-contrast` themes because GitHub's default light theme renders some tokens at 3.48:1.
+
 ### 5.3 Your own components
 
 Start with what your two existing projects already needed and shadcn lacks: the `type-*`
@@ -260,7 +264,7 @@ skills, `.claude/rules/registry.md`, `.claude/launch.json`. Push to
 docs home page; `/llms.txt`. Verify from a scratch consumer: `init @uifiles/base`,
 `add @uifiles/button`. Tag `v0.1.0`.
 
-**Phase 2, AI Elements Tier 1 (the bulk of the work).** Port `prompt-input`, `response`,
+**Phase 2, AI Elements Tier 1 (the bulk of the work). Done 2026-09-26: 18 items ported, `chat` block built, CLI round-trip verified.** Port `prompt-input`, `response`,
 `branch`, `reasoning`, `tool`, `task`, `plan`, `code-block`, `sources`, `suggestion`,
 `context`, `model-selector`, `chain-of-thought`, `queue`, `checkpoint`, `inline-citation`,
 `confirmation`, `image`. Each port = file + Apache header + registry entry + preview route +
