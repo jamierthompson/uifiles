@@ -120,9 +120,9 @@ export type ToolInputProps = ComponentProps<"div"> & {
 
 export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
   <div className={cn("space-y-2 overflow-hidden", className)} {...props}>
-    <h4 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+    <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
       Parameters
-    </h4>
+    </div>
     <div className="rounded-md bg-muted/50">
       <CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
     </div>
@@ -156,9 +156,9 @@ export const ToolOutput = ({
 
   return (
     <div className={cn("space-y-2", className)} {...props}>
-      <h4 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+      <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         {errorText ? "Error" : "Result"}
-      </h4>
+      </div>
       <div
         className={cn(
           "overflow-x-auto rounded-md text-xs [&_table]:w-full",
