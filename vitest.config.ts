@@ -4,6 +4,30 @@ import { defineConfig } from "vitest/config"
 
 export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL(".", import.meta.url)) } },
+  // Pre-bundle deps the browser tests discover lazily; a mid-run re-optimize
+  // serves a second React copy and fails with "Invalid hook call".
+  optimizeDeps: {
+    include: [
+      "cmdk",
+      "nanoid",
+      "embla-carousel-react",
+      "streamdown",
+      "@streamdown/code",
+      "@streamdown/math",
+      "@streamdown/mermaid",
+      "@streamdown/cjk",
+      "shiki",
+      "tokenlens",
+      "@base-ui/react/progress",
+      "@base-ui/react/collapsible",
+      "@base-ui/react/preview-card",
+      "@base-ui/react/select",
+      "@base-ui/react/menu",
+      "@base-ui/react/dialog",
+      "@base-ui/react/tooltip",
+      "@base-ui/react/scroll-area",
+    ],
+  },
   test: {
     projects: [
       {
