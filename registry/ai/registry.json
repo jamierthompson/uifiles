@@ -1,4 +1,332 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "branch",
+      "type": "registry:component",
+      "title": "Message Branch",
+      "description": "Branch switcher for an AI chat message that has several alternative responses (regenerations, forks). MessageBranch holds the current index, MessageBranchContent shows one child branch at a time, and MessageBranchSelector composes MessageBranchPrevious, MessageBranchPage (\"2 of 3\") and MessageBranchNext in a button-group with wrap-around navigation. Use it inside a message to let users flip between regenerated answers; pairs with @uifiles/response for markdown branches.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["button", "button-group"],
+      "files": [
+        {
+          "path": "branch.tsx",
+          "type": "registry:component",
+          "target": "components/ai/branch.tsx"
+        }
+      ],
+      "docs": "Extracted from AI Elements message.tsx (the MessageBranch* family only; shadcn's own message replaces the rest). Same export names and props as upstream. Base UI: Button is the Base UI Button primitive (nativeButton), so onClick/disabled/type behave as before; no asChild anywhere.",
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "chain-of-thought",
+      "type": "registry:component",
+      "title": "Chain Of Thought",
+      "description": "Collapsible step-by-step trace of an AI agent's reasoning: a header toggle (ChainOfThoughtHeader), then ChainOfThoughtStep rows with icon, label, description and complete/active/pending status, optional ChainOfThoughtSearchResults badges and a ChainOfThoughtImage with caption. Use it to show tool calls, searches and intermediate findings while an agent works; controlled or uncontrolled via open/defaultOpen/onOpenChange.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["badge", "collapsible"],
+      "files": [
+        {
+          "path": "chain-of-thought.tsx",
+          "type": "registry:component",
+          "target": "components/ai/chain-of-thought.tsx"
+        }
+      ],
+      "docs": "Ported to Base UI. @radix-ui/react-use-controllable-state replaced with a useState controlled/uncontrolled pattern (open/defaultOpen/onOpenChange unchanged). Structure change: ChainOfThought now renders a single Base UI Collapsible root (still a div, same className/props) and ChainOfThoughtHeader/ChainOfThoughtContent render the Trigger/Panel directly instead of each wrapping their own Collapsible; upstream's split roots left the trigger's aria-controls pointing at a panel that never exists (axe aria-valid-attr-value). Panel animation selectors use data-open/data-closed instead of data-[state=...]. Pending steps keep text at text-muted-foreground and dim only the icon (upstream's text-muted-foreground/50 fails WCAG AA at 1.96:1).",
+      "categories": ["ai", "chat", "agent"]
+    },
+    {
+      "name": "checkpoint",
+      "type": "registry:component",
+      "title": "Checkpoint",
+      "description": "Inline checkpoint marker between chat messages: a bookmark icon, a small ghost button with an optional tooltip, and a separator rule that fills the rest of the row. Use it to let people restore a conversation or agent workspace to an earlier point. Composes shadcn button, tooltip and separator.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["button", "separator", "tooltip"],
+      "files": [
+        {
+          "path": "checkpoint.tsx",
+          "type": "registry:component",
+          "target": "components/ai/checkpoint.tsx"
+        }
+      ],
+      "docs": "Base UI port of AI Elements checkpoint. CheckpointTrigger composes TooltipTrigger with render={<Button />} instead of asChild; it works without a TooltipProvider (wrap one to share delay). Separator is Base UI's: always role=separator, no `decorative` prop. Export names and props are unchanged.",
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "code-block",
+      "type": "registry:component",
+      "title": "Code Block",
+      "description": "Syntax-highlighted code block for AI chat and agent UIs, rendered with shiki (github-light/github-dark, lazy-loaded per language, token cache). Composes a header with filename/title, a copy-to-clipboard button with a checkmark timeout, a language selector built on Select, optional line numbers, and a body that shows raw text instantly and swaps in highlighted tokens when the highlighter resolves. Use it for model-generated code, tool inputs/outputs, and snippets inside Response or Tool; use CodeBlockContent/CodeBlockContainer to build custom layouts.",
+      "dependencies": ["lucide-react", "shiki@^4.4"],
+      "registryDependencies": ["button", "select"],
+      "files": [
+        {
+          "path": "code-block.tsx",
+          "type": "registry:component",
+          "target": "components/ai/code-block.tsx"
+        }
+      ],
+      "docs": "Ported to Base UI. CodeBlockLanguageSelector is Base UI Select.Root: onValueChange is (value | null, eventDetails) instead of (value: string), so widen state to string | null or guard null; pass `items` (Record<value, label>) to Select so CodeBlockLanguageSelectorValue renders the label instead of the raw value. CodeBlockLanguageSelectorContent forwards side/sideOffset/align/alignOffset to the positioner; Radix `position=\"popper\"` is `alignItemWithTrigger={false}` (the wrapper defaults to true). Copy button is the Base UI Button (use `render` instead of `asChild`). Header background is bg-muted/50 (upstream bg-muted/80) so 12px muted-foreground text meets 4.5:1 in the light theme.",
+      "categories": ["ai", "chat", "code"]
+    },
+    {
+      "name": "confirmation",
+      "type": "registry:component",
+      "title": "Confirmation",
+      "description": "Human-in-the-loop approval prompt for AI tool calls, rendered as an Alert. Reads the tool part's state and approval object and shows exactly one of: the pending request with Approve/Reject action buttons (approval-requested), the accepted outcome, or the rejected outcome (approval-responded, output-available, output-denied); renders nothing while input is streaming or before an approval exists. Use it with useChat addToolApprovalResponse for tools that require user consent.",
+      "dependencies": ["ai@^7"],
+      "registryDependencies": ["alert", "button"],
+      "files": [
+        {
+          "path": "confirmation.tsx",
+          "type": "registry:component",
+          "target": "components/ai/confirmation.tsx"
+        }
+      ],
+      "docs": "No Radix primitives upstream; only imports changed. ConfirmationAction is the Base UI Button (use `render` instead of `asChild`).",
+      "categories": ["ai", "chat", "agent"]
+    },
+    {
+      "name": "context",
+      "type": "registry:component",
+      "title": "Context",
+      "description": "Context-window usage indicator for AI chat: a ghost button showing percent used with a ring icon that opens a hover card with a progress bar, token counts (input, output, reasoning, cached) and a USD cost estimated by tokenlens from the model id. Use in a chat toolbar or prompt-input footer to show how much of the model's context a conversation has consumed.",
+      "dependencies": ["ai@^7", "tokenlens@^1"],
+      "registryDependencies": ["button", "hover-card", "progress"],
+      "files": [
+        {
+          "path": "context.tsx",
+          "type": "registry:component",
+          "target": "components/ai/context.tsx"
+        }
+      ],
+      "docs": "Base UI Preview Card puts hover delays on the trigger, not the root: Context no longer accepts openDelay/closeDelay; pass delay/closeDelay to ContextTrigger instead (both default 0). ContextTrigger composes HoverCardTrigger via render (a custom child element still replaces the default button, as upstream). Context's onOpenChange receives (open, eventDetails). ai@7 LanguageModelUsage moved fields: reasoning tokens are read from usage.outputTokenDetails.reasoningTokens and cached tokens from usage.inputTokenDetails.cacheReadTokens (upstream read usage.reasoningTokens / usage.cachedInputTokens). The Progress bar carries aria-label=\"Context window usage\" (upstream had no accessible name), and ContextContentFooter's label uses text-secondary-foreground for AA contrast on bg-secondary.",
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "image",
+      "type": "registry:component",
+      "title": "Image",
+      "description": "Renders an AI-generated image (base64 plus media type from the AI SDK GeneratedFile / experimental_generateImage result) as a responsive, rounded <img> with a data: URL. Use it to display model-generated images in chat messages; pass alt and className through.",
+      "dependencies": ["ai@^7"],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "image.tsx",
+          "type": "registry:component",
+          "target": "components/ai/image.tsx"
+        }
+      ],
+      "docs": "ImageProps now extends `GeneratedFile` from ai@7 (Experimental_GeneratedImage is a deprecated alias slated for removal in v8; the shape is identical). providerMetadata is stripped along with uint8Array so it never reaches the DOM. Uses a plain <img> (biome noImgElement suppressed) because the source is an inline data: URL.",
+      "categories": ["ai", "chat", "media"]
+    },
+    {
+      "name": "inline-citation",
+      "type": "registry:component",
+      "title": "Inline Citation",
+      "description": "Inline citation badge for AI-generated text: a hostname pill such as \"ai-sdk.dev +2\" placed after a passage that opens a hover card containing a carousel of sources (title, URL, description, quote) with prev/next paging and an index. Use inside streamed responses to attribute claims to web or document sources.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["badge", "carousel", "hover-card"],
+      "files": [
+        {
+          "path": "inline-citation.tsx",
+          "type": "registry:component",
+          "target": "components/ai/inline-citation.tsx"
+        }
+      ],
+      "docs": "Base UI Preview Card puts hover delays on the trigger, not the root: InlineCitationCard no longer accepts openDelay/closeDelay; pass delay/closeDelay to InlineCitationCardTrigger instead (both default 0). InlineCitationCardTrigger composes HoverCardTrigger via render={<Badge />} (no asChild); remaining props still go to the Badge. InlineCitationSource renders its title as <p> instead of <h4> so a hover card never breaks the page's heading order. InlineCitationCarouselIndex uses text-secondary-foreground on the bg-secondary header for AA contrast.",
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "model-selector",
+      "type": "registry:component",
+      "title": "Model Selector",
+      "description": "Searchable model picker for AI chat: a dialog opened from any trigger that hosts a cmdk command palette with a search input, grouped items, separators, keyboard-shortcut hints, an empty state, and provider logos from models.dev (ModelSelectorLogo, ModelSelectorLogoGroup, ModelSelectorName). Use to switch the model behind a conversation or prompt input.",
+      "dependencies": [],
+      "registryDependencies": ["command", "dialog"],
+      "files": [
+        {
+          "path": "model-selector.tsx",
+          "type": "registry:component",
+          "target": "components/ai/model-selector.tsx"
+        }
+      ],
+      "docs": "Base UI Dialog: ModelSelectorTrigger takes render={<Button />} instead of asChild, and ModelSelector's onOpenChange receives (open, eventDetails). ModelSelectorContent is the Base UI Dialog Popup, so initialFocus/finalFocus replace onOpenAutoFocus/onCloseAutoFocus. ModelSelectorDialog wraps the base-nova CommandDialog (title, description, className, showCloseButton). The base-nova command input is an InputGroup with a forced h-8, so ModelSelectorContent also sets **:data-[slot=input-group]:h-auto! to keep upstream's taller py-3.5 input.",
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "plan",
+      "type": "registry:component",
+      "title": "Plan",
+      "description": "Card-shaped, collapsible plan an agent proposes before acting: a header with title, description and a toggle trigger, collapsible content for the steps, and a footer for approve or edit actions. isStreaming renders the title and description with shadcn's shimmer utility while the plan is still being generated. Composes shadcn card, collapsible and button.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["button", "card", "collapsible"],
+      "files": [
+        {
+          "path": "plan.tsx",
+          "type": "registry:component",
+          "target": "components/ai/plan.tsx"
+        }
+      ],
+      "docs": "Base UI port of AI Elements plan. Plan renders the Collapsible as the Card via render={<Card />}; PlanContent and PlanTrigger use render the same way (all three were asChild). Upstream's <Shimmer> component is replaced by shadcn's `shimmer` class on a <span>, so there is no shimmer item or motion dependency. PlanTrigger spreads its props onto the collapsible trigger; className is merged into the inner Button and re-run through cn, so overrides still win. Plan is closed by default (as upstream); pass defaultOpen. onOpenChange receives (open, eventDetails).",
+      "categories": ["ai", "chat", "agent"]
+    },
+    {
+      "name": "prompt-input",
+      "type": "registry:component",
+      "title": "Prompt Input",
+      "description": "Chat composer for AI apps: an auto-growing textarea that submits on Enter (Shift+Enter for newlines), a footer/header tools row, an attachment action menu (add files, take screenshot), model select, hover-card and command-palette slots, and a submit button that turns into a stop button while the response is streaming. Handles file attachments via drag-drop, paste, and file dialog with accept/maxFiles/maxFileSize validation, converts blob URLs to data URLs on submit, and can lift its state into an optional PromptInputProvider. Use it as the input at the bottom of any AI SDK useChat conversation. Composes input-group, dropdown-menu, select, tooltip, hover-card, command, spinner.",
+      "dependencies": ["ai@^7", "lucide-react", "nanoid@^6"],
+      "registryDependencies": [
+        "command",
+        "dropdown-menu",
+        "hover-card",
+        "input-group",
+        "select",
+        "spinner",
+        "tooltip"
+      ],
+      "files": [
+        {
+          "path": "prompt-input.tsx",
+          "type": "registry:component",
+          "target": "components/ai/prompt-input.tsx"
+        }
+      ],
+      "docs": "Ported from Radix to Base UI. API changes vs AI Elements: (1) PromptInputActionAddScreenshot takes `onClick` instead of Radix `onSelect`; calling `event.preventDefault()` in it still skips the capture. (2) PromptInputActionAddAttachments and PromptInputActionMenuItem are Base UI Menu items: use `onClick` (not `onSelect`) and `closeOnClick={false}` to keep the menu open; PromptInputActionAddAttachments sets `closeOnClick={false}` by default to mirror upstream's preventDefault, override it with `closeOnClick` if you want the menu to close. (3) PromptInputHoverCard still accepts `openDelay`/`closeDelay` (default 0) but they are applied to PromptInputHoverCardTrigger via context because Base UI PreviewCard puts delays on the trigger; passing `delay`/`closeDelay` directly on the trigger overrides them. (4) PromptInputSelect is Base UI Select: `onValueChange` receives `(value, eventDetails)` and the value may be `null`; PromptInputSelectValue renders the raw value unless you pass `items={[{ label, value }]}` on PromptInputSelect (or a children function). (5) `PromptInputButton`/`PromptInputSubmit` `onClick` receive Base UI's event type (a superset of React.MouseEvent). Everything else (exports, prop names, keyboard behavior, attachment validation, provider) is unchanged.",
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "queue",
+      "type": "registry:component",
+      "title": "Queue",
+      "description": "Queued work panel for agent chat: collapsible sections with a count label, a scrollable list of items with a status indicator, strike-through completed state, a description line, image and file attachments, and hover-revealed action buttons. Use it for pending todos and queued messages beside a prompt input. Composes shadcn collapsible, scroll-area and button; exports QueueTodo, QueueMessage and QueueMessagePart types.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["button", "collapsible", "scroll-area"],
+      "files": [
+        {
+          "path": "queue.tsx",
+          "type": "registry:component",
+          "target": "components/ai/queue.tsx"
+        }
+      ],
+      "docs": "Base UI port of AI Elements queue. QueueSectionTrigger is the Collapsible trigger's own native <button> (upstream wrapped a <button> in asChild); its chevron rotates on the trigger's data-panel-open attribute. QueueSectionContent unmounts when closed (Base UI Panel default; pass keepMounted to retain). QueueList is a Base UI ScrollArea, so Radix `type` and `scrollHideDelay` props do not exist. onOpenChange receives (open, eventDetails). Note: completed items keep upstream's text-muted-foreground/50 and /40, which do not meet AA contrast.",
+      "categories": ["ai", "chat", "agent"]
+    },
+    {
+      "name": "reasoning",
+      "type": "registry:component",
+      "title": "Reasoning",
+      "description": "Collapsible \"thinking\" block for AI reasoning/thought tokens. ReasoningTrigger shows a shimmering \"Thinking...\" while isStreaming, then \"Thought for N seconds\" (duration measured automatically or passed in); ReasoningContent renders the reasoning text as markdown with Streamdown. Auto-opens when streaming starts and auto-closes one second after it ends, unless controlled or defaultOpen={false}. Use it above a message response when the model exposes reasoning.",
+      "dependencies": [
+        "lucide-react",
+        "streamdown@^2.6",
+        "@streamdown/cjk@^1",
+        "@streamdown/code@^1",
+        "@streamdown/math@^1",
+        "@streamdown/mermaid@^1"
+      ],
+      "registryDependencies": ["collapsible"],
+      "files": [
+        {
+          "path": "reasoning.tsx",
+          "type": "registry:component",
+          "target": "components/ai/reasoning.tsx"
+        }
+      ],
+      "docs": "Ported to Base UI. @radix-ui/react-use-controllable-state replaced with useState controlled/uncontrolled patterns for both open and duration (props unchanged). The AI Elements <Shimmer> dependency is gone: the thinking label is a <span className=\"shimmer [--shimmer-duration:1s]\"> using the shimmer utility from shadcn/tailwind.css. Collapsible content selectors use data-open/data-closed instead of data-[state=...]. onOpenChange receives only (open) as upstream; Base UI's eventDetails argument is dropped.",
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "response",
+      "type": "registry:component",
+      "title": "Message Response",
+      "description": "Markdown renderer for streamed AI assistant output. MessageResponse wraps Streamdown with the cjk, code (Shiki), math (KaTeX) and mermaid plugins, tolerates incomplete markdown while tokens arrive, and is memoized on children/isAnimating so a chat list does not re-render every block on each token. Use it as the body of an assistant message; accepts every Streamdown prop.",
+      "dependencies": [
+        "streamdown@^2.6",
+        "@streamdown/cjk@^1",
+        "@streamdown/code@^1",
+        "@streamdown/math@^1",
+        "@streamdown/mermaid@^1"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "response.tsx",
+          "type": "registry:component",
+          "target": "components/ai/response.tsx"
+        }
+      ],
+      "docs": "Extracted from AI Elements message.tsx (MessageResponse only; shadcn's own message replaces the rest). Export name and props identical (ComponentProps<typeof Streamdown>). No Radix code in this component. Note for consumers: Streamdown's Tailwind classes need `@source \"../node_modules/streamdown/dist/*.js\"` (and optionally `@import \"streamdown/styles.css\"`) in globals.css; inline `$...$` math is off by default in @streamdown/math (singleDollarTextMath: false), `$$` blocks work.",
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "sources",
+      "type": "registry:component",
+      "title": "Sources",
+      "description": "Collapsible list of the sources an AI answer cited. Sources wraps a collapsible; SourcesTrigger shows \"Used N sources\" with a chevron; SourcesContent reveals Source links (book icon + title, opens in a new tab). Use under an assistant message to surface citations from web-search or retrieval tool results.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["collapsible"],
+      "files": [
+        {
+          "path": "sources.tsx",
+          "type": "registry:component",
+          "target": "components/ai/sources.tsx"
+        }
+      ],
+      "docs": "Ported to Base UI Collapsible: SourcesTrigger and SourcesContent accept Base UI Trigger/Panel props (render instead of asChild; keepMounted instead of forceMount). Open/closed animation classes use data-open/data-closed instead of data-[state=open|closed]. Sources keeps upstream's ComponentProps<\"div\"> type, so open/defaultOpen/onOpenChange are not typed on it (same as upstream).",
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "suggestion",
+      "type": "registry:component",
+      "title": "Suggestion",
+      "description": "Horizontally scrolling row of pill-shaped suggestion buttons (\"Summarize this repo\", \"Explain the auth flow\") shown under an empty conversation or above the prompt input to give users one-click starting prompts. Suggestions wraps children in a hidden-scrollbar scroll area; Suggestion is an outline button that calls onClick with its suggestion string. Pair with prompt-input to prefill the textarea. Composes button and scroll-area.",
+      "dependencies": [],
+      "registryDependencies": ["button", "scroll-area"],
+      "files": [
+        {
+          "path": "suggestion.tsx",
+          "type": "registry:component",
+          "target": "components/ai/suggestion.tsx"
+        }
+      ],
+      "docs": "Same API as AI Elements. Built on the Base UI ScrollArea and Button wrappers; Suggestions accepts ScrollArea.Root props (Radix-only props such as `type` and `scrollHideDelay` no longer exist).",
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "task",
+      "type": "registry:component",
+      "title": "Task",
+      "description": "Collapsible task log for agent activity: a search-icon trigger with a title and rotating chevron, and an indented list of TaskItem rows with inline TaskItemFile chips for filenames. Use it inside a chat message to show what an agent did in a step, such as files read or searches run. Open by default; composes shadcn collapsible.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["collapsible"],
+      "files": [
+        {
+          "path": "task.tsx",
+          "type": "registry:component",
+          "target": "components/ai/task.tsx"
+        }
+      ],
+      "docs": "Base UI port of AI Elements task. TaskTrigger renders the Collapsible trigger's native <button> (upstream rendered a <div> through asChild); custom children render inside that button instead of replacing it, and `render` substitutes the element. The default label is a <span> (was <p>, which is invalid inside a button). The chevron rotates on the trigger's data-panel-open attribute (was group-data-[state=open]); TaskContent animates on data-open / data-closed. onOpenChange receives (open, eventDetails).",
+      "categories": ["ai", "chat", "agent"]
+    },
+    {
+      "name": "tool",
+      "type": "registry:component",
+      "title": "Tool",
+      "description": "Collapsible tool-call card for AI chat: header with wrench icon, tool name derived from the part type (or toolName for dynamic tools), and a status badge for every AI SDK tool state (input-streaming, input-available, approval-requested, approval-responded, output-available, output-denied, output-error); expandable content showing Parameters (input as JSON) and Result or Error (output as JSON, string, or React node) in Code Blocks. Use it to render ToolUIPart and DynamicToolUIPart parts from useChat messages.",
+      "dependencies": ["ai@^7", "lucide-react"],
+      "registryDependencies": ["badge", "collapsible", "@uifiles/code-block"],
+      "files": [
+        {
+          "path": "tool.tsx",
+          "type": "registry:component",
+          "target": "components/ai/tool.tsx"
+        }
+      ],
+      "docs": "Ported to Base UI. Tool is Base UI Collapsible.Root: onOpenChange is (open, eventDetails); ToolContent is Collapsible.Panel (forceMount → keepMounted). Open-state styling uses data-open/data-closed and group-data-open (root carries data-open) instead of data-[state=open]. Status icon colors use semantic tokens (text-primary for completed/responded, text-destructive for error/denied, text-muted-foreground for awaiting approval) because the theme has no success/warning tokens; the error result container is bg-card text-destructive (upstream bg-destructive/10) to meet WCAG AA contrast with the light-mode destructive token.",
+      "categories": ["ai", "chat", "agent"]
+    }
+  ]
 }
