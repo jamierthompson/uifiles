@@ -1,3 +1,5 @@
+"use client"
+
 import { ImageIcon, SearchIcon, WrenchIcon } from "lucide-react"
 import {
   ChainOfThought,
