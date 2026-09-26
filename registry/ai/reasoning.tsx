@@ -217,6 +217,11 @@ export type ReasoningContentProps = ComponentProps<
 }
 
 const streamdownPlugins = { cjk, code, math, mermaid }
+// uifiles: GitHub's default light theme fails AA (orange tokens at 3.48:1); the
+// high-contrast pair keeps every token readable in both schemes.
+const shikiThemes: NonNullable<
+  ComponentProps<typeof Streamdown>["shikiTheme"]
+> = ["github-light-high-contrast", "github-dark-high-contrast"]
 
 export const ReasoningContent = memo(
   ({ className, children, ...props }: ReasoningContentProps) => (
@@ -228,7 +233,9 @@ export const ReasoningContent = memo(
       )}
       {...props}
     >
-      <Streamdown plugins={streamdownPlugins}>{children}</Streamdown>
+      <Streamdown plugins={streamdownPlugins} shikiTheme={shikiThemes}>
+        {children}
+      </Streamdown>
     </CollapsibleContent>
   )
 )
