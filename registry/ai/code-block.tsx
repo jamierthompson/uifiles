@@ -14,6 +14,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react"
 import type {
   BundledLanguage,
@@ -178,6 +179,8 @@ const createRawTokens = (code: string): TokenizedCode => ({
         ]
   ),
 })
+
+const subscribeToNothing = () => () => {}
 
 // Synchronous highlight with callback for async results
 export const highlightCode = (
@@ -379,10 +382,18 @@ export const CodeBlockContent = ({
   // Memoized raw tokens for immediate display
   const rawTokens = useMemo(() => createRawTokens(code), [code])
 
-  // Synchronous cache lookup — avoids setState in effect for cached results
+  // Synchronous cache lookup — avoids setState in effect for cached results.
+  // Skipped on the server and during hydration: the server's module cache
+  // warms across requests, so reading it there makes SSR output diverge from
+  // the client's first render (uifiles change; upstream hydrates inconsistently).
+  const isHydrated = useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false
+  )
   const syncTokens = useMemo(
-    () => highlightCode(code, language) ?? rawTokens,
-    [code, language, rawTokens]
+    () => (isHydrated ? highlightCode(code, language) : null) ?? rawTokens,
+    [code, language, rawTokens, isHydrated]
   )
 
   // Async highlighting result (populated after shiki loads)
