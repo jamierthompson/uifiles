@@ -13,7 +13,9 @@ for (const name of previews) {
     const errors: string[] = []
     page.on("pageerror", (e) => errors.push(e.message))
     await page.goto(`/preview/${name}`)
-    await expect(page.locator("main, body")).toBeVisible()
+    // Axe must see the hydrated page: client effects add focus targets.
+    await page.waitForLoadState("networkidle")
+    await expect(page.locator("main")).toBeVisible()
     const results = await new AxeBuilder({ page }).analyze()
     expect(
       results.violations,

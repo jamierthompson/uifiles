@@ -98,6 +98,8 @@ it("renders the near-full state", async () => {
   await expect
     .element(screen.getByRole("button", { name: /95%/ }))
     .toBeVisible()
-  const results = await axe.run(document.body)
+  // Scoped to this render: the previous test's hover card can still be
+  // animating out in <body>, outside any landmark.
+  const results = await axe.run(screen.container)
   expect(results.violations).toEqual([])
 })
