@@ -52,6 +52,7 @@ export default function PromptInputPreview() {
 
   return (
     <>
+      <h1 className="font-heading text-xl font-semibold">Prompt input</h1>
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-medium">Ready</h2>
         <Suggestions>
@@ -103,7 +104,7 @@ export default function PromptInputPreview() {
                 </PromptInputSelectContent>
               </PromptInputSelect>
             </PromptInputTools>
-            <PromptInputSubmit disabled={!draft.trim()} status="ready" />
+            <PromptInputSubmit status="ready" />
           </PromptInputFooter>
         </PromptInput>
         {lastMessage ? (

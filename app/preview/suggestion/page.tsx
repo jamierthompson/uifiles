@@ -18,6 +18,7 @@ export default function SuggestionPreview() {
 
   return (
     <section className="flex flex-col gap-3">
+      <h1 className="font-heading text-xl font-semibold">Suggestion</h1>
       <h2 className="text-sm font-medium">Suggestions</h2>
       <Suggestions>
         {suggestions.map((suggestion) => (
