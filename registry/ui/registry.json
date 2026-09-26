@@ -1,0 +1,509 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "accordion",
+      "type": "registry:ui",
+      "title": "Accordion",
+      "description": "Collapsible accordion component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["accordion"],
+      "files": []
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "title": "Alert",
+      "description": "Alert component for messages and notifications. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["alert"],
+      "files": []
+    },
+    {
+      "name": "alert-dialog",
+      "type": "registry:ui",
+      "title": "Alert Dialog",
+      "description": "Alert dialog for confirmation prompts. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["alert-dialog"],
+      "files": []
+    },
+    {
+      "name": "aspect-ratio",
+      "type": "registry:ui",
+      "title": "Aspect Ratio",
+      "description": "Container that maintains aspect ratio. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["aspect-ratio"],
+      "files": []
+    },
+    {
+      "name": "attachment",
+      "type": "registry:ui",
+      "title": "Attachment",
+      "description": "File and image attachment display for chat and forms. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["attachment"],
+      "files": []
+    },
+    {
+      "name": "avatar",
+      "type": "registry:ui",
+      "title": "Avatar",
+      "description": "Avatar component for user profiles. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["avatar"],
+      "files": []
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "Badge component for labels and status indicators. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["badge"],
+      "files": []
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "title": "Breadcrumb",
+      "description": "Breadcrumb navigation component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["breadcrumb"],
+      "files": []
+    },
+    {
+      "name": "bubble",
+      "type": "registry:ui",
+      "title": "Bubble",
+      "description": "Chat bubble surface for message content and reactions. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["bubble"],
+      "files": []
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button",
+      "description": "Button component with multiple variants. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["button"],
+      "files": []
+    },
+    {
+      "name": "button-group",
+      "type": "registry:ui",
+      "title": "Button Group",
+      "description": "Group multiple buttons together. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["button-group"],
+      "files": []
+    },
+    {
+      "name": "calendar",
+      "type": "registry:ui",
+      "title": "Calendar",
+      "description": "Calendar component for date selection. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["calendar"],
+      "files": []
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "title": "Card",
+      "description": "Card container component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["card"],
+      "files": []
+    },
+    {
+      "name": "carousel",
+      "type": "registry:ui",
+      "title": "Carousel",
+      "description": "Carousel component using Embla Carousel. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["carousel"],
+      "files": []
+    },
+    {
+      "name": "chart",
+      "type": "registry:ui",
+      "title": "Chart",
+      "description": "Chart components using Recharts. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["chart"],
+      "files": []
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "title": "Checkbox",
+      "description": "Checkbox input component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["checkbox"],
+      "files": []
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "title": "Collapsible",
+      "description": "Collapsible container component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["collapsible"],
+      "files": []
+    },
+    {
+      "name": "combobox",
+      "type": "registry:ui",
+      "title": "Combobox",
+      "description": "Searchable select component with autocomplete. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["combobox"],
+      "files": []
+    },
+    {
+      "name": "command",
+      "type": "registry:ui",
+      "title": "Command",
+      "description": "Command palette component (cmdk). Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["command"],
+      "files": []
+    },
+    {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "title": "Context Menu",
+      "description": "Right-click context menu. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["context-menu"],
+      "files": []
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "title": "Dialog",
+      "description": "Modal dialog component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["dialog"],
+      "files": []
+    },
+    {
+      "name": "direction",
+      "type": "registry:ui",
+      "title": "Direction",
+      "description": "Text direction provider for RTL support. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["direction"],
+      "files": []
+    },
+    {
+      "name": "drawer",
+      "type": "registry:ui",
+      "title": "Drawer",
+      "description": "Mobile-friendly drawer component using Vaul. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["drawer"],
+      "files": []
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:ui",
+      "title": "Dropdown Menu",
+      "description": "Dropdown menu component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["dropdown-menu"],
+      "files": []
+    },
+    {
+      "name": "empty",
+      "type": "registry:ui",
+      "title": "Empty",
+      "description": "Empty state component for no data scenarios. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["empty"],
+      "files": []
+    },
+    {
+      "name": "field",
+      "type": "registry:ui",
+      "title": "Field",
+      "description": "Field component for form inputs with labels and error messages. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["field"],
+      "files": []
+    },
+    {
+      "name": "form",
+      "type": "registry:ui",
+      "title": "Form",
+      "description": "Form primitives for react-hook-form. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["form"],
+      "files": []
+    },
+    {
+      "name": "hover-card",
+      "type": "registry:ui",
+      "title": "Hover Card",
+      "description": "Card that appears on hover. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["hover-card"],
+      "files": []
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "title": "Input",
+      "description": "Text input component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["input"],
+      "files": []
+    },
+    {
+      "name": "input-group",
+      "type": "registry:ui",
+      "title": "Input Group",
+      "description": "Input component with prefix and suffix addons. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["input-group"],
+      "files": []
+    },
+    {
+      "name": "input-otp",
+      "type": "registry:ui",
+      "title": "Input Otp",
+      "description": "One-time password input component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["input-otp"],
+      "files": []
+    },
+    {
+      "name": "item",
+      "type": "registry:ui",
+      "title": "Item",
+      "description": "Generic item component for lists and menus. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["item"],
+      "files": []
+    },
+    {
+      "name": "kbd",
+      "type": "registry:ui",
+      "title": "Kbd",
+      "description": "Keyboard shortcut display component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["kbd"],
+      "files": []
+    },
+    {
+      "name": "label",
+      "type": "registry:ui",
+      "title": "Label",
+      "description": "Form label component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["label"],
+      "files": []
+    },
+    {
+      "name": "marker",
+      "type": "registry:ui",
+      "title": "Marker",
+      "description": "Inline conversation markers: status updates, system notes, labeled separators. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["marker"],
+      "files": []
+    },
+    {
+      "name": "menubar",
+      "type": "registry:ui",
+      "title": "Menubar",
+      "description": "Horizontal menubar component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["menubar"],
+      "files": []
+    },
+    {
+      "name": "message",
+      "type": "registry:ui",
+      "title": "Message",
+      "description": "Chat message row with avatar, header, content and footer slots. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["message"],
+      "files": []
+    },
+    {
+      "name": "message-scroller",
+      "type": "registry:ui",
+      "title": "Message Scroller",
+      "description": "Chat transcript container that follows streaming output only while the reader is at the live edge. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["message-scroller"],
+      "files": []
+    },
+    {
+      "name": "native-select",
+      "type": "registry:ui",
+      "title": "Native Select",
+      "description": "Styled native HTML select element. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["native-select"],
+      "files": []
+    },
+    {
+      "name": "navigation-menu",
+      "type": "registry:ui",
+      "title": "Navigation Menu",
+      "description": "Accessible navigation menu with dropdowns. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["navigation-menu"],
+      "files": []
+    },
+    {
+      "name": "pagination",
+      "type": "registry:ui",
+      "title": "Pagination",
+      "description": "Pagination component for lists and tables. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["pagination"],
+      "files": []
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "title": "Popover",
+      "description": "Floating popover component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["popover"],
+      "files": []
+    },
+    {
+      "name": "progress",
+      "type": "registry:ui",
+      "title": "Progress",
+      "description": "Progress bar component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["progress"],
+      "files": []
+    },
+    {
+      "name": "questionnaire",
+      "type": "registry:ui",
+      "title": "Questionnaire",
+      "description": "Multi-step question flow: single choice, multiple choice, freeform, skippable. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["questionnaire"],
+      "files": []
+    },
+    {
+      "name": "radio-group",
+      "type": "registry:ui",
+      "title": "Radio Group",
+      "description": "Radio button group component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["radio-group"],
+      "files": []
+    },
+    {
+      "name": "resizable",
+      "type": "registry:ui",
+      "title": "Resizable",
+      "description": "Resizable panel layout component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["resizable"],
+      "files": []
+    },
+    {
+      "name": "scroll-area",
+      "type": "registry:ui",
+      "title": "Scroll Area",
+      "description": "Custom scrollable area with styled scrollbars. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["scroll-area"],
+      "files": []
+    },
+    {
+      "name": "select",
+      "type": "registry:ui",
+      "title": "Select",
+      "description": "Select dropdown component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["select"],
+      "files": []
+    },
+    {
+      "name": "separator",
+      "type": "registry:ui",
+      "title": "Separator",
+      "description": "Visual divider between content sections. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["separator"],
+      "files": []
+    },
+    {
+      "name": "sheet",
+      "type": "registry:ui",
+      "title": "Sheet",
+      "description": "Slide-out panel component (drawer). Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["sheet"],
+      "files": []
+    },
+    {
+      "name": "sidebar",
+      "type": "registry:ui",
+      "title": "Sidebar",
+      "description": "Collapsible sidebar component for app layouts. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["sidebar"],
+      "files": []
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "Skeleton loading placeholder. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["skeleton"],
+      "files": []
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "title": "Slider",
+      "description": "Slider input component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["slider"],
+      "files": []
+    },
+    {
+      "name": "sonner",
+      "type": "registry:ui",
+      "title": "Sonner",
+      "description": "Opinionated toast component for React. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["sonner"],
+      "files": []
+    },
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "title": "Spinner",
+      "description": "Loading spinner component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["spinner"],
+      "files": []
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "title": "Switch",
+      "description": "Toggle switch component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["switch"],
+      "files": []
+    },
+    {
+      "name": "table",
+      "type": "registry:ui",
+      "title": "Table",
+      "description": "Table component for displaying data. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["table"],
+      "files": []
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "title": "Tabs",
+      "description": "Tabbed interface component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["tabs"],
+      "files": []
+    },
+    {
+      "name": "textarea",
+      "type": "registry:ui",
+      "title": "Textarea",
+      "description": "Multi-line text input component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["textarea"],
+      "files": []
+    },
+    {
+      "name": "toast",
+      "type": "registry:ui",
+      "title": "Toast",
+      "description": "Toast notification component using Sonner. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["toast"],
+      "files": []
+    },
+    {
+      "name": "toggle",
+      "type": "registry:ui",
+      "title": "Toggle",
+      "description": "Toggle button component. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["toggle"],
+      "files": []
+    },
+    {
+      "name": "toggle-group",
+      "type": "registry:ui",
+      "title": "Toggle Group",
+      "description": "Group of toggle buttons. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["toggle-group"],
+      "files": []
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "title": "Tooltip",
+      "description": "Tooltip component for additional context. Upstream shadcn/ui component, resolved against your style.",
+      "registryDependencies": ["tooltip"],
+      "files": []
+    }
+  ]
+}

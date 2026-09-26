@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "uifiles",
+  "homepage": "https://uifiles.dev",
+  "include": [
+    "registry/base/registry.json",
+    "registry/ui/registry.json",
+    "registry/ai/registry.json",
+    "registry/components/registry.json",
+    "registry/blocks/registry.json",
+    "registry/hooks/registry.json",
+    "registry/lib/registry.json"
+  ]
+}
