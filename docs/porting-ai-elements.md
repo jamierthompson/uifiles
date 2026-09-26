@@ -117,7 +117,10 @@ Playwright can screenshot it later.
 
 `tests/browser/ai/<name>.test.tsx`, following `tests/browser/button.test.tsx`: render the
 main composition, assert something visible by role or text, run `axe.run(document.body)` and
-expect zero violations. If the component needs interaction (open a collapsible, open a menu),
+expect zero violations. Wrap the fixture in `<main>` (axe's `region` rule needs a landmark
+and the test page has none), and await enter animations before `axe.run`
+(`await Promise.all(document.getAnimations().map((a) => a.finished))`) so axe does not sample
+mid-fade colors. If the component needs interaction (open a collapsible, open a menu),
 do it with `userEvent` from `vitest/browser` and assert the result. Import `@/app/globals.css`.
 
 ## 5. Verify

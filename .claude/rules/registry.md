@@ -13,7 +13,7 @@ paths:
   `@ui/`, `@components/`, `@lib/`, `@hooks/` placeholders or `~/` for project root.
 - Cross-item dependencies inside this registry are `@uifiles/<name>`, never relative imports
   across items and never absolute URLs.
-- Ported AI Elements files start with:
-  `// Derived from Vercel AI Elements (Apache-2.0, Copyright 2023 Vercel, Inc.). Modified for Base UI.`
+- Ported AI Elements files start with the two-line header in
+  `docs/porting-ai-elements.md` §1 (upstream file, Apache-2.0, what was modified).
 - After adding an item, check `pnpm dev` → `/` lists it with a useful description, and
   `/llms.txt` includes it.
