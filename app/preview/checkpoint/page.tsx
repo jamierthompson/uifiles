@@ -1,9 +1,12 @@
+import type { Metadata } from "next"
 import { Message, MessageContent } from "@/components/ui/message"
 import {
   Checkpoint,
   CheckpointIcon,
   CheckpointTrigger,
 } from "@/registry/ai/checkpoint"
+
+export const metadata: Metadata = { title: "Checkpoint" }
 
 const turns = [
   {
