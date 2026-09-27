@@ -28,9 +28,14 @@ export type SuggestionProps = Omit<ComponentProps<typeof Button>, "onClick"> & {
   onClick?: (suggestion: string) => void
 }
 
+type SuggestionFocusEvent = Parameters<
+  NonNullable<ComponentProps<typeof Button>["onFocus"]>
+>[0]
+
 export const Suggestion = ({
   suggestion,
   onClick,
+  onFocus,
   className,
   variant = "outline",
   size = "sm",
@@ -41,10 +46,24 @@ export const Suggestion = ({
     onClick?.(suggestion)
   }, [onClick, suggestion])
 
+  // Sequential focus only scrolls a chip into view when it is fully hidden;
+  // one straddling the row's edge would keep focus half out of sight.
+  const handleFocus = useCallback(
+    (event: SuggestionFocusEvent) => {
+      onFocus?.(event)
+      event.currentTarget.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+      })
+    },
+    [onFocus]
+  )
+
   return (
     <Button
       className={cn("cursor-pointer rounded-full px-4", className)}
       onClick={handleClick}
+      onFocus={handleFocus}
       size={size}
       type="button"
       variant={variant}

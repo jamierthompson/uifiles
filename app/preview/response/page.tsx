@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { MessageResponse } from "@/registry/ai/response"
+
+export const metadata: Metadata = { title: "Message Response" }
 
 const markdown = `## Choosing a cache strategy
 
@@ -24,13 +27,19 @@ $$
 c_{\\text{eff}} = h \\cdot c_{\\text{hit}} + (1 - h) \\cdot c_{\\text{miss}}
 $$
 
-Tip: keep the chunk size small so partial output paints early.
+A regularised logistic loss is wider than a phone, so it scrolls on its own instead of widening the page:
+
+$$
+\\mathcal{L}(\\theta) = -\\frac{1}{n} \\sum_{i=1}^{n} \\left[ y_i \\log \\sigma(\\theta^\\top x_i) + (1 - y_i) \\log\\left(1 - \\sigma(\\theta^\\top x_i)\\right) \\right] + \\lambda \\lVert \\theta \\rVert_2^2
+$$
+
+Tip: keep the chunk size small so partial output paints early. Links such as the [Next.js caching guide](https://nextjs.org/docs/app/guides/caching) ask before they open.
 `
 
 export default function ResponsePreview() {
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">response</h1>
+      <h1 className="font-heading text-xl font-semibold">Message Response</h1>
       <div className="rounded-lg border p-4 text-sm">
         <MessageResponse>{markdown}</MessageResponse>
       </div>

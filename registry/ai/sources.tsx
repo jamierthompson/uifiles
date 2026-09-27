@@ -11,7 +11,11 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 
-export type SourcesProps = ComponentProps<"div">
+export type SourcesProps = ComponentProps<"div"> &
+  Pick<
+    ComponentProps<typeof Collapsible>,
+    "open" | "defaultOpen" | "onOpenChange" | "disabled"
+  >
 
 export const Sources = ({ className, ...props }: SourcesProps) => (
   <Collapsible
@@ -31,12 +35,14 @@ export const SourcesTrigger = ({
   ...props
 }: SourcesTriggerProps) => (
   <CollapsibleTrigger
-    className={cn("flex items-center gap-2", className)}
+    className={cn("flex min-h-6 items-center gap-2", className)}
     {...props}
   >
     {children ?? (
       <>
-        <p className="font-medium">Used {count} sources</p>
+        <span className="font-medium">
+          {`Used ${count} ${count === 1 ? "source" : "sources"}`}
+        </span>
         <ChevronDownIcon className="h-4 w-4" />
       </>
     )}
@@ -61,19 +67,58 @@ export const SourcesContent = ({
 
 export type SourceProps = ComponentProps<"a">
 
-export const Source = ({ href, title, children, ...props }: SourceProps) => (
-  <a
-    className="flex items-center gap-2"
-    href={href}
-    rel="noreferrer"
-    target="_blank"
-    {...props}
-  >
-    {children ?? (
-      <>
-        <BookIcon className="h-4 w-4" />
-        <span className="block font-medium">{title}</span>
-      </>
-    )}
-  </a>
-)
+/** Absolute (`https://…`, `mailto:`) or protocol-relative URLs leave the app. */
+const isExternal = (href: string) => /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(href)
+
+const hostnameOf = (href: string) => {
+  try {
+    return new URL(href).hostname
+  } catch {
+    return ""
+  }
+}
+
+export const Source = ({
+  href,
+  title,
+  children,
+  className,
+  rel,
+  target,
+  ...props
+}: SourceProps) => {
+  // Providers do return empty titles; an empty string is as unusable as a
+  // missing one, so both fall through to the hostname.
+  const content = children || (
+    <>
+      <BookIcon className="h-4 w-4" />
+      <span className="block font-medium">
+        {title || (href ? hostnameOf(href) || href : undefined)}
+      </span>
+    </>
+  )
+  const classes = cn("flex min-h-6 items-center gap-2", className)
+
+  if (!href) {
+    // An <a> without href is neither a link nor focusable; render plain text.
+    return (
+      <span className={classes} {...(props as ComponentProps<"span">)}>
+        {content}
+      </span>
+    )
+  }
+
+  const external = isExternal(href)
+
+  return (
+    <a
+      className={classes}
+      href={href}
+      rel={rel ?? (external ? "noreferrer noopener" : undefined)}
+      target={target ?? (external ? "_blank" : undefined)}
+      {...props}
+    >
+      {content}
+    </a>
+  )
+}
