@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { Button } from "@/components/ui/button"
 import {
   Plan,
@@ -9,6 +10,8 @@ import {
   PlanTitle,
   PlanTrigger,
 } from "@/registry/ai/plan"
+
+export const metadata: Metadata = { title: "Plan" }
 
 const steps = [
   "Add a `theme` column to the users table with a Drizzle migration",

@@ -1,4 +1,5 @@
 import { FileCodeIcon } from "lucide-react"
+import type { Metadata } from "next"
 import {
   Task,
   TaskContent,
@@ -6,6 +7,8 @@ import {
   TaskItemFile,
   TaskTrigger,
 } from "@/registry/ai/task"
+
+export const metadata: Metadata = { title: "Task" }
 
 const files = ["app/layout.tsx", "app/page.tsx", "components/ui/button.tsx"]
 

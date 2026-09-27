@@ -16,6 +16,31 @@ const fullText = `The user wants a caching strategy for a profile page.
 
 Recommend \`revalidate: 60\` and mention \`revalidateTag\` for instant invalidation on edit.`
 
+// The finished demo also shows what scrolls in its own box at phone width
+// instead of widening the page: a fence with one long line, a table and a
+// display formula (the response preview's regularised logistic loss).
+const finishedText = `${fullText}
+
+Checking the route config before answering:
+
+\`\`\`ts
+export const revalidate = 60 // and revalidateTag("profile") in the rename action
+\`\`\`
+
+| Caching strategy | Freshness guarantee | Origin load | Recommended for |
+| --- | --- | --- | --- |
+| \`no-store\` | Always fresh | Every request | Personalised dashboards |
+| \`revalidate: 60\` | Up to 60s stale | Once a minute | Profile pages |
+| \`force-cache\` | Until redeploy | Once per build | Reference data |
+
+If a model predicted which profiles get renamed, its regularised logistic loss would be:
+
+$$
+\\mathcal{L}(\\theta) = -\\frac{1}{n} \\sum_{i=1}^{n} \\left[ y_i \\log \\sigma(\\theta^\\top x_i) + (1 - y_i) \\log\\left(1 - \\sigma(\\theta^\\top x_i)\\right) \\right] + \\lambda \\lVert \\theta \\rVert_2^2
+$$
+
+Not worth it for a profile page: a 60 second window is simpler.`
+
 const STREAM_DURATION_MS = 4000
 const TICK_MS = 80
 
@@ -40,7 +65,9 @@ function StreamingReasoning() {
   return (
     <Reasoning isStreaming={isStreaming}>
       <ReasoningTrigger />
-      <ReasoningContent>{text}</ReasoningContent>
+      {/* Reserve the streamed text's final height so the sections below do
+          not shift while the demo grows (measured CLS 0.114 on mobile). */}
+      <ReasoningContent className="min-h-56">{text}</ReasoningContent>
     </Reasoning>
   )
 }
@@ -50,7 +77,7 @@ export default function ReasoningPreview() {
 
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">reasoning</h1>
+      <h1 className="font-heading text-xl font-semibold">Reasoning</h1>
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
@@ -74,7 +101,7 @@ export default function ReasoningPreview() {
         </h2>
         <Reasoning defaultOpen duration={7}>
           <ReasoningTrigger />
-          <ReasoningContent>{fullText}</ReasoningContent>
+          <ReasoningContent>{finishedText}</ReasoningContent>
         </Reasoning>
       </section>
 

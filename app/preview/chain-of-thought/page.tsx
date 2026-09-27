@@ -58,7 +58,7 @@ function LatencyChart() {
 export default function ChainOfThoughtPreview() {
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">chain-of-thought</h1>
+      <h1 className="font-heading text-xl font-semibold">Chain of Thought</h1>
       <div className="rounded-lg border p-4">
         <ChainOfThought defaultOpen>
           <ChainOfThoughtHeader>

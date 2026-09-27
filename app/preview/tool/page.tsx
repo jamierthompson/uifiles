@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import {
   Tool,
   ToolContent,
@@ -5,6 +6,8 @@ import {
   ToolInput,
   ToolOutput,
 } from "@/registry/ai/tool"
+
+export const metadata: Metadata = { title: "Tool" }
 
 const input = { city: "Melbourne", unit: "celsius" }
 
@@ -22,7 +25,21 @@ export default function ToolPreview() {
       <h1 className="font-heading text-xl font-semibold">Tool</h1>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">input-streaming</h2>
+        <h2 className="text-sm text-muted-foreground">
+          input-streaming (no input received yet)
+        </h2>
+        <Tool defaultOpen>
+          <ToolHeader state="input-streaming" type="tool-get_weather" />
+          <ToolContent>
+            <ToolInput input={undefined} />
+          </ToolContent>
+        </Tool>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-sm text-muted-foreground">
+          input-streaming (partial input)
+        </h2>
         <Tool>
           <ToolHeader state="input-streaming" type="tool-get_weather" />
           <ToolContent>

@@ -59,7 +59,7 @@ export const TaskTrigger = ({
 }: TaskTriggerProps) => (
   <CollapsibleTrigger
     className={cn(
-      "group flex w-full cursor-pointer items-center gap-2 text-left text-sm text-muted-foreground transition-colors hover:text-foreground",
+      "group flex min-h-6 w-full cursor-pointer items-center gap-2 text-left text-sm text-muted-foreground transition-colors hover:text-foreground",
       className
     )}
     {...props}
