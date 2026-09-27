@@ -1,12 +1,31 @@
 uifiles
 Copyright (c) 2026 Jamie Thompson
 
-This product includes software developed by Vercel, Inc. as part of
-AI Elements (https://github.com/vercel/ai-elements), licensed under the
-Apache License, Version 2.0 (see LICENSE-ai-elements). Files derived from
-AI Elements live under registry/ai/ and carry a header comment naming the
-upstream file and the modifications made (ported from Radix UI to Base UI,
-dependencies re-pointed at the uifiles registry).
+The uifiles repository is licensed under the MIT License (see LICENSE). It
+also contains the third-party material listed below.
 
-Components under registry/ui/ that are forks of shadcn/ui
-(https://github.com/shadcn-ui/ui) are Copyright (c) 2023 shadcn, MIT License.
+AI Elements (https://github.com/vercel/ai-elements)
+  Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0;
+  the full licence text is in licenses/APACHE-2.0-ai-elements.txt. Files
+  under registry/ai/ are derived from AI Elements. Each carries a header
+  comment naming the upstream file and the modifications made (ported from
+  Radix UI to Base UI, dependencies re-pointed at the uifiles registry). The
+  upstream source each port was made from is recorded in
+  registry/ai/upstream.lock.json.
+
+shadcn/ui (https://github.com/shadcn-ui/ui)
+  Copyright (c) 2023 shadcn. Licensed under the MIT License. Files under
+  components/ui/ are the shadcn/ui base-nova components installed by the
+  shadcn CLI. Any registry/ui item that gains files is a fork of the same
+  and keeps that notice.
+
+Agent skills under .claude/skills/ are installed verbatim from their source
+repositories, recorded in skills-lock.json, and are not part of the uifiles
+registry:
+  - shadcn and migrate-radix-to-base, from shadcn-ui/ui
+    (https://github.com/shadcn-ui/ui): MIT License, Copyright (c) 2023 shadcn.
+  - ai-sdk, from vercel/ai (https://github.com/vercel/ai, skills/use-ai-sdk):
+    Apache License, Version 2.0, Copyright 2023 Vercel, Inc.
+  - ai-elements, from vercel/ai-elements
+    (https://github.com/vercel/ai-elements, skills/ai-elements): Apache
+    License, Version 2.0, Copyright 2023 Vercel, Inc.

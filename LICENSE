@@ -19,10 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Components under registry/ui that are forks of shadcn/ui remain
-Copyright (c) 2023 shadcn, MIT License (https://github.com/shadcn-ui/ui).
-Components under registry/ai derived from Vercel AI Elements are
-Copyright 2023 Vercel, Inc., Apache License 2.0; see LICENSE-ai-elements and NOTICE.

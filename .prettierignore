@@ -7,3 +7,4 @@ coverage/
 pnpm-lock.yaml
 skills-lock.json
 .claude/skills/
+docs/qa/

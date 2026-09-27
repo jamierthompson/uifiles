@@ -1,0 +1,30 @@
+name: Feature or component request
+description: Ask for a new item, a fork of an upstream primitive, or a change to an existing one
+labels: [enhancement]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Item
+      placeholder: "agent, file-tree, a fork of button, prompt-input"
+    validations:
+      required: true
+  - type: dropdown
+    id: source
+    attributes:
+      label: Does shadcn/ui or AI Elements already ship it?
+      description: uifiles favours shadcn when both exist and ports AI Elements items that have no shadcn equivalent.
+      options:
+        - shadcn/ui
+        - AI Elements
+        - Neither
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What should it do that the upstream item does not?
+      description: Prop, behaviour, accessibility or styling need, with an example of the UI you are building.
+    validations:
+      required: true
