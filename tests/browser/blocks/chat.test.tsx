@@ -273,6 +273,63 @@ function timedTransport(
   }
 }
 
+/**
+ * A transport that sends `head`, holds the stream open until the request is
+ * aborted, then pushes `tail` and closes, like a server that keeps writing
+ * after the client hangs up. A Stop test therefore lands mid-stream however
+ * slowly its click arrives, and anything from `tail` on screen means the
+ * client kept reading after Stop.
+ */
+function heldTransport(
+  head: UIMessageChunk[],
+  tail: UIMessageChunk[]
+): ChatTransport<UIMessage> {
+  return {
+    async sendMessages({ abortSignal }) {
+      return new ReadableStream<UIMessageChunk>({
+        start(controller) {
+          for (const chunk of head) controller.enqueue(chunk)
+          abortSignal?.addEventListener(
+            "abort",
+            () => {
+              try {
+                for (const chunk of tail) controller.enqueue(chunk)
+                controller.close()
+              } catch {
+                // The reader was cancelled.
+              }
+            },
+            { once: true }
+          )
+        },
+      })
+    },
+    async reconnectToStream() {
+      return null
+    },
+  }
+}
+
+/** What the demo script sends after its tool call: the output, then the answer. */
+const afterToolCall: UIMessageChunk[] = [
+  {
+    type: "tool-output-available",
+    toolCallId: "call-1",
+    output: { path: "app/globals.css", lines: 212 },
+  },
+  { type: "text-start", id: "t" },
+  { type: "text-delta", id: "t", delta: "Then:" },
+  { type: "text-end", id: "t" },
+  { type: "finish" },
+]
+
+const readFileCall: UIMessageChunk = {
+  type: "tool-input-available",
+  toolCallId: "call-1",
+  toolName: "readFile",
+  input: { path: "app/globals.css" },
+}
+
 /** A plain text answer of `lines` paragraphs. */
 const textAnswer = (lines: number): UIMessageChunk[] => [
   { type: "start" },
@@ -2026,7 +2083,17 @@ describe("through useChat", () => {
   }, 90_000)
 
   it("stop mid-reasoning settles the trigger and returns the composer to ready", async () => {
-    const screen = await render(<Demo />)
+    // The reasoning stays open until Stop; the rest of the answer is pushed
+    // after it.
+    const chatTransport = heldTransport(
+      [
+        { type: "start" },
+        { type: "reasoning-start", id: "r" },
+        { type: "reasoning-delta", id: "r", delta: "Reading the tokens." },
+      ],
+      [{ type: "reasoning-end", id: "r" }, readFileCall, ...afterToolCall]
+    )
+    const screen = await render(<Demo chatTransport={chatTransport} />)
     await screen.getByPlaceholder(PLACEHOLDER).fill("go")
     await userEvent.keyboard("{Enter}")
     await expect
@@ -2046,24 +2113,27 @@ describe("through useChat", () => {
       })
       .toBeVisible()
     expect(screen.getByRole("button", { name: /Thinking/ }).query()).toBeNull()
-    // Nothing from later in the script arrives after stop (the tool output
-    // would have followed within 900 ms).
+    // Nothing the transport pushed after Stop reaches the screen.
     await settled(
       () =>
         screen.getByText("Then:").query() === null &&
         screen.getByRole("button", { name: /readFile/ }).query() === null,
       true,
-      1_500
+      500
     )
   }, 30_000)
 
   it("stop mid-tool leaves the tool header settled rather than Running", async () => {
-    const screen = await render(<Demo />)
+    // The tool output is held until Stop and pushed after it.
+    const chatTransport = heldTransport(
+      [{ type: "start" }, readFileCall],
+      afterToolCall
+    )
+    const screen = await render(<Demo chatTransport={chatTransport} />)
     await screen.getByPlaceholder(PLACEHOLDER).fill("go")
     await userEvent.keyboard("{Enter}")
     const tool = screen.getByRole("button", { name: /readFile/ })
     await expect.element(tool, { timeout: 15_000 }).toBeVisible()
-    // The script sleeps 900 ms between the call and its output.
     await expect.poll(() => tool.element().textContent).toContain("Running")
     await screen.getByRole("button", { name: "Stop" }).click()
     await expect
@@ -2078,7 +2148,7 @@ describe("through useChat", () => {
         !tool.element().textContent?.includes("Completed") &&
         screen.getByText("Then:").query() === null,
       true,
-      1_500
+      500
     )
   }, 30_000)
 
