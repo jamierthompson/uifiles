@@ -1,8 +1,19 @@
 {
   "name": "uifiles",
-  "version": "0.0.1",
-  "type": "module",
+  "version": "0.1.0",
+  "description": "A shadcn/ui registry on Base UI: every shadcn primitive under one namespace, AI components ported from Vercel AI Elements, and the tokens that tie them together.",
   "private": true,
+  "type": "module",
+  "license": "MIT",
+  "author": "Jamie Thompson",
+  "homepage": "https://uifiles.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jamierthompson/uifiles.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jamierthompson/uifiles/issues"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "pnpm registry:build && next build",
@@ -13,6 +24,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "registry:sync": "node scripts/sync-tokens.ts && node scripts/generate-aliases.ts",
     "registry:validate": "shadcn registry validate",
@@ -33,13 +45,13 @@
     "cmdk": "^1.1.1",
     "cn": "^0.4.0",
     "embla-carousel-react": "^8.6.0",
+    "katex": "^0.16.47",
     "lucide-react": "^1.48.0",
     "nanoid": "^6.0.1",
     "next": "16.3.6",
     "next-themes": "^0.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "shadcn": "^4.21.0",
     "shiki": "^4.4.3",
     "streamdown": "^2.6.0",
     "tokenlens": "^1.3.1",
@@ -54,14 +66,17 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitest/browser-playwright": "^5.0.2",
+    "@vitest/coverage-v8": "^5.0.2",
     "axe-core": "^4.13.0",
     "playwright": "^1.63.0",
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "shadcn": "^4.21.0",
     "tailwindcss": "^4",
     "typescript": "^7.0.2",
     "vitest": "^5.0.2",
-    "vitest-browser-react": "^2.3.0"
+    "vitest-browser-react": "^2.3.0",
+    "yaml": "^2.9.1"
   },
   "packageManager": "pnpm@11.18.0",
   "engines": {
