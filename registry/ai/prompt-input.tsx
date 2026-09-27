@@ -22,6 +22,8 @@ import type {
   FormEventHandler,
   HTMLAttributes,
   KeyboardEventHandler,
+  MouseEvent,
+  MouseEventHandler,
   PropsWithChildren,
   ReactNode,
   RefObject,
@@ -29,9 +31,11 @@ import type {
 import {
   Children,
   createContext,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -169,6 +173,24 @@ const captureScreenshot = async (): Promise<File | null> => {
   }
 }
 
+type AttachmentFile = FileUIPart & { id: string }
+
+const toAttachment = (file: File): AttachmentFile => ({
+  filename: file.name,
+  id: nanoid(),
+  mediaType: file.type,
+  type: "file",
+  url: URL.createObjectURL(file),
+})
+
+const revokeObjectUrls = (files: Pick<FileUIPart, "url">[]) => {
+  for (const file of files) {
+    if (file.url) {
+      URL.revokeObjectURL(file.url)
+    }
+  }
+}
+
 // ============================================================================
 // Provider Context & Types
 // ============================================================================
@@ -204,6 +226,16 @@ const PromptInputController = createContext<PromptInputControllerProps | null>(
 const ProviderAttachmentsContext = createContext<AttachmentsContext | null>(
   null
 )
+// The provider's attachment list and text as add/remove/clear and
+// setInput/clear leave them, before React commits. PromptInput checks
+// maxFiles against the list, so an add() in the same handler as a remove()
+// or clear() sees the freed slot, and a submit takes the text from here and
+// clears it, so a second submit in the same tick does not send it again.
+type ProviderRefs = {
+  files: RefObject<AttachmentFile[]>
+  text: RefObject<string>
+}
+const ProviderRefsContext = createContext<ProviderRefs | null>(null)
 
 export const usePromptInputController = () => {
   const ctx = useContext(PromptInputController)
@@ -245,71 +277,56 @@ export const PromptInputProvider = ({
 }: PromptInputProviderProps) => {
   // ----- textInput state
   const [textInput, setTextInput] = useState(initialTextInput)
-  const clearInput = useCallback(() => setTextInput(""), [])
+  const textInputRef = useRef(initialTextInput)
+  const setInput = useCallback((value: string) => {
+    textInputRef.current = value
+    setTextInput(value)
+  }, [])
+  const clearInput = useCallback(() => setInput(""), [setInput])
 
   // ----- attachments state (global when wrapped)
-  const [attachmentFiles, setAttachmentFiles] = useState<
-    (FileUIPart & { id: string })[]
-  >([])
+  const [attachmentFiles, setAttachmentFiles] = useState<AttachmentFile[]>([])
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const openRef = useRef<() => void>(() => {
     // replaced by PromptInput via __registerFileInput
   })
 
-  const add = useCallback((files: File[] | FileList) => {
-    const incoming = [...files]
-    if (incoming.length === 0) {
-      return
-    }
-
-    setAttachmentFiles((prev) => [
-      ...prev,
-      ...incoming.map((file) => ({
-        filename: file.name,
-        id: nanoid(),
-        mediaType: file.type,
-        type: "file" as const,
-        url: URL.createObjectURL(file),
-      })),
-    ])
-  }, [])
-
-  const remove = useCallback((id: string) => {
-    setAttachmentFiles((prev) => {
-      const found = prev.find((f) => f.id === id)
-      if (found?.url) {
-        URL.revokeObjectURL(found.url)
-      }
-      return prev.filter((f) => f.id !== id)
-    })
-  }, [])
-
-  const clear = useCallback(() => {
-    setAttachmentFiles((prev) => {
-      for (const f of prev) {
-        if (f.url) {
-          URL.revokeObjectURL(f.url)
-        }
-      }
-      return []
-    })
-  }, [])
-
-  // Keep a ref to attachments for cleanup on unmount (avoids stale closure)
+  // Mirrors the attachments synchronously so object URLs can be created and
+  // revoked outside React's state updaters, which StrictMode invokes twice.
   const attachmentsRef = useRef(attachmentFiles)
 
   useEffect(() => {
     attachmentsRef.current = attachmentFiles
   }, [attachmentFiles])
 
+  const add = useCallback((files: File[] | FileList) => {
+    const next = [...files].map(toAttachment)
+    if (next.length === 0) {
+      return
+    }
+    attachmentsRef.current = [...attachmentsRef.current, ...next]
+    setAttachmentFiles((prev) => [...prev, ...next])
+  }, [])
+
+  const remove = useCallback((id: string) => {
+    const found = attachmentsRef.current.find((f) => f.id === id)
+    if (found?.url) {
+      URL.revokeObjectURL(found.url)
+    }
+    attachmentsRef.current = attachmentsRef.current.filter((f) => f.id !== id)
+    setAttachmentFiles((prev) => prev.filter((f) => f.id !== id))
+  }, [])
+
+  const clear = useCallback(() => {
+    revokeObjectUrls(attachmentsRef.current)
+    attachmentsRef.current = []
+    setAttachmentFiles([])
+  }, [])
+
   // Cleanup blob URLs on unmount to prevent memory leaks
   useEffect(
     () => () => {
-      for (const f of attachmentsRef.current) {
-        if (f.url) {
-          URL.revokeObjectURL(f.url)
-        }
-      }
+      revokeObjectUrls(attachmentsRef.current)
     },
     []
   )
@@ -344,17 +361,24 @@ export const PromptInputProvider = ({
       attachments,
       textInput: {
         clear: clearInput,
-        setInput: setTextInput,
+        setInput,
         value: textInput,
       },
     }),
-    [textInput, clearInput, attachments, __registerFileInput]
+    [textInput, clearInput, setInput, attachments, __registerFileInput]
+  )
+
+  const refs = useMemo<ProviderRefs>(
+    () => ({ files: attachmentsRef, text: textInputRef }),
+    []
   )
 
   return (
     <PromptInputController.Provider value={controller}>
       <ProviderAttachmentsContext.Provider value={attachments}>
-        {children}
+        <ProviderRefsContext.Provider value={refs}>
+          {children}
+        </ProviderRefsContext.Provider>
       </ProviderAttachmentsContext.Provider>
     </PromptInputController.Provider>
   )
@@ -378,6 +402,19 @@ export const usePromptInputAttachments = () => {
   }
   return context
 }
+
+export type PromptInputError = {
+  code: "max_files" | "max_file_size" | "accept" | "screenshot"
+  message: string
+}
+
+const PromptInputErrorContext = createContext<
+  ((error: PromptInputError) => void) | undefined
+>(undefined)
+
+// Set by PromptInputTextarea so a rejected submit does not write into a
+// textarea the consumer controls through `value`.
+const TextareaControlContext = createContext<RefObject<boolean> | null>(null)
 
 // ============================================================================
 // Referenced Sources (Local to PromptInput)
@@ -416,20 +453,24 @@ export type PromptInputActionAddAttachmentsProps = ComponentProps<
 
 export const PromptInputActionAddAttachments = ({
   label = "Add photos or files",
+  onClick,
   ...props
 }: PromptInputActionAddAttachmentsProps) => {
   const attachments = usePromptInputAttachments()
 
   const handleClick = useCallback(
-    (e: PromptInputActionMenuItemClickEvent) => {
-      e.preventDefault()
+    (event: PromptInputActionMenuItemClickEvent) => {
+      onClick?.(event)
+      if (event.defaultPrevented) {
+        return
+      }
       attachments.openFileDialog()
     },
-    [attachments]
+    [onClick, attachments]
   )
 
-  // Upstream calls `event.preventDefault()` in Radix `onSelect`, which keeps the
-  // menu open while the file dialog is up. Base UI's equivalent is `closeOnClick`.
+  // Upstream keeps the menu open while the file dialog is up by calling
+  // `preventDefault()` in Radix `onSelect`; Base UI's equivalent is `closeOnClick`.
   return (
     <DropdownMenuItem closeOnClick={false} {...props} onClick={handleClick}>
       <ImageIcon className="mr-2 size-4" /> {label}
@@ -449,6 +490,7 @@ export const PromptInputActionAddScreenshot = ({
   ...props
 }: PromptInputActionAddScreenshotProps) => {
   const attachments = usePromptInputAttachments()
+  const onError = useContext(PromptInputErrorContext)
 
   const handleClick = useCallback(
     async (event: PromptInputActionMenuItemClickEvent) => {
@@ -469,10 +511,18 @@ export const PromptInputActionAddScreenshot = ({
         ) {
           return
         }
-        throw error
+        const message =
+          error instanceof Error && error.message
+            ? error.message
+            : "Screenshot capture failed."
+        if (onError) {
+          onError({ code: "screenshot", message })
+        } else {
+          console.error(error)
+        }
       }
     },
-    [onClick, attachments]
+    [onClick, attachments, onError]
   )
 
   return (
@@ -497,20 +547,22 @@ export type PromptInputProps = Omit<
   multiple?: boolean
   // When true, accepts drops anywhere on document. Default false (opt-in).
   globalDrop?: boolean
-  // Render a hidden input with given name and keep it in sync for native form posts. Default false.
+  // Kept for API parity with AI Elements. Browsers do not let scripts set a
+  // file input's value, so this only clears the hidden input when the
+  // attachment list empties; native form posts never carry the attachments.
   syncHiddenInput?: boolean
   // Minimal constraints
   maxFiles?: number
   // bytes
   maxFileSize?: number
-  onError?: (err: {
-    code: "max_files" | "max_file_size" | "accept"
-    message: string
-  }) => void
+  onError?: (err: PromptInputError) => void
+  // Returning `false` (or throwing/rejecting) rejects the submit: the text is
+  // restored and the attachments and referenced sources are kept.
   onSubmit: (
     message: PromptInputMessage,
     event: FormEvent<HTMLFormElement>
-  ) => void | Promise<void>
+    // biome-ignore lint/suspicious/noConfusingVoidType: `void` keeps `async () => {}` and useChat's sendMessage (Promise<void>) assignable alongside a `false` return.
+  ) => void | boolean | Promise<void | boolean>
 }
 
 export const PromptInput = ({
@@ -529,13 +581,14 @@ export const PromptInput = ({
   // Try to use a provider controller if present
   const controller = useOptionalPromptInputController()
   const usingProvider = !!controller
+  const providerRefs = useContext(ProviderRefsContext)
 
   // Refs
   const inputRef = useRef<HTMLInputElement | null>(null)
   const formRef = useRef<HTMLFormElement | null>(null)
 
   // ----- Local attachments (only used when no provider)
-  const [items, setItems] = useState<(FileUIPart & { id: string })[]>([])
+  const [items, setItems] = useState<AttachmentFile[]>([])
   const files = usingProvider ? controller.attachments.files : items
 
   // ----- Local referenced sources (always local to PromptInput)
@@ -543,12 +596,36 @@ export const PromptInput = ({
     (SourceDocumentUIPart & { id: string })[]
   >([])
 
-  // Keep a ref to files for cleanup on unmount (avoids stale closure)
+  // Mirrors `files` synchronously: validation, object URLs and `onError` run
+  // outside React's state updaters (StrictMode invokes those twice), and the
+  // unmount cleanup needs the latest list without a stale closure.
   const filesRef = useRef(files)
 
   useEffect(() => {
     filesRef.current = files
   }, [files])
+
+  // The attachments as of now, not as of the last render: add, remove and
+  // clear update these synchronously (the provider's own ref in provider
+  // mode), so maxFiles and a submit's snapshot see changes made earlier in
+  // the same handler.
+  const currentFiles = useCallback(
+    () =>
+      (usingProvider ? providerRefs?.files.current : undefined) ??
+      filesRef.current,
+    [usingProvider, providerRefs]
+  )
+
+  // Ids of attachments carried by a submit that has not settled yet: a
+  // second submit (a double press, or one while an async onSubmit is
+  // pending) leaves them out instead of sending them again.
+  const inFlightFileIdsRef = useRef(new Set<string>())
+  // Settles once the latest submit has called onSubmit, so submits reach
+  // onSubmit in the order they were made even when an earlier one is still
+  // converting its attachments.
+  const submitTurnRef = useRef<Promise<void>>(Promise.resolve())
+
+  const textareaControlledRef = useRef(false)
 
   const openFileDialogLocal = useCallback(() => {
     inputRef.current?.click()
@@ -562,155 +639,159 @@ export const PromptInput = ({
 
       const patterns = accept
         .split(",")
-        .map((s) => s.trim())
+        .map((s) => s.trim().toLowerCase())
         .filter(Boolean)
+      const type = f.type.toLowerCase()
+      const name = f.name.toLowerCase()
 
       return patterns.some((pattern) => {
+        if (pattern === "*/*") {
+          return true
+        }
+        if (pattern.startsWith(".")) {
+          // e.g: .pdf -> matches by file name, which also covers files the
+          // OS reports with an empty type
+          return name.endsWith(pattern)
+        }
         if (pattern.endsWith("/*")) {
           // e.g: image/* -> image/
           const prefix = pattern.slice(0, -1)
-          return f.type.startsWith(prefix)
+          return type.startsWith(prefix)
         }
-        return f.type === pattern
+        return type === pattern
       })
     },
     [accept]
   )
 
-  const addLocal = useCallback(
-    (fileList: File[] | FileList) => {
+  // Applies accept, maxFileSize and maxFiles in that order and reports every
+  // file that was dropped, so a partially rejected batch is never silent.
+  const acceptFiles = useCallback(
+    (fileList: File[] | FileList, currentCount: number): File[] => {
       const incoming = [...fileList]
+      if (incoming.length === 0) {
+        return []
+      }
       const accepted = incoming.filter((f) => matchesAccept(f))
-      if (incoming.length && accepted.length === 0) {
+      if (accepted.length === 0) {
         onError?.({
           code: "accept",
           message: "No files match the accepted types.",
         })
-        return
+        return []
       }
-      const withinSize = (f: File) =>
-        maxFileSize ? f.size <= maxFileSize : true
-      const sized = accepted.filter(withinSize)
-      if (accepted.length > 0 && sized.length === 0) {
-        onError?.({
-          code: "max_file_size",
-          message: "All files exceed the maximum size.",
-        })
-        return
-      }
-
-      setItems((prev) => {
-        const capacity =
-          typeof maxFiles === "number"
-            ? Math.max(0, maxFiles - prev.length)
-            : undefined
-        const capped =
-          typeof capacity === "number" ? sized.slice(0, capacity) : sized
-        if (typeof capacity === "number" && sized.length > capacity) {
-          onError?.({
-            code: "max_files",
-            message: "Too many files. Some were not added.",
-          })
-        }
-        const next: (FileUIPart & { id: string })[] = []
-        for (const file of capped) {
-          next.push({
-            filename: file.name,
-            id: nanoid(),
-            mediaType: file.type,
-            type: "file",
-            url: URL.createObjectURL(file),
-          })
-        }
-        return [...prev, ...next]
-      })
-    },
-    [matchesAccept, maxFiles, maxFileSize, onError]
-  )
-
-  const removeLocal = useCallback(
-    (id: string) =>
-      setItems((prev) => {
-        const found = prev.find((file) => file.id === id)
-        if (found?.url) {
-          URL.revokeObjectURL(found.url)
-        }
-        return prev.filter((file) => file.id !== id)
-      }),
-    []
-  )
-
-  // Wrapper that validates files before calling provider's add
-  const addWithProviderValidation = useCallback(
-    (fileList: File[] | FileList) => {
-      const incoming = [...fileList]
-      const accepted = incoming.filter((f) => matchesAccept(f))
-      if (incoming.length && accepted.length === 0) {
+      if (accepted.length < incoming.length) {
         onError?.({
           code: "accept",
-          message: "No files match the accepted types.",
+          message:
+            "Some files do not match the accepted types and were not added.",
         })
-        return
       }
-      const withinSize = (f: File) =>
-        maxFileSize ? f.size <= maxFileSize : true
-      const sized = accepted.filter(withinSize)
-      if (accepted.length > 0 && sized.length === 0) {
+      const sized = maxFileSize
+        ? accepted.filter((f) => f.size <= maxFileSize)
+        : accepted
+      if (sized.length === 0) {
         onError?.({
           code: "max_file_size",
           message: "All files exceed the maximum size.",
         })
-        return
+        return []
       }
-
-      const currentCount = files.length
-      const capacity =
-        typeof maxFiles === "number"
-          ? Math.max(0, maxFiles - currentCount)
-          : undefined
-      const capped =
-        typeof capacity === "number" ? sized.slice(0, capacity) : sized
-      if (typeof capacity === "number" && sized.length > capacity) {
+      if (sized.length < accepted.length) {
+        onError?.({
+          code: "max_file_size",
+          message: "Some files exceed the maximum size and were not added.",
+        })
+      }
+      if (typeof maxFiles !== "number") {
+        return sized
+      }
+      const capacity = Math.max(0, maxFiles - currentCount)
+      if (sized.length > capacity) {
         onError?.({
           code: "max_files",
           message: "Too many files. Some were not added.",
         })
       }
+      return sized.slice(0, capacity)
+    },
+    [matchesAccept, maxFileSize, maxFiles, onError]
+  )
 
+  const addLocal = useCallback(
+    (fileList: File[] | FileList) => {
+      const next = acceptFiles(fileList, filesRef.current.length).map(
+        toAttachment
+      )
+      if (next.length === 0) {
+        return
+      }
+      filesRef.current = [...filesRef.current, ...next]
+      setItems((prev) => [...prev, ...next])
+    },
+    [acceptFiles]
+  )
+
+  const removeLocal = useCallback((id: string) => {
+    const found = filesRef.current.find((file) => file.id === id)
+    if (found?.url) {
+      URL.revokeObjectURL(found.url)
+    }
+    filesRef.current = filesRef.current.filter((file) => file.id !== id)
+    setItems((prev) => prev.filter((file) => file.id !== id))
+  }, [])
+
+  // Wrapper that validates files before calling provider's add
+  const addWithProviderValidation = useCallback(
+    (fileList: File[] | FileList) => {
+      const capped = acceptFiles(fileList, currentFiles().length)
       if (capped.length > 0) {
         controller?.attachments.add(capped)
       }
     },
-    [matchesAccept, maxFileSize, maxFiles, onError, files.length, controller]
+    [acceptFiles, controller, currentFiles]
   )
 
-  const clearAttachments = useCallback(
-    () =>
-      usingProvider
-        ? controller?.attachments.clear()
-        : setItems((prev) => {
-            for (const file of prev) {
-              if (file.url) {
-                URL.revokeObjectURL(file.url)
-              }
-            }
-            return []
-          }),
+  const clearAttachments = useCallback(() => {
+    if (usingProvider) {
+      controller?.attachments.clear()
+      return
+    }
+    revokeObjectUrls(filesRef.current)
+    filesRef.current = []
+    setItems([])
+  }, [usingProvider, controller])
+
+  const removeAttachments = useCallback(
+    (ids: ReadonlySet<string>) => {
+      if (usingProvider) {
+        for (const id of ids) {
+          controller?.attachments.remove(id)
+        }
+        return
+      }
+      revokeObjectUrls(filesRef.current.filter((file) => ids.has(file.id)))
+      filesRef.current = filesRef.current.filter((file) => !ids.has(file.id))
+      setItems((prev) => prev.filter((file) => !ids.has(file.id)))
+    },
     [usingProvider, controller]
   )
 
   const clearReferencedSources = useCallback(() => setReferencedSources([]), [])
+
+  const removeReferencedSources = useCallback(
+    (ids: ReadonlySet<string>) =>
+      setReferencedSources((prev) =>
+        prev.filter((source) => !ids.has(source.id))
+      ),
+    []
+  )
 
   const add = usingProvider ? addWithProviderValidation : addLocal
   const remove = usingProvider ? controller.attachments.remove : removeLocal
   const openFileDialog = usingProvider
     ? controller.attachments.openFileDialog
     : openFileDialogLocal
-
-  const clear = useCallback(() => {
-    clearAttachments()
-    clearReferencedSources()
-  }, [clearAttachments, clearReferencedSources])
 
   // Let provider know about our hidden file input so external menus can call openFileDialog()
   useEffect(() => {
@@ -720,8 +801,6 @@ export const PromptInput = ({
     controller.__registerFileInput(inputRef, () => inputRef.current?.click())
   }, [usingProvider, controller])
 
-  // Note: File input cannot be programmatically set for security reasons
-  // The syncHiddenInput prop is no longer functional
   useEffect(() => {
     if (syncHiddenInput && inputRef.current && files.length === 0) {
       inputRef.current.value = ""
@@ -789,11 +868,7 @@ export const PromptInput = ({
   useEffect(
     () => () => {
       if (!usingProvider) {
-        for (const f of filesRef.current) {
-          if (f.url) {
-            URL.revokeObjectURL(f.url)
-          }
-        }
+        revokeObjectUrls(filesRef.current)
       }
     },
     [usingProvider]
@@ -846,22 +921,71 @@ export const PromptInput = ({
 
       const form = event.currentTarget
       const text = usingProvider
-        ? controller.textInput.value
+        ? (providerRefs?.text.current ?? controller.textInput.value)
         : (() => {
             const formData = new FormData(form)
             return (formData.get("message") as string) || ""
           })()
 
-      // Reset form immediately after capturing text to avoid race condition
-      // where user input during async blob conversion would be lost
-      if (!usingProvider) {
+      // Clear the text as soon as it is captured, in both modes, so input
+      // typed during the async blob conversion or a pending onSubmit is kept,
+      // and a second submit in the meantime does not send the same text.
+      if (usingProvider) {
+        controller.textInput.clear()
+      } else {
         form.reset()
+      }
+
+      // Only what this submit carried is cleared once it is accepted, so a
+      // file attached while a slow onSubmit is still pending survives.
+      const inFlight = inFlightFileIdsRef.current
+      const submittedFiles = currentFiles().filter(
+        (file) => !inFlight.has(file.id)
+      )
+      const submittedFileIds = new Set(submittedFiles.map((file) => file.id))
+      for (const id of submittedFileIds) {
+        inFlight.add(id)
+      }
+      const submittedSourceIds = new Set(
+        referencedSources.map((source) => source.id)
+      )
+
+      const previousTurn = submitTurnRef.current
+      let endTurn = () => {}
+      submitTurnRef.current = new Promise<void>((resolve) => {
+        endTurn = resolve
+      })
+
+      const commit = () => {
+        removeAttachments(submittedFileIds)
+        removeReferencedSources(submittedSourceIds)
+      }
+
+      // A rejected submit gives the text back so the user can retry, unless
+      // they have typed something new since the reset. A controlled textarea
+      // belongs to the consumer, so it is left alone.
+      const restoreText = () => {
+        if (usingProvider) {
+          if (providerRefs?.text.current === "") {
+            controller.textInput.setInput(text)
+          }
+          return
+        }
+        if (textareaControlledRef.current) {
+          return
+        }
+        const textarea = form.querySelector<HTMLTextAreaElement>(
+          'textarea[name="message"]'
+        )
+        if (textarea && textarea.value === textarea.defaultValue) {
+          textarea.value = text
+        }
       }
 
       try {
         // Convert blob URLs to data URLs asynchronously
         const convertedFiles: FileUIPart[] = await Promise.all(
-          files.map(async ({ id: _id, ...item }) => {
+          submittedFiles.map(async ({ id: _id, ...item }) => {
             if (item.url?.startsWith("blob:")) {
               const dataUrl = await convertBlobUrlToDataUrl(item.url)
               // If conversion failed, keep the original blob URL
@@ -874,31 +998,36 @@ export const PromptInput = ({
           })
         )
 
+        await previousTurn
         const result = onSubmit({ files: convertedFiles, text }, event)
-
-        // Handle both sync and async onSubmit
-        if (result instanceof Promise) {
-          try {
-            await result
-            clear()
-            if (usingProvider) {
-              controller.textInput.clear()
-            }
-          } catch {
-            // Don't clear on error - user may want to retry
-          }
+        endTurn()
+        // A sync onSubmit commits in the same tick; an async one once it
+        // settles. Throwing, rejecting or returning false rejects the submit.
+        const accepted = result instanceof Promise ? await result : result
+        if (accepted === false) {
+          restoreText()
         } else {
-          // Sync function completed without throwing, clear inputs
-          clear()
-          if (usingProvider) {
-            controller.textInput.clear()
-          }
+          commit()
         }
       } catch {
-        // Don't clear on error - user may want to retry
+        restoreText()
+      } finally {
+        endTurn()
+        for (const id of submittedFileIds) {
+          inFlight.delete(id)
+        }
       }
     },
-    [usingProvider, controller, files, onSubmit, clear]
+    [
+      usingProvider,
+      controller,
+      providerRefs,
+      currentFiles,
+      referencedSources,
+      onSubmit,
+      removeAttachments,
+      removeReferencedSources,
+    ]
   )
 
   // Render with or without local provider
@@ -927,14 +1056,18 @@ export const PromptInput = ({
 
   const withReferencedSources = (
     <LocalReferencedSourcesContext.Provider value={refsCtx}>
-      {inner}
+      <TextareaControlContext.Provider value={textareaControlledRef}>
+        {inner}
+      </TextareaControlContext.Provider>
     </LocalReferencedSourcesContext.Provider>
   )
 
   // Always provide LocalAttachmentsContext so children get validated add function
   return (
     <LocalAttachmentsContext.Provider value={attachmentsCtx}>
-      {withReferencedSources}
+      <PromptInputErrorContext.Provider value={onError}>
+        {withReferencedSources}
+      </PromptInputErrorContext.Provider>
     </LocalAttachmentsContext.Provider>
   )
 }
@@ -961,6 +1094,14 @@ export const PromptInputTextarea = ({
   const attachments = usePromptInputAttachments()
   const [isComposing, setIsComposing] = useState(false)
 
+  const controlledRef = useContext(TextareaControlContext)
+  const isControlled = !controller && props.value !== undefined
+  useEffect(() => {
+    if (controlledRef) {
+      controlledRef.current = isControlled
+    }
+  }, [controlledRef, isControlled])
+
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = useCallback(
     (e) => {
       // Call the external onKeyDown handler first
@@ -972,7 +1113,13 @@ export const PromptInputTextarea = ({
       }
 
       if (e.key === "Enter") {
-        if (isComposing || e.nativeEvent.isComposing) {
+        // keyCode 229 marks a key handled by an IME; Safari fires it on the
+        // Enter that confirms a composition after `compositionend` has run.
+        if (
+          isComposing ||
+          e.nativeEvent.isComposing ||
+          e.nativeEvent.keyCode === 229
+        ) {
           return
         }
         if (e.shiftKey) {
@@ -980,16 +1127,20 @@ export const PromptInputTextarea = ({
         }
         e.preventDefault()
 
-        // Check if the submit button is disabled before submitting
+        // Enter only submits through an enabled submit button, so a disabled
+        // button or a Stop button (type="button" while generating) blocks it
         const { form } = e.currentTarget
-        const submitButton = form?.querySelector(
+        if (!form) {
+          return
+        }
+        const submitButton = form.querySelector<HTMLButtonElement>(
           'button[type="submit"]'
-        ) as HTMLButtonElement | null
-        if (submitButton?.disabled) {
+        )
+        if (!submitButton || submitButton.disabled) {
           return
         }
 
-        form?.requestSubmit()
+        form.requestSubmit()
       }
 
       // Remove last attachment when Backspace is pressed and textarea is empty
@@ -1052,6 +1203,7 @@ export const PromptInputTextarea = ({
 
   return (
     <InputGroupTextarea
+      aria-label="Message"
       className={cn("field-sizing-content max-h-48 min-h-16", className)}
       name="message"
       onCompositionEnd={handleCompositionEnd}
@@ -1065,6 +1217,60 @@ export const PromptInputTextarea = ({
   )
 }
 
+// Anything that takes focus or handles clicks itself; a click on one of these
+// inside an addon must not move focus to the textarea.
+const INTERACTIVE_SELECTOR = [
+  "button",
+  "a[href]",
+  "input",
+  "select",
+  "textarea",
+  "summary",
+  "label",
+  '[contenteditable]:not([contenteditable="false"])',
+  '[tabindex]:not([tabindex="-1"])',
+  '[role="button"]',
+  '[role="link"]',
+  '[role="switch"]',
+  '[role="checkbox"]',
+  '[role="radio"]',
+  '[role="slider"]',
+  '[role="tab"]',
+  '[role="menuitem"]',
+  '[role="option"]',
+  '[role="combobox"]',
+  '[role="textbox"]',
+].join(", ")
+
+// shadcn's InputGroupAddon focuses the group's first <input> when its surface
+// is clicked. In a composer that input is Base UI Select's hidden input, which
+// forwards focus to the select trigger, and clicks on portaled menu items
+// reach the addon through React's tree. Focus the textarea instead, and only
+// for clicks that land on the addon's own inert surface.
+const useAddonClick = (
+  onClick: MouseEventHandler<HTMLDivElement> | undefined
+) =>
+  useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      onClick?.(event)
+      if (event.defaultPrevented) {
+        return
+      }
+      const { currentTarget, target } = event
+      if (!(target instanceof Element) || !currentTarget.contains(target)) {
+        return
+      }
+      if (target.closest(INTERACTIVE_SELECTOR)) {
+        return
+      }
+      const group =
+        currentTarget.closest('[data-slot="input-group"]') ??
+        currentTarget.parentElement
+      group?.querySelector("textarea")?.focus()
+    },
+    [onClick]
+  )
+
 export type PromptInputHeaderProps = Omit<
   ComponentProps<typeof InputGroupAddon>,
   "align"
@@ -1072,14 +1278,19 @@ export type PromptInputHeaderProps = Omit<
 
 export const PromptInputHeader = ({
   className,
+  onClick,
   ...props
-}: PromptInputHeaderProps) => (
-  <InputGroupAddon
-    align="block-end"
-    className={cn("order-first flex-wrap gap-1", className)}
-    {...props}
-  />
-)
+}: PromptInputHeaderProps) => {
+  const handleClick = useAddonClick(onClick)
+  return (
+    <InputGroupAddon
+      align="block-end"
+      className={cn("order-first flex-wrap gap-1", className)}
+      onClick={handleClick}
+      {...props}
+    />
+  )
+}
 
 export type PromptInputFooterProps = Omit<
   ComponentProps<typeof InputGroupAddon>,
@@ -1088,14 +1299,19 @@ export type PromptInputFooterProps = Omit<
 
 export const PromptInputFooter = ({
   className,
+  onClick,
   ...props
-}: PromptInputFooterProps) => (
-  <InputGroupAddon
-    align="block-end"
-    className={cn("justify-between gap-1", className)}
-    {...props}
-  />
-)
+}: PromptInputFooterProps) => {
+  const handleClick = useAddonClick(onClick)
+  return (
+    <InputGroupAddon
+      align="block-end"
+      className={cn("justify-between gap-1", className)}
+      onClick={handleClick}
+      {...props}
+    />
+  )
+}
 
 export type PromptInputToolsProps = HTMLAttributes<HTMLDivElement>
 
@@ -1104,7 +1320,7 @@ export const PromptInputTools = ({
   ...props
 }: PromptInputToolsProps) => (
   <div
-    className={cn("flex min-w-0 items-center gap-1", className)}
+    className={cn("flex min-w-0 flex-wrap items-center gap-1", className)}
     {...props}
   />
 )
@@ -1121,6 +1337,76 @@ export type PromptInputButtonProps = ComponentProps<typeof InputGroupButton> & {
   tooltip?: PromptInputButtonTooltip
 }
 
+/** The text a node renders, read from React children (icons contribute nothing). */
+const textOf = (node: ReactNode): string => {
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node)
+  }
+  if (Array.isArray(node)) {
+    return node.map(textOf).join("")
+  }
+  if (isValidElement<{ children?: ReactNode }>(node)) {
+    return textOf(node.props.children)
+  }
+  return ""
+}
+
+// Key names for aria-keyshortcuts, which wants UI Events key values joined by
+// "+" ("Meta+K"), not the glyphs a tooltip shows ("⌘K").
+const KEY_GLYPHS: Record<string, string> = {
+  "⌘": "Meta",
+  "⌃": "Control",
+  "⌥": "Alt",
+  "⇧": "Shift",
+  "↵": "Enter",
+  "⏎": "Enter",
+  "⌫": "Backspace",
+  "⌦": "Delete",
+  "⎋": "Escape",
+  "⇥": "Tab",
+  "↑": "ArrowUp",
+  "↓": "ArrowDown",
+  "←": "ArrowLeft",
+  "→": "ArrowRight",
+}
+
+const KEY_WORDS: Record<string, string> = {
+  alt: "Alt",
+  cmd: "Meta",
+  command: "Meta",
+  control: "Control",
+  ctrl: "Control",
+  del: "Delete",
+  enter: "Enter",
+  esc: "Escape",
+  escape: "Escape",
+  meta: "Meta",
+  opt: "Alt",
+  option: "Alt",
+  return: "Enter",
+  shift: "Shift",
+  space: "Space",
+  tab: "Tab",
+}
+
+const toKeyShortcuts = (shortcut: string): string | undefined => {
+  const keys: string[] = []
+  for (const token of shortcut.split(/[\s+]+/)) {
+    let rest = token
+    // Glyphs run together ("⌘⇧K"), so peel them off one at a time.
+    while (rest !== "") {
+      const glyph = KEY_GLYPHS[rest.charAt(0)]
+      if (!glyph) break
+      keys.push(glyph)
+      rest = rest.slice(1)
+    }
+    if (rest === "") continue
+    const word = KEY_WORDS[rest.toLowerCase()]
+    keys.push(word ?? (rest.length === 1 ? rest.toUpperCase() : rest))
+  }
+  return keys.length > 0 ? keys.join("+") : undefined
+}
+
 export const PromptInputButton = ({
   variant = "ghost",
   className,
@@ -1128,11 +1414,32 @@ export const PromptInputButton = ({
   tooltip,
   ...props
 }: PromptInputButtonProps) => {
+  const descriptionId = useId()
   const newSize =
     size ?? (Children.count(props.children) > 1 ? "sm" : "icon-sm")
 
+  const tooltipContent =
+    typeof tooltip === "string" ? tooltip : tooltip?.content
+  const hasTooltip = Boolean(tooltipContent)
+  const shortcut = typeof tooltip === "string" ? undefined : tooltip?.shortcut
+  const side = typeof tooltip === "string" ? "top" : (tooltip?.side ?? "top")
+  // Base UI tooltips are visual only (no role or aria-describedby), so the
+  // content is mirrored in a visually hidden description unless it would
+  // just repeat the button's own name (its aria-label or visible text).
+  const repeatsName =
+    typeof tooltipContent === "string" &&
+    [props["aria-label"], textOf(props.children)].some(
+      (name) => name?.trim() === tooltipContent.trim()
+    )
+  const describes = hasTooltip && !repeatsName
+  // The shortcut survives a skipped description as aria-keyshortcuts.
+  const keyShortcuts =
+    hasTooltip && shortcut ? toKeyShortcuts(shortcut) : undefined
+
   const button = (
     <InputGroupButton
+      aria-describedby={describes ? descriptionId : undefined}
+      aria-keyshortcuts={keyShortcuts}
       className={cn(className)}
       size={newSize}
       type="button"
@@ -1141,24 +1448,28 @@ export const PromptInputButton = ({
     />
   )
 
-  if (!tooltip) {
+  if (!hasTooltip) {
     return button
   }
 
-  const tooltipContent = typeof tooltip === "string" ? tooltip : tooltip.content
-  const shortcut = typeof tooltip === "string" ? undefined : tooltip.shortcut
-  const side = typeof tooltip === "string" ? "top" : (tooltip.side ?? "top")
-
   return (
-    <Tooltip>
-      <TooltipTrigger render={button} />
-      <TooltipContent side={side}>
-        {tooltipContent}
-        {shortcut && (
-          <span className="ml-2 text-muted-foreground">{shortcut}</span>
-        )}
-      </TooltipContent>
-    </Tooltip>
+    <>
+      <Tooltip>
+        <TooltipTrigger delay={0} render={button} />
+        <TooltipContent side={side}>
+          {tooltipContent}
+          {shortcut && (
+            <span className="ml-2 text-muted-foreground">{shortcut}</span>
+          )}
+        </TooltipContent>
+      </Tooltip>
+      {describes && (
+        <span className="sr-only" id={descriptionId}>
+          {tooltipContent}
+          {shortcut && ` ${shortcut}`}
+        </span>
+      )}
+    </>
   )
 }
 
@@ -1226,12 +1537,16 @@ export const PromptInputSubmit = ({
   ...props
 }: PromptInputSubmitProps) => {
   const isGenerating = status === "submitted" || status === "streaming"
+  // Only a wired onStop makes this a Stop button. Without one a press still
+  // submits, so the name, the glyph and the type stay those of Submit.
+  const canStop = isGenerating && onStop !== undefined
 
   let Icon = <CornerDownLeftIcon className="size-4" />
 
   if (status === "submitted") {
+    // Progress rather than an action, so it shows with or without onStop.
     Icon = <Spinner />
-  } else if (status === "streaming") {
+  } else if (status === "streaming" && canStop) {
     Icon = <SquareIcon className="size-4" />
   } else if (status === "error") {
     Icon = <XIcon className="size-4" />
@@ -1239,23 +1554,23 @@ export const PromptInputSubmit = ({
 
   const handleClick = useCallback(
     (e: PromptInputSubmitClickEvent) => {
-      if (isGenerating && onStop) {
+      if (canStop) {
         e.preventDefault()
-        onStop()
+        onStop?.()
         return
       }
       onClick?.(e)
     },
-    [isGenerating, onStop, onClick]
+    [canStop, onStop, onClick]
   )
 
   return (
     <InputGroupButton
-      aria-label={isGenerating ? "Stop" : "Submit"}
-      className={cn(className)}
+      aria-label={canStop ? "Stop" : "Submit"}
+      className={cn("shrink-0", className)}
       onClick={handleClick}
       size={size}
-      type={isGenerating && onStop ? "button" : "submit"}
+      type={canStop ? "button" : "submit"}
       variant={variant}
       {...props}
     >

@@ -1,7 +1,17 @@
 "use client"
 
-import { GlobeIcon, MicIcon } from "lucide-react"
+import { FileIcon, GlobeIcon, MicIcon, XIcon } from "lucide-react"
 import { useState } from "react"
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentTitle,
+} from "@/components/ui/attachment"
 import {
   PromptInput,
   PromptInputActionAddAttachments,
@@ -11,7 +21,9 @@ import {
   PromptInputActionMenuTrigger,
   PromptInputBody,
   PromptInputButton,
+  type PromptInputError,
   PromptInputFooter,
+  PromptInputHeader,
   type PromptInputMessage,
   PromptInputSelect,
   PromptInputSelectContent,
@@ -21,12 +33,14 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
+  usePromptInputAttachments,
 } from "@/registry/ai/prompt-input"
 import { Suggestion, Suggestions } from "@/registry/ai/suggestion"
 
 // `items` gives Base UI's Select.Value a label to render for each value.
+const defaultModel = { label: "Claude Sonnet 4", value: "claude-sonnet-4" }
 const models = [
-  { label: "Claude Sonnet 4", value: "claude-sonnet-4" },
+  defaultModel,
   { label: "GPT-5", value: "gpt-5" },
   { label: "Gemini 2.5 Pro", value: "gemini-2.5-pro" },
 ]
@@ -38,21 +52,74 @@ const suggestions = [
   "Find unused exports",
 ]
 
+/** Attached-but-unsent files, read from the surrounding PromptInput. */
+function Attachments() {
+  const attachments = usePromptInputAttachments()
+  if (attachments.files.length === 0) {
+    return null
+  }
+  return (
+    <PromptInputHeader>
+      <AttachmentGroup>
+        {attachments.files.map((file) => {
+          const isImage = file.mediaType.startsWith("image")
+          const name = file.filename ?? (isImage ? "Image" : "File")
+          return (
+            <Attachment
+              key={file.id}
+              orientation={isImage ? "vertical" : "horizontal"}
+              size="sm"
+            >
+              <AttachmentMedia variant={isImage ? "image" : "icon"}>
+                {isImage ? (
+                  // biome-ignore lint/performance/noImgElement: a blob: URL preview of a local file, which next/image cannot optimize.
+                  <img alt={name} src={file.url} />
+                ) : (
+                  <FileIcon />
+                )}
+              </AttachmentMedia>
+              <AttachmentContent>
+                <AttachmentTitle>{name}</AttachmentTitle>
+                <AttachmentDescription>{file.mediaType}</AttachmentDescription>
+              </AttachmentContent>
+              <AttachmentActions>
+                <AttachmentAction
+                  aria-label={`Remove ${name}`}
+                  onClick={() => attachments.remove(file.id)}
+                >
+                  <XIcon />
+                </AttachmentAction>
+              </AttachmentActions>
+            </Attachment>
+          )
+        })}
+      </AttachmentGroup>
+    </PromptInputHeader>
+  )
+}
+
 export default function PromptInputPreview() {
-  const [model, setModel] = useState<string | null>(models[0].value)
+  const [model, setModel] = useState<string | null>(defaultModel.value)
   const [lastMessage, setLastMessage] = useState<PromptInputMessage | null>(
     null
   )
+  const [lastError, setLastError] = useState<PromptInputError | null>(null)
   const [draft, setDraft] = useState("")
 
   const handleSubmit = (message: PromptInputMessage) => {
+    // Like the chat block: an empty submit is rejected, so nothing is
+    // recorded and the composer keeps its state.
+    if (message.text.trim() === "" && message.files.length === 0) {
+      return false
+    }
     setLastMessage(message)
+    setLastError(null)
     setDraft("")
   }
 
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">Prompt input</h1>
+      <h1 className="font-heading text-xl font-semibold">Prompt Input</h1>
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-medium">Ready</h2>
         <Suggestions>
@@ -64,7 +131,13 @@ export default function PromptInputPreview() {
             />
           ))}
         </Suggestions>
-        <PromptInput onSubmit={handleSubmit} accept="image/*" multiple>
+        <PromptInput
+          accept="image/*"
+          multiple
+          onError={setLastError}
+          onSubmit={handleSubmit}
+        >
+          <Attachments />
           <PromptInputBody>
             <PromptInputTextarea
               onChange={(event) => setDraft(event.currentTarget.value)}
@@ -113,11 +186,17 @@ export default function PromptInputPreview() {
             file(s)
           </p>
         ) : null}
+        {lastError ? (
+          <p className="text-xs text-muted-foreground">
+            Rejected ({lastError.code}): {lastError.message}
+          </p>
+        ) : null}
       </section>
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-medium">Streaming</h2>
         <PromptInput onSubmit={() => {}}>
+          <Attachments />
           <PromptInputBody>
             <PromptInputTextarea
               defaultValue="Explain how the registry build step works."
@@ -133,7 +212,10 @@ export default function PromptInputPreview() {
                   <PromptInputActionAddScreenshot />
                 </PromptInputActionMenuContent>
               </PromptInputActionMenu>
-              <PromptInputSelect defaultValue={models[0].value} items={models}>
+              <PromptInputSelect
+                defaultValue={defaultModel.value}
+                items={models}
+              >
                 <PromptInputSelectTrigger aria-label="Model">
                   <PromptInputSelectValue />
                 </PromptInputSelectTrigger>
