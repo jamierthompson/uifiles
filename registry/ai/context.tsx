@@ -6,7 +6,7 @@ import type { LanguageModelUsage } from "ai"
 import { cn } from "cn"
 import type { ComponentProps } from "react"
 import { createContext, isValidElement, useContext, useMemo } from "react"
-import { getUsage } from "tokenlens"
+import { getUsage, type TokenBreakdown } from "tokenlens"
 import { Button } from "@/components/ui/button"
 import {
   HoverCard,
@@ -21,16 +21,50 @@ const ICON_VIEWBOX = 24
 const ICON_CENTER = 12
 const ICON_STROKE_WIDTH = 2
 
+// Number formatting is fixed to en-US (tokenlens prices in USD); see docs.
+const LOCALE = "en-US"
+const percentFormat = new Intl.NumberFormat(LOCALE, {
+  maximumFractionDigits: 1,
+  style: "percent",
+})
+const compactFormat = new Intl.NumberFormat(LOCALE, { notation: "compact" })
+const currencyFormat = new Intl.NumberFormat(LOCALE, {
+  currency: "USD",
+  style: "currency",
+})
+
 type ModelId = string
 
 interface ContextSchema {
   usedTokens: number
   maxTokens: number
-  usage?: LanguageModelUsage
-  modelId?: ModelId
+  usage?: LanguageModelUsage | undefined
+  modelId?: ModelId | undefined
 }
 
-const ContextContext = createContext<ContextSchema | null>(null)
+/**
+ * The usage split into non-overlapping rows: cached input reads and reasoning
+ * output are subsets of `inputTokens` / `outputTokens` in ai@7, so they are
+ * taken out of Input / Output and shown (and priced) on their own rows.
+ */
+interface UsageRows {
+  input: number
+  cache: number
+  output: number
+  reasoning: number
+}
+
+/** Each row's cost in USD, rounded to cents so the rows add up to `total`. */
+interface UsageCosts extends UsageRows {
+  total: number
+}
+
+interface ContextValue extends ContextSchema {
+  rows: UsageRows
+  costs: UsageCosts | undefined
+}
+
+const ContextContext = createContext<ContextValue | null>(null)
 
 const useContextValue = () => {
   const context = useContext(ContextContext)
@@ -40,6 +74,65 @@ const useContextValue = () => {
   }
 
   return context
+}
+
+// Fraction of the window in use; 0 when the window is unknown (maxTokens
+// 0/undefined while model metadata loads) so no NaN% or ∞% is rendered.
+const usedPercent = (used: number, max: number): number =>
+  Number.isFinite(used) && Number.isFinite(max) && max > 0
+    ? Math.max(0, used / max)
+    : 0
+
+// A missing, NaN or negative count (a JS consumer, usage still streaming)
+// reads as 0 everywhere, never as "NaN".
+const count = (value: number | undefined): number =>
+  typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0
+
+const formatTokens = (value: number | undefined): string =>
+  compactFormat.format(count(value))
+
+const splitUsage = (usage: LanguageModelUsage | undefined): UsageRows => {
+  const cache = count(usage?.inputTokenDetails?.cacheReadTokens)
+  const reasoning = count(usage?.outputTokenDetails?.reasoningTokens)
+  return {
+    cache,
+    input: Math.max(0, count(usage?.inputTokens) - cache),
+    output: Math.max(0, count(usage?.outputTokens) - reasoning),
+    reasoning,
+  }
+}
+
+const roundCents = (usd: number): number =>
+  Number.isFinite(usd) ? Math.round(usd * 100) / 100 : 0
+
+const priceTokens = (modelId: ModelId, usage: TokenBreakdown): number =>
+  roundCents(getUsage({ modelId, usage }).costUSD?.totalUSD ?? 0)
+
+// Reasoning is billed at the output rate (tokenlens only prices
+// `reasoningTokens` for models with a separate reasoning rate, and the
+// bundled catalog has none); cache reads at the cache-read rate; the rest of
+// the input at the input rate. The total is the sum of the four rows.
+const priceRows = (
+  modelId: ModelId | undefined,
+  rows: UsageRows
+): UsageCosts | undefined => {
+  if (!modelId) return undefined
+  const costs = {
+    cache: priceTokens(modelId, {
+      cacheReads: rows.cache,
+      input: 0,
+      output: 0,
+    }),
+    input: priceTokens(modelId, { input: rows.input, output: 0 }),
+    output: priceTokens(modelId, { input: 0, output: rows.output }),
+    reasoning: priceTokens(modelId, { input: 0, output: rows.reasoning }),
+  }
+  return {
+    ...costs,
+    total: roundCents(
+      costs.input + costs.cache + costs.output + costs.reasoning
+    ),
+  }
 }
 
 export type ContextProps = ComponentProps<typeof HoverCard> & ContextSchema
@@ -52,10 +145,17 @@ export const Context = ({
   modelId,
   ...props
 }: ContextProps) => {
-  const contextValue = useMemo(
-    () => ({ maxTokens, modelId, usage, usedTokens }),
-    [maxTokens, modelId, usage, usedTokens]
-  )
+  const contextValue = useMemo<ContextValue>(() => {
+    const rows = splitUsage(usage)
+    return {
+      costs: priceRows(modelId, rows),
+      maxTokens,
+      modelId,
+      rows,
+      usage,
+      usedTokens,
+    }
+  }, [maxTokens, modelId, usage, usedTokens])
 
   return (
     <ContextContext.Provider value={contextValue}>
@@ -67,8 +167,8 @@ export const Context = ({
 const ContextIcon = () => {
   const { usedTokens, maxTokens } = useContextValue()
   const circumference = 2 * Math.PI * ICON_RADIUS
-  const usedPercent = usedTokens / maxTokens
-  const dashOffset = circumference * (1 - usedPercent)
+  const percent = Math.min(1, usedPercent(usedTokens, maxTokens))
+  const dashOffset = circumference * (1 - percent)
 
   return (
     <svg
@@ -115,11 +215,9 @@ export const ContextTrigger = ({
   ...props
 }: ContextTriggerProps) => {
   const { usedTokens, maxTokens } = useContextValue()
-  const usedPercent = usedTokens / maxTokens
-  const renderedPercent = new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 1,
-    style: "percent",
-  }).format(usedPercent)
+  const renderedPercent = percentFormat.format(
+    usedPercent(usedTokens, maxTokens)
+  )
 
   // As upstream: a custom child element replaces the default button entirely.
   return (
@@ -166,17 +264,10 @@ export const ContextContentHeader = ({
   ...props
 }: ContextContentHeaderProps) => {
   const { usedTokens, maxTokens } = useContextValue()
-  const usedPercent = usedTokens / maxTokens
-  const displayPct = new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 1,
-    style: "percent",
-  }).format(usedPercent)
-  const used = new Intl.NumberFormat("en-US", {
-    notation: "compact",
-  }).format(usedTokens)
-  const total = new Intl.NumberFormat("en-US", {
-    notation: "compact",
-  }).format(maxTokens)
+  const percent = usedPercent(usedTokens, maxTokens)
+  const displayPct = percentFormat.format(percent)
+  const used = formatTokens(usedTokens)
+  const total = formatTokens(maxTokens)
 
   return (
     <div className={cn("w-full space-y-2 p-3", className)} {...props}>
@@ -191,7 +282,7 @@ export const ContextContentHeader = ({
           <div className="space-y-2">
             <Progress
               aria-label="Context window usage"
-              value={usedPercent * PERCENT_MAX}
+              value={percent * PERCENT_MAX}
             />
           </div>
         </>
@@ -219,20 +310,8 @@ export const ContextContentFooter = ({
   className,
   ...props
 }: ContextContentFooterProps) => {
-  const { modelId, usage } = useContextValue()
-  const costUSD = modelId
-    ? getUsage({
-        modelId,
-        usage: {
-          input: usage?.inputTokens ?? 0,
-          output: usage?.outputTokens ?? 0,
-        },
-      }).costUSD?.totalUSD
-    : undefined
-  const totalCost = new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    style: "currency",
-  }).format(costUSD ?? 0)
+  const { costs } = useContextValue()
+  const totalCost = currencyFormat.format(costs?.total ?? 0)
 
   return (
     <div
@@ -260,175 +339,72 @@ const TokensWithCost = ({
   costText?: string
 }) => (
   <span>
-    {tokens === undefined
-      ? "—"
-      : new Intl.NumberFormat("en-US", {
-          notation: "compact",
-        }).format(tokens)}
+    {tokens === undefined ? "—" : formatTokens(tokens)}
     {costText ? (
       <span className="ml-2 text-muted-foreground">• {costText}</span>
     ) : null}
   </span>
 )
 
-export type ContextInputUsageProps = ComponentProps<"div">
-
-export const ContextInputUsage = ({
+const UsageRow = ({
+  label,
+  row,
   className,
-  children,
   ...props
-}: ContextInputUsageProps) => {
-  const { usage, modelId } = useContextValue()
-  const inputTokens = usage?.inputTokens ?? 0
+}: ComponentProps<"div"> & { label: string; row: keyof UsageRows }) => {
+  const { rows, costs } = useContextValue()
+  const tokens = rows[row]
 
-  if (children) {
-    return children
-  }
-
-  if (!inputTokens) {
+  if (!tokens) {
     return null
   }
-
-  const inputCost = modelId
-    ? getUsage({
-        modelId,
-        usage: { input: inputTokens, output: 0 },
-      }).costUSD?.totalUSD
-    : undefined
-  const inputCostText = new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    style: "currency",
-  }).format(inputCost ?? 0)
 
   return (
     <div
       className={cn("flex items-center justify-between text-xs", className)}
       {...props}
     >
-      <span className="text-muted-foreground">Input</span>
-      <TokensWithCost costText={inputCostText} tokens={inputTokens} />
+      <span className="text-muted-foreground">{label}</span>
+      <TokensWithCost
+        costText={currencyFormat.format(costs?.[row] ?? 0)}
+        tokens={tokens}
+      />
     </div>
   )
 }
+
+export type ContextInputUsageProps = ComponentProps<"div">
+
+export const ContextInputUsage = ({
+  children,
+  ...props
+}: ContextInputUsageProps) =>
+  children ? children : <UsageRow label="Input" row="input" {...props} />
 
 export type ContextOutputUsageProps = ComponentProps<"div">
 
 export const ContextOutputUsage = ({
-  className,
   children,
   ...props
-}: ContextOutputUsageProps) => {
-  const { usage, modelId } = useContextValue()
-  const outputTokens = usage?.outputTokens ?? 0
-
-  if (children) {
-    return children
-  }
-
-  if (!outputTokens) {
-    return null
-  }
-
-  const outputCost = modelId
-    ? getUsage({
-        modelId,
-        usage: { input: 0, output: outputTokens },
-      }).costUSD?.totalUSD
-    : undefined
-  const outputCostText = new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    style: "currency",
-  }).format(outputCost ?? 0)
-
-  return (
-    <div
-      className={cn("flex items-center justify-between text-xs", className)}
-      {...props}
-    >
-      <span className="text-muted-foreground">Output</span>
-      <TokensWithCost costText={outputCostText} tokens={outputTokens} />
-    </div>
-  )
-}
+}: ContextOutputUsageProps) =>
+  children ? children : <UsageRow label="Output" row="output" {...props} />
 
 export type ContextReasoningUsageProps = ComponentProps<"div">
 
 export const ContextReasoningUsage = ({
-  className,
   children,
   ...props
-}: ContextReasoningUsageProps) => {
-  const { usage, modelId } = useContextValue()
-  // ai@7: reasoning tokens live under outputTokenDetails (was usage.reasoningTokens).
-  const reasoningTokens = usage?.outputTokenDetails?.reasoningTokens ?? 0
-
-  if (children) {
-    return children
-  }
-
-  if (!reasoningTokens) {
-    return null
-  }
-
-  const reasoningCost = modelId
-    ? getUsage({
-        modelId,
-        usage: { reasoningTokens },
-      }).costUSD?.totalUSD
-    : undefined
-  const reasoningCostText = new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    style: "currency",
-  }).format(reasoningCost ?? 0)
-
-  return (
-    <div
-      className={cn("flex items-center justify-between text-xs", className)}
-      {...props}
-    >
-      <span className="text-muted-foreground">Reasoning</span>
-      <TokensWithCost costText={reasoningCostText} tokens={reasoningTokens} />
-    </div>
+}: ContextReasoningUsageProps) =>
+  children ? (
+    children
+  ) : (
+    <UsageRow label="Reasoning" row="reasoning" {...props} />
   )
-}
 
 export type ContextCacheUsageProps = ComponentProps<"div">
 
 export const ContextCacheUsage = ({
-  className,
   children,
   ...props
-}: ContextCacheUsageProps) => {
-  const { usage, modelId } = useContextValue()
-  // ai@7: cached input tokens live under inputTokenDetails (was usage.cachedInputTokens).
-  const cacheTokens = usage?.inputTokenDetails?.cacheReadTokens ?? 0
-
-  if (children) {
-    return children
-  }
-
-  if (!cacheTokens) {
-    return null
-  }
-
-  const cacheCost = modelId
-    ? getUsage({
-        modelId,
-        usage: { cacheReads: cacheTokens, input: 0, output: 0 },
-      }).costUSD?.totalUSD
-    : undefined
-  const cacheCostText = new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    style: "currency",
-  }).format(cacheCost ?? 0)
-
-  return (
-    <div
-      className={cn("flex items-center justify-between text-xs", className)}
-      {...props}
-    >
-      <span className="text-muted-foreground">Cache</span>
-      <TokensWithCost costText={cacheCostText} tokens={cacheTokens} />
-    </div>
-  )
-}
+}: ContextCacheUsageProps) =>
+  children ? children : <UsageRow label="Cache" row="cache" {...props} />

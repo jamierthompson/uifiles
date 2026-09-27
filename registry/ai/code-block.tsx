@@ -20,9 +20,14 @@ import type {
   BundledLanguage,
   BundledTheme,
   HighlighterGeneric,
+  SpecialLanguage,
   ThemedToken,
 } from "shiki"
-import { createHighlighter } from "shiki"
+import {
+  bundledLanguages,
+  bundledLanguagesInfo,
+  createHighlighter,
+} from "shiki"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -76,16 +81,18 @@ const TokenSpan = ({ token }: { token: ThemedToken }) => (
   </span>
 )
 
-// Line number styles using CSS counters
+// Line number styles using CSS counters. The gutter is `--line-digits`
+// characters wide (set on <code> from the line count) so four-digit numbers
+// stay right-aligned instead of overflowing a fixed box.
 const LINE_NUMBER_CLASSES = cn(
   "block",
   "before:content-[counter(line)]",
   "before:inline-block",
   "before:[counter-increment:line]",
-  "before:w-8",
+  "before:w-[calc(var(--line-digits,2)*1ch)]",
   "before:mr-4",
   "before:text-right",
-  "before:text-muted-foreground/50",
+  "before:text-muted-foreground",
   "before:font-mono",
   "before:select-none"
 )
@@ -118,6 +125,8 @@ interface TokenizedCode {
   tokens: ThemedToken[][]
   fg: string
   bg: string
+  /** Theme custom properties (`--shiki-dark`, `--shiki-dark-bg`) for the `<pre>`. */
+  vars: Record<string, string>
 }
 
 interface CodeBlockContextType {
@@ -129,117 +138,232 @@ const CodeBlockContext = createContext<CodeBlockContextType>({
   code: "",
 })
 
-// Highlighter cache (singleton per language)
-const highlighterCache = new Map<
-  string,
-  Promise<HighlighterGeneric<BundledLanguage, BundledTheme>>
->()
+type Highlighter = HighlighterGeneric<BundledLanguage, BundledTheme>
+type HighlightLanguage = BundledLanguage | SpecialLanguage
 
-// Token cache
+const THEMES = {
+  dark: "github-dark-high-contrast",
+  light: "github-light-high-contrast",
+} as const
+
+const FALLBACK_LANGUAGE: SpecialLanguage = "text"
+const SPECIAL_LANGUAGES = new Set<string>([
+  "text",
+  "plaintext",
+  "txt",
+  "plain",
+  "ansi",
+])
+
+// One highlighter for every block, created on first use with both themes and
+// no grammars: Shiki warns from its tenth instance on, and every instance
+// would load the themes again (uifiles change; upstream made one per language).
+let highlighterPromise: Promise<Highlighter> | undefined
+
+// Grammar loads per language, shared by concurrent callers
+const languageLoads = new Map<string, Promise<Highlighter>>()
+
+// Token cache, keyed on the whole code and the language
 const tokensCache = new Map<string, TokenizedCode>()
+
+// In-flight highlights per cache key, so concurrent callers share one job
+const pending = new Map<string, Promise<void>>()
 
 // Subscribers for async token updates
 const subscribers = new Map<string, Set<(result: TokenizedCode) => void>>()
 
-const getTokensCacheKey = (code: string, language: BundledLanguage) => {
-  const start = code.slice(0, 100)
-  const end = code.length > 100 ? code.slice(-100) : ""
-  return `${language}:${code.length}:${start}:${end}`
+// Languages already reported as unknown (one warning each, not one per render)
+const warnedLanguages = new Set<string>()
+
+// Callers such as Tool pass `code` straight from streamed model output, which
+// can be undefined before the first chunk; never let that reach `split`.
+const toCodeString = (code: unknown): string =>
+  typeof code === "string" ? code : ""
+
+// NUL cannot appear in a fence info string, so "foo:bar" + "baz" and
+// "foo" + "bar:baz" get different keys.
+const getTokensCacheKey = (code: string, language: string) =>
+  `${language}\0${code}`
+
+// Display names for the scroll container's default label ("TypeScript code").
+const languageNames = new Map<string, string>()
+for (const info of bundledLanguagesInfo) {
+  for (const key of [info.id, ...(info.aliases ?? [])]) {
+    languageNames.set(key, info.name)
+  }
 }
 
-const getHighlighter = (
-  language: BundledLanguage
-): Promise<HighlighterGeneric<BundledLanguage, BundledTheme>> => {
-  const cached = highlighterCache.get(language)
+const defaultContentLabel = (language: unknown): string => {
+  const name =
+    typeof language === "string" ? languageNames.get(language) : undefined
+  return name ? `${name} code` : "Code"
+}
+
+// Unknown grammars (typos, exotic fence info strings) render as plain text
+// instead of leaving a rejected highlighter in the cache. `Object.hasOwn`,
+// not `in`: "constructor" or "toString" is not a grammar either.
+const resolveLanguage = (language: unknown): HighlightLanguage => {
+  if (typeof language !== "string" || language === "") {
+    return FALLBACK_LANGUAGE
+  }
+  if (
+    Object.hasOwn(bundledLanguages, language) ||
+    SPECIAL_LANGUAGES.has(language)
+  ) {
+    return language as HighlightLanguage
+  }
+  if (!warnedLanguages.has(language)) {
+    warnedLanguages.add(language)
+    console.warn(
+      `CodeBlock: shiki has no "${language}" grammar; rendering it as plain text.`
+    )
+  }
+  return FALLBACK_LANGUAGE
+}
+
+const getSharedHighlighter = (): Promise<Highlighter> => {
+  if (highlighterPromise) {
+    return highlighterPromise
+  }
+  highlighterPromise = createHighlighter({
+    langs: [],
+    themes: [THEMES.light, THEMES.dark],
+  }).catch((error: unknown) => {
+    // A failed start (offline, chunk error) must not poison later attempts.
+    highlighterPromise = undefined
+    throw error
+  })
+  return highlighterPromise
+}
+
+const getHighlighter = (language: HighlightLanguage): Promise<Highlighter> => {
+  const cached = languageLoads.get(language)
   if (cached) {
     return cached
   }
 
-  const highlighterPromise = createHighlighter({
-    langs: [language],
-    themes: ["github-light-high-contrast", "github-dark-high-contrast"],
-  })
+  const loaded = getSharedHighlighter()
+    .then(async (highlighter) => {
+      // Plain-text languages load nothing, and Shiki skips a grammar it
+      // already has under another alias ("ts" after "typescript").
+      await highlighter.loadLanguage(language)
+      return highlighter
+    })
+    .catch((error: unknown) => {
+      // A failed grammar load must not poison later attempts either.
+      languageLoads.delete(language)
+      throw error
+    })
 
-  highlighterCache.set(language, highlighterPromise)
-  return highlighterPromise
+  languageLoads.set(language, loaded)
+  return loaded
 }
 
-// Create raw tokens for immediate display while highlighting loads
-const createRawTokens = (code: string): TokenizedCode => ({
+// Shiki packs the dual-theme colours as "#fff;--shiki-dark-bg:#0a0c10";
+// React needs the colour and the custom properties as separate style keys.
+const splitThemeStyle = (
+  value: string | undefined,
+  fallback: string
+): { color: string; vars: Record<string, string> } => {
+  const [color = "", ...declarations] = (value ?? "").split(";")
+  const vars: Record<string, string> = {}
+  for (const declaration of declarations) {
+    const separator = declaration.indexOf(":")
+    if (separator > 0) {
+      vars[declaration.slice(0, separator).trim()] = declaration
+        .slice(separator + 1)
+        .trim()
+    }
+  }
+  return { color: color.trim() || fallback, vars }
+}
+
+const tokenize = async (
+  code: string,
+  language: unknown
+): Promise<TokenizedCode> => {
+  const lang = resolveLanguage(language)
+  const highlighter = await getHighlighter(lang)
+  const result = highlighter.codeToTokens(code, { lang, themes: THEMES })
+  const bg = splitThemeStyle(result.bg, "transparent")
+  const fg = splitThemeStyle(result.fg, "inherit")
+  return {
+    bg: bg.color,
+    fg: fg.color,
+    tokens: result.tokens,
+    vars: { ...bg.vars, ...fg.vars },
+  }
+}
+
+// Create raw tokens for immediate display while highlighting loads. Shiki
+// splits on CRLF too, so the raw and highlighted line counts match.
+const createRawTokens = (code: unknown): TokenizedCode => ({
   bg: "transparent",
   fg: "inherit",
-  tokens: code.split("\n").map((line) =>
-    line === ""
-      ? []
-      : [
-          {
-            color: "inherit",
-            content: line,
-          } as ThemedToken,
-        ]
-  ),
+  tokens: toCodeString(code)
+    .split(/\r?\n/)
+    .map((line) =>
+      line === ""
+        ? []
+        : [
+            {
+              color: "inherit",
+              content: line,
+            } as ThemedToken,
+          ]
+    ),
+  vars: {},
 })
 
 const subscribeToNothing = () => () => {}
 
-// Synchronous highlight with callback for async results
+// Synchronous highlight with callback for async results. The callback runs
+// exactly once per call: synchronously on a cache hit, otherwise when the
+// shared highlight for this code and language resolves.
 export const highlightCode = (
   code: string,
   language: BundledLanguage,
   callback?: (result: TokenizedCode) => void
 ): TokenizedCode | null => {
-  const tokensCacheKey = getTokensCacheKey(code, language)
+  const text = toCodeString(code)
+  const tokensCacheKey = getTokensCacheKey(text, String(language))
 
-  // Return cached result if available
   const cached = tokensCache.get(tokensCacheKey)
   if (cached) {
+    callback?.(cached)
     return cached
   }
 
-  // Subscribe callback if provided
   if (callback) {
-    if (!subscribers.has(tokensCacheKey)) {
-      subscribers.set(tokensCacheKey, new Set())
+    const subs = subscribers.get(tokensCacheKey)
+    if (subs) {
+      subs.add(callback)
+    } else {
+      subscribers.set(tokensCacheKey, new Set([callback]))
     }
-    subscribers.get(tokensCacheKey)?.add(callback)
   }
 
-  // Start highlighting in background - fire-and-forget async pattern
-  getHighlighter(language)
-    .then((highlighter) => {
-      const availableLangs = highlighter.getLoadedLanguages()
-      const langToUse = availableLangs.includes(language) ? language : "text"
-
-      const result = highlighter.codeToTokens(code, {
-        lang: langToUse,
-        themes: {
-          dark: "github-dark-high-contrast",
-          light: "github-light-high-contrast",
-        },
-      })
-
-      const tokenized: TokenizedCode = {
-        bg: result.bg ?? "transparent",
-        fg: result.fg ?? "inherit",
-        tokens: result.tokens,
-      }
-
-      // Cache the result
-      tokensCache.set(tokensCacheKey, tokenized)
-
-      // Notify all subscribers
-      const subs = subscribers.get(tokensCacheKey)
-      if (subs) {
-        for (const sub of subs) {
-          sub(tokenized)
-        }
+  if (!pending.has(tokensCacheKey)) {
+    const job = tokenize(text, language)
+      .then((tokenized) => {
+        tokensCache.set(tokensCacheKey, tokenized)
+        const subs = subscribers.get(tokensCacheKey)
         subscribers.delete(tokensCacheKey)
-      }
-    })
-    .catch((error) => {
-      console.error("Failed to highlight code:", error)
-      subscribers.delete(tokensCacheKey)
-    })
+        if (subs) {
+          for (const sub of subs) {
+            sub(tokenized)
+          }
+        }
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to highlight code:", error)
+        subscribers.delete(tokensCacheKey)
+      })
+      .finally(() => {
+        pending.delete(tokensCacheKey)
+      })
+    pending.set(tokensCacheKey, job)
+  }
 
   return null
 }
@@ -255,16 +379,28 @@ const CodeBlockBody = memo(
     className?: string
   }) => {
     const preStyle = useMemo(
-      () => ({
-        backgroundColor: tokenized.bg,
-        color: tokenized.fg,
-      }),
-      [tokenized.bg, tokenized.fg]
+      () =>
+        ({
+          backgroundColor: tokenized.bg,
+          color: tokenized.fg,
+          ...tokenized.vars,
+        }) as CSSProperties,
+      [tokenized]
     )
 
     const keyedLines = useMemo(
       () => addKeysToTokens(tokenized.tokens),
       [tokenized.tokens]
+    )
+
+    const codeStyle = useMemo(
+      () =>
+        showLineNumbers
+          ? ({
+              "--line-digits": String(keyedLines.length).length,
+            } as CSSProperties)
+          : undefined,
+      [showLineNumbers, keyedLines.length]
     )
 
     return (
@@ -280,6 +416,7 @@ const CodeBlockBody = memo(
             "font-mono text-sm",
             showLineNumbers && "[counter-increment:line_0] [counter-reset:line]"
           )}
+          style={codeStyle}
         >
           {keyedLines.map((keyedLine) => (
             <LineSpan
@@ -370,17 +507,28 @@ export const CodeBlockActions = ({
   </div>
 )
 
+export type CodeBlockContentProps = {
+  code: string
+  language: BundledLanguage
+  showLineNumbers?: boolean
+  /**
+   * Accessible name of the scroll container when the code overflows.
+   * Defaults to "<Language> code" ("TypeScript code"), or "Code" when the
+   * language is not a shiki grammar.
+   */
+  "aria-label"?: string | undefined
+}
+
 export const CodeBlockContent = ({
   code,
   language,
   showLineNumbers = false,
-}: {
-  code: string
-  language: BundledLanguage
-  showLineNumbers?: boolean
-}) => {
+  "aria-label": ariaLabel,
+}: CodeBlockContentProps) => {
+  const text = toCodeString(code)
+
   // Memoized raw tokens for immediate display
-  const rawTokens = useMemo(() => createRawTokens(code), [code])
+  const rawTokens = useMemo(() => createRawTokens(text), [text])
 
   // Synchronous cache lookup — avoids setState in effect for cached results.
   // Skipped on the server and during hydration: the server's module cache
@@ -392,27 +540,27 @@ export const CodeBlockContent = ({
     () => false
   )
   const syncTokens = useMemo(
-    () => (isHydrated ? highlightCode(code, language) : null) ?? rawTokens,
-    [code, language, rawTokens, isHydrated]
+    () => (isHydrated ? highlightCode(text, language) : null) ?? rawTokens,
+    [text, language, rawTokens, isHydrated]
   )
 
   // Async highlighting result (populated after shiki loads)
   const [asyncTokens, setAsyncTokens] = useState<TokenizedCode | null>(null)
-  const asyncKeyRef = useRef({ code, language })
+  const asyncKeyRef = useRef({ code: text, language })
 
   // Invalidate stale async tokens synchronously during render
   if (
-    asyncKeyRef.current.code !== code ||
+    asyncKeyRef.current.code !== text ||
     asyncKeyRef.current.language !== language
   ) {
-    asyncKeyRef.current = { code, language }
+    asyncKeyRef.current = { code: text, language }
     setAsyncTokens(null)
   }
 
   useEffect(() => {
     let cancelled = false
 
-    highlightCode(code, language, (result) => {
+    highlightCode(text, language, (result) => {
       if (!cancelled) {
         setAsyncTokens(result)
       }
@@ -421,12 +569,59 @@ export const CodeBlockContent = ({
     return () => {
       cancelled = true
     }
-  }, [code, language])
+  }, [text, language])
 
   const tokenized = asyncTokens ?? syncTokens
 
+  // A block that overflows must be a tab stop so keyboard users can scroll
+  // it (axe scrollable-region-focusable). It is a named group, not a region:
+  // a landmark per block would trip axe landmark-unique as soon as a page
+  // has two. Measured after mount and again when the container resizes, the
+  // content changes (highlighted tokens replacing raw text, streamed code)
+  // or the fonts finish loading; the attributes go through React state so
+  // server HTML and hydration match.
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [scrollable, setScrollable] = useState(false)
+
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    let disposed = false
+    const check = () => {
+      if (disposed) return
+      setScrollable(
+        scroller.scrollWidth > scroller.clientWidth ||
+          scroller.scrollHeight > scroller.clientHeight
+      )
+    }
+    check()
+    const resizeObserver = new ResizeObserver(check)
+    resizeObserver.observe(scroller)
+    const mutationObserver = new MutationObserver(check)
+    mutationObserver.observe(scroller, {
+      characterData: true,
+      childList: true,
+      subtree: true,
+    })
+    document.fonts?.ready.then(check, () => undefined)
+    return () => {
+      disposed = true
+      resizeObserver.disconnect()
+      mutationObserver.disconnect()
+    }
+  }, [])
+
   return (
-    <div className="relative overflow-auto">
+    <div
+      className="relative overflow-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+      data-slot="code-block-content"
+      ref={scrollerRef}
+      {...(scrollable && {
+        "aria-label": ariaLabel ?? defaultContentLabel(language),
+        role: "group",
+        tabIndex: 0,
+      })}
+    >
       <CodeBlockBody showLineNumbers={showLineNumbers} tokenized={tokenized} />
     </div>
   )
@@ -438,16 +633,19 @@ export const CodeBlock = ({
   showLineNumbers = false,
   className,
   children,
+  "aria-label": ariaLabel,
   ...props
 }: CodeBlockProps) => {
-  const contextValue = useMemo(() => ({ code }), [code])
+  const text = toCodeString(code)
+  const contextValue = useMemo(() => ({ code: text }), [text])
 
   return (
     <CodeBlockContext.Provider value={contextValue}>
       <CodeBlockContainer className={className} language={language} {...props}>
         {children}
         <CodeBlockContent
-          code={code}
+          aria-label={ariaLabel}
+          code={text}
           language={language}
           showLineNumbers={showLineNumbers}
         />
@@ -491,7 +689,7 @@ export const CodeBlockCopyButton = ({
         )
       }
     } catch (error) {
-      onError?.(error as Error)
+      onError?.(error instanceof Error ? error : new Error(String(error)))
     }
   }, [code, onCopy, onError, timeout, isCopied])
 
@@ -517,10 +715,13 @@ export const CodeBlockCopyButton = ({
   )
 }
 
-export type CodeBlockLanguageSelectorProps = ComponentProps<typeof Select>
+// Generic over the value so `useState<string | null>` setters and literal
+// unions both type-check against Base UI's `(value | null, eventDetails)`.
+export type CodeBlockLanguageSelectorProps<Value extends string = string> =
+  ComponentProps<typeof Select<Value, false>>
 
-export const CodeBlockLanguageSelector = (
-  props: CodeBlockLanguageSelectorProps
+export const CodeBlockLanguageSelector = <Value extends string = string>(
+  props: CodeBlockLanguageSelectorProps<Value>
 ) => <Select {...props} />
 
 export type CodeBlockLanguageSelectorTriggerProps = ComponentProps<

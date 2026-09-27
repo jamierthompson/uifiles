@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import {
   InlineCitation,
   InlineCitationCard,
@@ -14,6 +15,8 @@ import {
   InlineCitationSource,
   InlineCitationText,
 } from "@/registry/ai/inline-citation"
+
+export const metadata: Metadata = { title: "Inline Citation" }
 
 const streamingSources = [
   {
@@ -46,10 +49,11 @@ const baseUiSources = [
 export default function InlineCitationPreview() {
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">Inline citation</h1>
+      <h1 className="font-heading text-xl font-semibold">Inline Citation</h1>
       <p className="text-sm text-muted-foreground">
-        Hover a citation badge to open the source card; use the arrows to page
-        through multiple sources.
+        Hover or focus a citation badge to peek at the source card; click, tap
+        or press Enter to pin it and move focus inside, where Tab reaches the
+        arrows that page through multiple sources and Escape closes it.
       </p>
       <div className="rounded-xl border p-4 text-sm leading-7">
         <p>

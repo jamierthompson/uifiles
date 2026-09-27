@@ -1,4 +1,5 @@
 import type { LanguageModelUsage } from "ai"
+import type { Metadata } from "next"
 import {
   Context,
   ContextCacheUsage,
@@ -11,6 +12,8 @@ import {
   ContextReasoningUsage,
   ContextTrigger,
 } from "@/registry/ai/context"
+
+export const metadata: Metadata = { title: "Context" }
 
 const MAX_TOKENS = 200_000
 const MODEL_ID = "openai:gpt-4o"
