@@ -1,0 +1,32 @@
+name: Bug report
+description: Something installs wrong, renders wrong, or fails axe
+labels: [bug]
+body:
+  - type: input
+    id: item
+    attributes:
+      label: Registry item
+      description: The item or page affected.
+      placeholder: "@uifiles/prompt-input, the chat block, /llms.txt"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The shadcn CLI command you ran, or the JSX you rendered.
+      placeholder: "pnpm dlx shadcn@latest add @uifiles/tool"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behaviour
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Output of `pnpm dlx shadcn@latest info` plus the browser, if it renders wrong.
+      placeholder: "shadcn 4.21, next 16.3, @base-ui/react 1.8, Chrome 140"
