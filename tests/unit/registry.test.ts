@@ -261,6 +261,20 @@ describe("source registry", () => {
       }
     }
   })
+
+  // An alias installs upstream shadcn/ui, so it names no author of its own.
+  it("credits the maintainer as author on every item uifiles ships and on none of the aliases", () => {
+    for (const item of registry.items) {
+      const author = (item as { author?: string }).author
+      if (item.files?.length || item.type === "registry:base") {
+        expect(author, item.name).toBe(
+          "Jamie Thompson <jamie@jamiethompson.design> (https://jamiethompson.design)"
+        )
+      } else {
+        expect(author, item.name).toBeUndefined()
+      }
+    }
+  })
 })
 
 describe("registryDependencies", () => {

@@ -319,7 +319,7 @@ palette classes, and never alpha-faded text for information-bearing content.
   installed under `.claude/skills/` from `skills-lock.json` and attributed in `NOTICE`.
 - For agents building with the system: `/r/registry.json` with retrieval-quality descriptions
   makes the MCP `list`/`search`/`view`/`add` tools work with no extra code; `/llms.txt` indexes
-  every item with its URL; `skills/uifiles/SKILL.md` (`pnpm dlx skills add jamierthompson/uifiles`)
+  every item with its URL; `skills/uifiles/SKILL.md` (`pnpm dlx skills add jamiethompsondesign/uifiles`)
   gives the workflow and the rules (search first, read the real API, semantic tokens, Base UI
   composition).
 - The repository's own `components.json` maps `@uifiles` to `http://localhost:3000/r/{name}.json`

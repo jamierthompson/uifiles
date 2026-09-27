@@ -14,7 +14,7 @@ export function GET() {
     "",
     `- [Design system base](${origin}/r/base.json): \`pnpm dlx shadcn@latest init ${origin}/r/base.json\` sets up a project with the uifiles config, tokens and fonts.`,
     `- [Registry index](${origin}/r/registry.json): the catalog the shadcn CLI and MCP server read. Add items with \`pnpm dlx shadcn@latest add @uifiles/<name>\`.`,
-    "- [Skill](https://github.com/jamierthompson/uifiles/tree/main/skills/uifiles): `pnpm dlx skills add jamierthompson/uifiles` gives coding agents the workflow and rules.",
+    "- [Skill](https://github.com/jamiethompsondesign/uifiles/tree/main/skills/uifiles): `pnpm dlx skills add jamiethompsondesign/uifiles` gives coding agents the workflow and rules.",
     "",
   ]
   for (const [type, items] of groupByType(registry.items)) {

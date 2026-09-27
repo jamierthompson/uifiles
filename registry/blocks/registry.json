@@ -5,6 +5,7 @@
       "name": "chat",
       "type": "registry:block",
       "title": "Chat",
+      "author": "Jamie Thompson <jamie@jamiethompson.design> (https://jamiethompson.design)",
       "description": "AI chat block for AI SDK useChat: a MessageScroller transcript that follows streamed output, an Empty state with one-click Suggestions, user text in Bubbles, assistant parts as Message Response (Streamdown), Reasoning, Tool (tool-* and dynamic-tool) and Attachments, a shimmering Marker while a request is pending, an error row with Retry on failure, and a Prompt Input composer with attachments whose submit button becomes Stop while a response is in flight (given onStop). Ships as a composable Chat component (plus ChatMessages, ChatMessage, ChatMessagePart, ChatToolPart, ChatAttachments, ChatEmpty, ChatThinkingMarker, ChatErrorMarker and ChatComposer exports), a scripted demo conversation built with @shadcn/helpers createChat that streams with no API key, and an app/chat page wiring it up. Use it to start a chatbot, assistant or agent UI, then swap the demo transport for your own route.",
       "dependencies": [
         "ai@^7",
