@@ -7,11 +7,14 @@ import type { LucideIcon } from "lucide-react"
 import { BrainIcon, ChevronDownIcon, DotIcon } from "lucide-react"
 import type { ComponentProps, ReactNode } from "react"
 import {
+  Children,
   createContext,
   memo,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
 import { Badge } from "@/components/ui/badge"
@@ -41,9 +44,9 @@ const useChainOfThought = () => {
 }
 
 export type ChainOfThoughtProps = ComponentProps<"div"> & {
-  open?: boolean
-  defaultOpen?: boolean
-  onOpenChange?: (open: boolean) => void
+  open?: boolean | undefined
+  defaultOpen?: boolean | undefined
+  onOpenChange?: ((open: boolean) => void) | undefined
 }
 
 export const ChainOfThought = memo(
@@ -55,16 +58,22 @@ export const ChainOfThought = memo(
     children,
     ...props
   }: ChainOfThoughtProps) => {
-    // Controlled/uncontrolled open state (replaces Radix useControllableState)
+    // The latest callback lives in a ref so the setter (and the context value
+    // built from it) keeps one identity across parent renders, as Radix's
+    // useControllableState did upstream.
+    const onOpenChangeRef = useRef(onOpenChange)
+    useEffect(() => {
+      onOpenChangeRef.current = onOpenChange
+    })
     const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen)
     const isControlled = open !== undefined
     const isOpen = isControlled ? open : uncontrolledOpen
     const setIsOpen = useCallback(
       (next: boolean) => {
         if (!isControlled) setUncontrolledOpen(next)
-        onOpenChange?.(next)
+        onOpenChangeRef.current?.(next)
       },
-      [isControlled, onOpenChange]
+      [isControlled]
     )
 
     const chainOfThoughtContext = useMemo(
@@ -98,7 +107,9 @@ export const ChainOfThoughtHeader = memo(
     return (
       <CollapsibleTrigger
         className={cn(
-          "flex w-full items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
+          // min-h-6 lifts the 20 px text row to the WCAG 2.2 24 px target size
+          // without changing the type size or weight.
+          "flex min-h-6 w-full items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
           className
         )}
         {...props}
@@ -118,17 +129,19 @@ export const ChainOfThoughtHeader = memo(
   }
 )
 
+type ChainOfThoughtStepStatus = "complete" | "active" | "pending"
+
 export type ChainOfThoughtStepProps = ComponentProps<"div"> & {
-  icon?: LucideIcon
+  icon?: LucideIcon | undefined
   label: ReactNode
-  description?: ReactNode
-  status?: "complete" | "active" | "pending"
+  description?: ReactNode | undefined
+  status?: ChainOfThoughtStepStatus | undefined
 }
 
 // uifiles: upstream dims pending steps with `text-muted-foreground/50`, which
 // fails WCAG AA contrast (1.96:1 on the light theme). Keep the text readable
 // and dim only the step icon instead.
-const stepStatusStyles = {
+const stepStatusStyles: Record<ChainOfThoughtStepStatus, string> = {
   active: "text-foreground",
   complete: "text-muted-foreground",
   pending: "text-muted-foreground [&>div:first-child>svg]:opacity-50",
@@ -147,7 +160,9 @@ export const ChainOfThoughtStep = memo(
     <div
       className={cn(
         "flex gap-2 text-sm",
-        stepStatusStyles[status],
+        // A status value this version does not know gets the neutral
+        // treatment rather than an unstyled row.
+        stepStatusStyles[status] ?? stepStatusStyles.complete,
         "animate-in fade-in-0 slide-in-from-top-2",
         className
       )}
@@ -171,12 +186,18 @@ export const ChainOfThoughtStep = memo(
 export type ChainOfThoughtSearchResultsProps = ComponentProps<"div">
 
 export const ChainOfThoughtSearchResults = memo(
-  ({ className, ...props }: ChainOfThoughtSearchResultsProps) => (
-    <div
-      className={cn("flex flex-wrap items-center gap-2", className)}
-      {...props}
-    />
-  )
+  ({ className, children, ...props }: ChainOfThoughtSearchResultsProps) => {
+    if (Children.toArray(children).length === 0) return null
+
+    return (
+      <div
+        className={cn("flex flex-wrap items-center gap-2", className)}
+        {...props}
+      >
+        {children}
+      </div>
+    )
+  }
 )
 
 export type ChainOfThoughtSearchResultProps = ComponentProps<typeof Badge>
@@ -213,7 +234,7 @@ export const ChainOfThoughtContent = memo(
 )
 
 export type ChainOfThoughtImageProps = ComponentProps<"div"> & {
-  caption?: string
+  caption?: string | undefined
 }
 
 export const ChainOfThoughtImage = memo(

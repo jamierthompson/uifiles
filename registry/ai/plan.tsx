@@ -37,7 +37,7 @@ const usePlan = () => {
 }
 
 export type PlanProps = ComponentProps<typeof Collapsible> & {
-  isStreaming?: boolean
+  isStreaming?: boolean | undefined
 }
 
 export const Plan = ({

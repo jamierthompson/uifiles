@@ -2,10 +2,6 @@
 // Modified for uifiles: ported from Radix UI to Base UI; dependencies point at @uifiles.
 "use client"
 
-import { cjk } from "@streamdown/cjk"
-import { code } from "@streamdown/code"
-import { math } from "@streamdown/math"
-import { mermaid } from "@streamdown/mermaid"
 import { cn } from "cn"
 import { BrainIcon, ChevronDownIcon } from "lucide-react"
 import type { ComponentProps, ReactNode } from "react"
@@ -19,12 +15,12 @@ import {
   useRef,
   useState,
 } from "react"
-import { Streamdown } from "streamdown"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { MessageResponse } from "@/registry/ai/response"
 
 interface ReasoningContextValue {
   isStreaming: boolean
@@ -44,11 +40,11 @@ export const useReasoning = () => {
 }
 
 export type ReasoningProps = ComponentProps<typeof Collapsible> & {
-  isStreaming?: boolean
-  open?: boolean
-  defaultOpen?: boolean
-  onOpenChange?: (open: boolean) => void
-  duration?: number
+  isStreaming?: boolean | undefined
+  open?: boolean | undefined
+  defaultOpen?: boolean | undefined
+  onOpenChange?: ((open: boolean) => void) | undefined
+  duration?: number | undefined
 }
 
 const AUTO_CLOSE_DELAY = 1000
@@ -69,7 +65,14 @@ export const Reasoning = memo(
     // Track if defaultOpen was explicitly set to false (to prevent auto-open)
     const isExplicitlyClosed = defaultOpen === false
 
-    // Controlled/uncontrolled open state (replaces Radix useControllableState)
+    // Controlled/uncontrolled open state (replaces Radix useControllableState).
+    // The latest onOpenChange lives in a ref so the setter stays stable and
+    // the effects below do not restart the auto-close timer whenever a parent
+    // re-renders with a new inline handler.
+    const onOpenChangeRef = useRef(onOpenChange)
+    useEffect(() => {
+      onOpenChangeRef.current = onOpenChange
+    })
     const [uncontrolledOpen, setUncontrolledOpen] =
       useState(resolvedDefaultOpen)
     const isOpenControlled = open !== undefined
@@ -77,23 +80,22 @@ export const Reasoning = memo(
     const setIsOpen = useCallback(
       (next: boolean) => {
         if (!isOpenControlled) setUncontrolledOpen(next)
-        onOpenChange?.(next)
+        onOpenChangeRef.current?.(next)
       },
-      [isOpenControlled, onOpenChange]
+      [isOpenControlled]
     )
 
     // Controlled/uncontrolled duration (replaces Radix useControllableState)
     const [uncontrolledDuration, setUncontrolledDuration] = useState<
       number | undefined
     >(undefined)
-    const duration =
-      durationProp !== undefined ? durationProp : uncontrolledDuration
-    const setDuration = useCallback((next: number | undefined) => {
-      setUncontrolledDuration(next)
-    }, [])
+    const duration = durationProp ?? uncontrolledDuration
 
     const hasEverStreamedRef = useRef(isStreaming)
-    const [hasAutoClosed, setHasAutoClosed] = useState(false)
+    const wasStreamingRef = useRef(false)
+    // Set once the auto-close has fired or the reader has toggled the panel
+    // themselves; reset when a new stream starts.
+    const autoCloseSpentRef = useRef(false)
     const startTimeRef = useRef<number | null>(null)
 
     // Track when streaming starts and compute duration
@@ -104,45 +106,59 @@ export const Reasoning = memo(
           startTimeRef.current = Date.now()
         }
       } else if (startTimeRef.current !== null) {
-        setDuration(Math.ceil((Date.now() - startTimeRef.current) / MS_IN_S))
+        // At least one second: a stream whose start and end commits land in
+        // the same millisecond would otherwise measure 0, which the trigger
+        // reads as "still thinking" and shimmers forever.
+        setUncontrolledDuration(
+          Math.max(1, Math.ceil((Date.now() - startTimeRef.current) / MS_IN_S))
+        )
         startTimeRef.current = null
       }
-    }, [isStreaming, setDuration])
+    }, [isStreaming])
 
-    // Auto-open when streaming starts (unless explicitly closed)
+    // Auto-open only when a stream starts (unless explicitly closed), so a
+    // reader who closes the panel mid-stream is not re-opened on the next render.
     useEffect(() => {
-      if (isStreaming && !isOpen && !isExplicitlyClosed) {
+      const started = isStreaming && !wasStreamingRef.current
+      wasStreamingRef.current = isStreaming
+      if (!started) return
+      autoCloseSpentRef.current = false
+      if (!isOpen && !isExplicitlyClosed) {
         setIsOpen(true)
       }
-    }, [isStreaming, isOpen, setIsOpen, isExplicitlyClosed])
+    }, [isStreaming, isOpen, isExplicitlyClosed, setIsOpen])
 
-    // Auto-close when streaming ends (once only, and only if it ever streamed)
+    // Auto-close once, one second after streaming ends: only if it ever
+    // streamed (#86) and the reader has not taken the panel over.
     useEffect(() => {
       if (
-        hasEverStreamedRef.current &&
-        !isStreaming &&
-        isOpen &&
-        !hasAutoClosed
+        !hasEverStreamedRef.current ||
+        isStreaming ||
+        !isOpen ||
+        autoCloseSpentRef.current
       ) {
-        const timer = setTimeout(() => {
-          setIsOpen(false)
-          setHasAutoClosed(true)
-        }, AUTO_CLOSE_DELAY)
-
-        return () => clearTimeout(timer)
+        return
       }
-    }, [isStreaming, isOpen, setIsOpen, hasAutoClosed])
+      const timer = setTimeout(() => {
+        autoCloseSpentRef.current = true
+        setIsOpen(false)
+      }, AUTO_CLOSE_DELAY)
 
+      return () => clearTimeout(timer)
+    }, [isStreaming, isOpen, setIsOpen])
+
+    // A manual toggle hands the panel to the reader until the next stream.
     const handleOpenChange = useCallback(
       (newOpen: boolean) => {
+        autoCloseSpentRef.current = true
         setIsOpen(newOpen)
       },
       [setIsOpen]
     )
 
     const contextValue = useMemo(
-      () => ({ duration, isOpen, isStreaming, setIsOpen }),
-      [duration, isOpen, isStreaming, setIsOpen]
+      () => ({ duration, isOpen, isStreaming, setIsOpen: handleOpenChange }),
+      [duration, isOpen, isStreaming, handleOpenChange]
     )
 
     return (
@@ -163,7 +179,8 @@ export const Reasoning = memo(
 export type ReasoningTriggerProps = ComponentProps<
   typeof CollapsibleTrigger
 > & {
-  getThinkingMessage?: (isStreaming: boolean, duration?: number) => ReactNode
+  getThinkingMessage?:
+    ((isStreaming: boolean, duration?: number) => ReactNode) | undefined
 }
 
 const defaultGetThinkingMessage = (isStreaming: boolean, duration?: number) => {
@@ -171,9 +188,9 @@ const defaultGetThinkingMessage = (isStreaming: boolean, duration?: number) => {
     return <span className="shimmer [--shimmer-duration:1s]">Thinking...</span>
   }
   if (duration === undefined) {
-    return <p>Thought for a few seconds</p>
+    return <span>Thought for a few seconds</span>
   }
-  return <p>Thought for {duration} seconds</p>
+  return <span>Thought for {duration} seconds</span>
 }
 
 export const ReasoningTrigger = memo(
@@ -188,7 +205,7 @@ export const ReasoningTrigger = memo(
     return (
       <CollapsibleTrigger
         className={cn(
-          "flex w-full items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
+          "flex min-h-6 w-full items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
           className
         )}
         {...props}
@@ -216,13 +233,6 @@ export type ReasoningContentProps = ComponentProps<
   children: string
 }
 
-const streamdownPlugins = { cjk, code, math, mermaid }
-// uifiles: GitHub's default light theme fails AA (orange tokens at 3.48:1); the
-// high-contrast pair keeps every token readable in both schemes.
-const shikiThemes: NonNullable<
-  ComponentProps<typeof Streamdown>["shikiTheme"]
-> = ["github-light-high-contrast", "github-dark-high-contrast"]
-
 export const ReasoningContent = memo(
   ({ className, children, ...props }: ReasoningContentProps) => (
     <CollapsibleContent
@@ -233,9 +243,11 @@ export const ReasoningContent = memo(
       )}
       {...props}
     >
-      <Streamdown plugins={streamdownPlugins} shikiTheme={shikiThemes}>
-        {children}
-      </Streamdown>
+      {/* uifiles: Message Response carries the plugins and the high-contrast
+          shiki pair, and adds what bare Streamdown lacks: overflowing code,
+          tables and formulas become named tab stops, and links confirm in an
+          accessible dialog. */}
+      <MessageResponse>{children}</MessageResponse>
     </CollapsibleContent>
   )
 )

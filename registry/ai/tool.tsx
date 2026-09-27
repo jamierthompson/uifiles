@@ -35,8 +35,8 @@ export const Tool = ({ className, ...props }: ToolProps) => (
 export type ToolPart = ToolUIPart | DynamicToolUIPart
 
 export type ToolHeaderProps = {
-  title?: string
-  className?: string
+  title?: string | undefined
+  className?: string | undefined
 } & (
   | { type: ToolUIPart["type"]; state: ToolUIPart["state"]; toolName?: never }
   | {
@@ -66,10 +66,12 @@ const statusIcons: Record<ToolPart["state"], ReactNode> = {
   "output-error": <XCircleIcon className="size-4 text-destructive" />,
 }
 
+// A newer `ai` can emit a state this map has not learned yet; show the raw
+// state with a neutral icon rather than an empty badge.
 export const getStatusBadge = (status: ToolPart["state"]) => (
   <Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
-    {statusIcons[status]}
-    {statusLabels[status]}
+    {statusIcons[status] ?? <CircleIcon className="size-4" />}
+    {statusLabels[status] ?? status}
   </Badge>
 )
 
@@ -114,6 +116,24 @@ export const ToolContent = ({ className, ...props }: ToolContentProps) => (
   />
 )
 
+// Tool inputs and outputs are JSON on the wire, but a consumer can hand us
+// anything; BigInt is stringified and whatever else JSON rejects (circular
+// references) falls back to String() so the card never throws mid-stream.
+const toJson = (value: unknown): string => {
+  try {
+    return (
+      JSON.stringify(
+        value,
+        (_key, item: unknown) =>
+          typeof item === "bigint" ? item.toString() : item,
+        2
+      ) ?? String(value)
+    )
+  } catch {
+    return String(value)
+  }
+}
+
 export type ToolInputProps = ComponentProps<"div"> & {
   input: ToolPart["input"]
 }
@@ -124,7 +144,11 @@ export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
       Parameters
     </div>
     <div className="rounded-md bg-muted/50">
-      <CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
+      {input === undefined ? (
+        <p className="px-4 py-3 text-xs text-muted-foreground">No input yet</p>
+      ) : (
+        <CodeBlock code={toJson(input)} language="json" />
+      )}
     </div>
   </div>
 )
@@ -134,24 +158,31 @@ export type ToolOutputProps = ComponentProps<"div"> & {
   errorText: ToolPart["errorText"]
 }
 
+const renderOutput = (output: ToolPart["output"]): ReactNode => {
+  if (output === undefined) {
+    return null
+  }
+  if (typeof output === "string") {
+    return <CodeBlock code={output} language="json" />
+  }
+  if (typeof output === "object") {
+    return isValidElement(output) ? (
+      <div>{output}</div>
+    ) : (
+      <CodeBlock code={toJson(output)} language="json" />
+    )
+  }
+  return <div>{String(output)}</div>
+}
+
 export const ToolOutput = ({
   className,
   output,
   errorText,
   ...props
 }: ToolOutputProps) => {
-  if (!(output || errorText)) {
+  if (output === undefined && !errorText) {
     return null
-  }
-
-  let Output = <div>{output as ReactNode}</div>
-
-  if (typeof output === "object" && !isValidElement(output)) {
-    Output = (
-      <CodeBlock code={JSON.stringify(output, null, 2)} language="json" />
-    )
-  } else if (typeof output === "string") {
-    Output = <CodeBlock code={output} language="json" />
   }
 
   return (
@@ -166,7 +197,7 @@ export const ToolOutput = ({
         )}
       >
         {errorText && <div>{errorText}</div>}
-        {Output}
+        {renderOutput(output)}
       </div>
     </div>
   )
