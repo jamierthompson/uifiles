@@ -384,7 +384,11 @@ describe("console guard (tests/console-guard.ts)", () => {
  * guard with the call tests/setup.ts makes, so the real runner decides the
  * hook order. The child runs in a temp dir that links node_modules.
  */
-function runGuardProbe(probe: string, extraArgs: string[] = []) {
+function runGuardProbe(
+  probe: string,
+  extraArgs: string[] = [],
+  extraEnv: Record<string, string> = {}
+) {
   const dir = mkdtempSync(join(tmpdir(), "uifiles-guard-"))
   try {
     symlinkSync(join(root, "node_modules"), join(dir, "node_modules"))
@@ -405,6 +409,10 @@ installConsoleGuard({ beforeEach, afterEach }, () => {})
       // The parent's Vitest variables would make the child think it is a worker.
       if (!key.startsWith("VITEST")) env[key] = value
     }
+    // CI runners set FORCE_COLOR (or CI), which makes the child's reporter wrap
+    // its summary in escape codes; the assertions read it as plain text.
+    env.NO_COLOR = "1"
+    Object.assign(env, extraEnv)
     const result = spawnSync(
       process.execPath,
       [
@@ -479,6 +487,13 @@ it("a silent test after the others", () => {
       )
     })
   }
+
+  it("reads the probe's summary as plain text even when the environment forces colour", () => {
+    const { status, out } = runGuardProbe(probe, [], { FORCE_COLOR: "1" })
+    expect(status, out).toBe(1)
+    expect(out).not.toContain("\u001b[")
+    expect(out).toMatch(/Tests\s+3 failed \| 2 passed/)
+  })
 })
 
 /** Every .ts/.tsx file under `dir`, recursively. */
