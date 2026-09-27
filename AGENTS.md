@@ -149,6 +149,9 @@ Use `pnpm` for everything (`pnpm add`, `pnpm dlx shadcn@latest ...`). Never `npm
   plus best-practice, `target-size` enabled, animations settled), `runAxe()`, `settle()`, and
   `withDark()` for the dark theme. Do not copy a `settle` or `axe.run` into a test file. Run
   axe in every meaningful state (closed, open, streaming, error) and once under `withDark()`.
+  `withDark()` flips the class with transitions off, as next-themes'
+  `disableTransitionOnChange` does, and restyles skipped `content-visibility: auto` subtrees
+  (message scroller items) so none of them fades from light to dark under axe.
 - **Fixtures sit in `<main>`**; never disable the `region` or `color-contrast` rules. Scope with
   `exclude` or fix the colour.
 - **Console must be clean.** `tests/setup.ts` runs before every browser test; a `console.error`

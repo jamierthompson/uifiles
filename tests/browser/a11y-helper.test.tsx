@@ -125,6 +125,49 @@ describe("withDark()", () => {
     expect(document.documentElement.classList.contains("dark")).toBe(false)
   })
 
+  it("switches the theme without starting transitions, as next-themes does with disableTransitionOnChange", async () => {
+    const screen = await render(
+      <main>
+        <p className="text-muted-foreground transition-colors">Muted</p>
+      </main>
+    )
+    const text = screen.getByText("Muted").element()
+    const light = getComputedStyle(text).color
+    await withDark(async () => {
+      expect(text.getAnimations()).toEqual([])
+      expect(getComputedStyle(text).color).not.toBe(light)
+    })
+    expect(text.getAnimations()).toEqual([])
+    expect(getComputedStyle(text).color).toBe(light)
+  })
+
+  it("restyles an element inside a skipped content-visibility subtree at once", async () => {
+    const screen = await render(
+      <main>
+        <div data-testid="spacer" />
+        <div className="[contain-intrinsic-size:auto_10rem] [content-visibility:auto]">
+          <p className="text-muted-foreground transition-colors">Skipped</p>
+        </div>
+      </main>
+    )
+    const text = screen.getByText("Skipped").element()
+    const light = getComputedStyle(text).color
+    // Push the item out of view so the browser skips its subtree, as the
+    // message scroller does with its items.
+    const spacer = screen.getByTestId("spacer").element() as HTMLElement
+    spacer.style.height = "20000px"
+    await expect
+      .poll(() => text.checkVisibility({ contentVisibilityAuto: true }))
+      .toBe(false)
+    await withDark(async () => {
+      await settle()
+      // axe reads the colour like this; before the fix the read started a
+      // transition that stayed frozen at the light colour.
+      expect(getComputedStyle(text).color).not.toBe(light)
+      expect(text.getAnimations()).toEqual([])
+    })
+  })
+
   it("removes the dark class when fn throws", async () => {
     await expect(
       withDark(async () => {
