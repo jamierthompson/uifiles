@@ -24,6 +24,22 @@ const EXTRA: Record<string, string> = {
   form: "Form primitives for react-hook-form.",
 }
 
+// Titles for names the plain word-by-word casing gets wrong (acronyms).
+// Upstream's own `title`, when the index carries one, always wins.
+const TITLES: Record<string, string> = {
+  "input-otp": "Input OTP",
+}
+
+function titleCase(name: string): string {
+  return (
+    TITLES[name] ??
+    name
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ")
+  )
+}
+
 type IndexItem = {
   name: string
   type: string
@@ -34,10 +50,10 @@ type IndexItem = {
 const index = (await (await fetch(INDEX)).json()) as IndexItem[]
 const llms = await (await fetch(LLMS)).text()
 const docDescriptions = new Map<string, string>()
-for (const m of llms.matchAll(
+for (const [, slug, description] of llms.matchAll(
   /^- \[[^\]]+\]\(https:\/\/ui\.shadcn\.com\/docs\/components\/([\w-]+)\): (.+)$/gm
 )) {
-  docDescriptions.set(m[1], m[2].trim())
+  if (slug && description) docDescriptions.set(slug, description.trim())
 }
 
 const path = "registry/ui/registry.json"
@@ -66,12 +82,7 @@ const items = index
     return {
       name: i.name,
       type: "registry:ui",
-      title:
-        i.title ??
-        i.name
-          .split("-")
-          .map((w) => w[0].toUpperCase() + w.slice(1))
-          .join(" "),
+      title: i.title ?? titleCase(i.name),
       description: `${description} Upstream shadcn/ui component, resolved against your style.`,
       registryDependencies: [i.name],
       files: [],

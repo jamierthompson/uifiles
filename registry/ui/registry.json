@@ -244,7 +244,7 @@
     {
       "name": "input-otp",
       "type": "registry:ui",
-      "title": "Input Otp",
+      "title": "Input OTP",
       "description": "One-time password input component. Upstream shadcn/ui component, resolved against your style.",
       "registryDependencies": ["input-otp"],
       "files": []
