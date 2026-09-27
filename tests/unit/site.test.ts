@@ -582,7 +582,9 @@ describe("docs accuracy", () => {
   it("README pins the GitHub install example to a tag that the changelog releases, on an item the GitHub path can install", () => {
     const readme = read("README.md")
     expect(readme).not.toContain("#v1.0.0")
-    const example = readme.match(/jamierthompson\/uifiles\/([\w-]+)#(v[\d.]+)/)
+    const example = readme.match(
+      /jamiethompsondesign\/uifiles\/([\w-]+)#(v[\d.]+)/
+    )
     expect(example, "GitHub-path example present").not.toBeNull()
     const [, name, tag] = example as RegExpMatchArray
     expect(read("CHANGELOG.md")).toContain(`## [${tag?.slice(1)}]`)
@@ -695,7 +697,7 @@ describe("open-source hygiene", () => {
     expect(read("CHANGELOG.md")).toMatch(/^## \[0\.1\.0\]/m)
     expect(read("SECURITY.md")).toContain("security/advisories/new")
     expect(read("CODE_OF_CONDUCT.md")).not.toContain("[INSERT CONTACT METHOD]")
-    expect(read(".github/CODEOWNERS").trim()).toBe("* @jamierthompson")
+    expect(read(".github/CODEOWNERS").trim()).toBe("* @jamiethompsondesign")
   })
 
   it("keeps a .gitkeep only where the directory would otherwise be empty", () => {

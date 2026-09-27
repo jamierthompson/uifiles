@@ -5,6 +5,7 @@
       "name": "base",
       "type": "registry:base",
       "title": "uifiles",
+      "author": "Jamie Thompson <jamie@jamiethompson.design> (https://jamiethompson.design)",
       "description": "The uifiles design system: shadcn on Base UI (Nova), the uifiles tokens, Geist type, and project config. Run `shadcn init @uifiles/base` in a new project, then add components.",
       "config": {
         "style": "base-nova",

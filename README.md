@@ -16,7 +16,7 @@ Items can also be installed straight from GitHub, with no hosting involved, pinn
 or branch:
 
 ```bash
-pnpm dlx shadcn@latest add jamierthompson/uifiles/response#v0.1.0
+pnpm dlx shadcn@latest add jamiethompsondesign/uifiles/response#v0.1.0
 ```
 
 Until the shadcn registry directory lists `@uifiles`, the GitHub path works for items that
@@ -24,7 +24,7 @@ have no `@uifiles/*` dependency of their own (every AI component except `reasoni
 `tool`; not the `chat` block), because the CLI resolves namespaced dependencies through the
 directory or a `components.json` entry. The hosted path has no such limit.
 
-For coding agents: `pnpm dlx skills add jamierthompson/uifiles` installs the skill, the
+For coding agents: `pnpm dlx skills add jamiethompsondesign/uifiles` installs the skill, the
 registry index at `/r/registry.json` works with the shadcn MCP server as is, and `/llms.txt`
 indexes everything.
 

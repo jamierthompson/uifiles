@@ -8,7 +8,7 @@ import {
   TYPE_LABELS,
 } from "@/lib/registry"
 
-const GITHUB_URL = "https://github.com/jamierthompson/uifiles"
+const GITHUB_URL = "https://github.com/jamiethompsondesign/uifiles"
 
 export default function Page() {
   const registry = loadRegistry()

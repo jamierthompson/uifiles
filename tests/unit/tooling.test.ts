@@ -232,6 +232,7 @@ describe("package.json and .npmrc", () => {
     license: string
     description: string
     homepage: string
+    author: { name: string; email: string; url: string }
     repository: { type: string; url: string }
     bugs: { url: string }
     engines: { node: string }
@@ -245,12 +246,17 @@ describe("package.json and .npmrc", () => {
     expect(pkg.license).toBe("MIT")
     expect(pkg.description.length).toBeGreaterThan(40)
     expect(pkg.homepage).toBe("https://uifiles.dev")
+    expect(pkg.author).toEqual({
+      name: "Jamie Thompson",
+      email: "jamie@jamiethompson.design",
+      url: "https://jamiethompson.design",
+    })
     expect(pkg.repository).toEqual({
       type: "git",
-      url: "git+https://github.com/jamierthompson/uifiles.git",
+      url: "git+https://github.com/jamiethompsondesign/uifiles.git",
     })
     expect(pkg.bugs.url).toBe(
-      "https://github.com/jamierthompson/uifiles/issues"
+      "https://github.com/jamiethompsondesign/uifiles/issues"
     )
   })
 
