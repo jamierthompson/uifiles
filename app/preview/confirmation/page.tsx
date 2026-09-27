@@ -95,6 +95,22 @@ export default function ConfirmationPreview() {
 
       <section className="flex flex-col gap-2">
         <h2 className="text-sm text-muted-foreground">
+          output-error, approved (the tool ran and failed)
+        </h2>
+        <Confirmation
+          approval={{ id: "call_04", approved: true }}
+          state="output-error"
+        >
+          <ConfirmationTitle>
+            <ConfirmationAccepted>
+              You approved running the database migration.
+            </ConfirmationAccepted>
+          </ConfirmationTitle>
+        </Confirmation>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-sm text-muted-foreground">
           approval-responded, rejected
         </h2>
         <Confirmation

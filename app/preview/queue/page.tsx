@@ -1,4 +1,5 @@
 import { CheckIcon, ListTodoIcon, MessageSquareIcon, XIcon } from "lucide-react"
+import type { Metadata } from "next"
 import {
   Queue,
   QueueItem,
@@ -16,6 +17,8 @@ import {
   QueueSectionTrigger,
   type QueueTodo,
 } from "@/registry/ai/queue"
+
+export const metadata: Metadata = { title: "Queue" }
 
 const todos: QueueTodo[] = [
   {

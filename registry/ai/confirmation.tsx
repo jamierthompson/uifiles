@@ -18,22 +18,17 @@ type ToolUIPartApproval =
   | {
       id: string
       approved: boolean
-      reason?: string
+      reason?: string | undefined
     }
   | {
       id: string
       approved: true
-      reason?: string
-    }
-  | {
-      id: string
-      approved: true
-      reason?: string
+      reason?: string | undefined
     }
   | {
       id: string
       approved: false
-      reason?: string
+      reason?: string | undefined
     }
   | undefined
 
@@ -54,6 +49,16 @@ const useConfirmation = () => {
   return context
 }
 
+// States in which the user has already answered the request. `output-error`
+// belongs here: ai@7 keeps `approval.approved === true` on a tool that was
+// approved and then failed, and the failure itself is ToolOutput's to show.
+const respondedStates: ReadonlySet<ToolUIPart["state"]> = new Set([
+  "approval-responded",
+  "output-available",
+  "output-denied",
+  "output-error",
+])
+
 export type ConfirmationProps = ComponentProps<typeof Alert> & {
   approval?: ToolUIPartApproval
   state: ToolUIPart["state"]
@@ -67,7 +72,13 @@ export const Confirmation = ({
 }: ConfirmationProps) => {
   const contextValue = useMemo(() => ({ approval, state }), [approval, state])
 
-  if (!approval || state === "input-streaming" || state === "input-available") {
+  const showsRequest = state === "approval-requested"
+  const showsOutcome =
+    respondedStates.has(state) && typeof approval?.approved === "boolean"
+
+  // Without a request or a decision none of the parts below has anything to
+  // show, and an empty role="alert" would still be announced.
+  if (!approval || !(showsRequest || showsOutcome)) {
     return null
   }
 
@@ -94,7 +105,6 @@ export interface ConfirmationRequestProps {
 export const ConfirmationRequest = ({ children }: ConfirmationRequestProps) => {
   const { state } = useConfirmation()
 
-  // Only show when approval is requested
   if (state !== "approval-requested") {
     return null
   }
@@ -111,13 +121,7 @@ export const ConfirmationAccepted = ({
 }: ConfirmationAcceptedProps) => {
   const { approval, state } = useConfirmation()
 
-  // Only show when approved and in response states
-  if (
-    !approval?.approved ||
-    (state !== "approval-responded" &&
-      state !== "output-denied" &&
-      state !== "output-available")
-  ) {
+  if (approval?.approved !== true || !respondedStates.has(state)) {
     return null
   }
 
@@ -126,24 +130,23 @@ export const ConfirmationAccepted = ({
 
 export interface ConfirmationRejectedProps {
   children?: ReactNode
+  className?: string | undefined
 }
 
 export const ConfirmationRejected = ({
   children,
+  className,
 }: ConfirmationRejectedProps) => {
   const { approval, state } = useConfirmation()
 
-  // Only show when rejected and in response states
-  if (
-    approval?.approved !== false ||
-    (state !== "approval-responded" &&
-      state !== "output-denied" &&
-      state !== "output-available")
-  ) {
+  if (approval?.approved !== false || !respondedStates.has(state)) {
     return null
   }
 
-  return children
+  // uifiles: upstream returns the children bare, so both outcomes read in
+  // the same foreground colour; the destructive token tells them apart at a
+  // glance (the wording still says which, so colour is not the only cue).
+  return <span className={cn("text-destructive", className)}>{children}</span>
 }
 
 export type ConfirmationActionsProps = ComponentProps<"div">
@@ -154,7 +157,6 @@ export const ConfirmationActions = ({
 }: ConfirmationActionsProps) => {
   const { state } = useConfirmation()
 
-  // Only show when approval is requested
   if (state !== "approval-requested") {
     return null
   }
@@ -169,6 +171,13 @@ export const ConfirmationActions = ({
 
 export type ConfirmationActionProps = ComponentProps<typeof Button>
 
-export const ConfirmationAction = (props: ConfirmationActionProps) => (
-  <Button className="h-8 px-3 text-sm" type="button" {...props} />
+export const ConfirmationAction = ({
+  className,
+  ...props
+}: ConfirmationActionProps) => (
+  <Button
+    className={cn("h-8 px-3 text-sm", className)}
+    type="button"
+    {...props}
+  />
 )
