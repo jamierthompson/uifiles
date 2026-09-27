@@ -298,6 +298,9 @@ function runWithoutBuild(
       // The parent's Vitest variables would make the child think it is a worker.
       if (!key.startsWith("VITEST")) childEnv[key] = value
     }
+    // CI runners set FORCE_COLOR (or CI), which makes the child's reporter wrap
+    // its summary in escape codes; the assertions below read it as plain text.
+    childEnv.NO_COLOR = "1"
     const result = spawnSync(
       process.execPath,
       [
@@ -342,6 +345,20 @@ describe("built-output checks (tests/unit/registry.test.ts)", () => {
     expect(local.status, local.out).toBe(0)
     expect(local.out).toMatch(/Tests\s+\d+ skipped/)
     expect(local.out).not.toMatch(/failed/)
+  })
+
+  it("reads the child's summary as plain text even when the environment forces colour", () => {
+    const local = runWithoutBuild(
+      "tests/unit/registry.test.ts",
+      "built output",
+      {
+        CI: "",
+        FORCE_COLOR: "1",
+      }
+    )
+    expect(local.status, local.out).toBe(0)
+    expect(local.out).not.toContain("\u001b[")
+    expect(local.out).toMatch(/Tests\s+\d+ skipped/)
   })
 })
 
