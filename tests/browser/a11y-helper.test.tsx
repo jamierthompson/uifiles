@@ -248,6 +248,31 @@ describe("cleanup between tests (vitest-browser-react runs cleanup in beforeEach
   })
 })
 
+describe("pointer parking (tests/setup.ts)", () => {
+  const Cover = ({ label }: { label: string }) => (
+    <main>
+      <button type="button" className="fixed inset-0">
+        {label}
+      </button>
+    </main>
+  )
+
+  it("a test can leave the pointer over the page", async () => {
+    const screen = await render(<Cover label="Hovered" />)
+    const button = screen.getByRole("button", { name: "Hovered" })
+    await userEvent.hover(button)
+    expect(button.element().matches(":hover")).toBe(true)
+  })
+
+  it("the next test starts with the pointer off the page", async () => {
+    const screen = await render(<Cover label="Fresh" />)
+    await settle()
+    expect(
+      screen.getByRole("button", { name: "Fresh" }).element().matches(":hover")
+    ).toBe(false)
+  })
+})
+
 describe("locator semantics the suite relies on", () => {
   // Vitest sets `browser.locators.exact` to true, so unlike Playwright a bare
   // getByText is whole-string and case-sensitive.

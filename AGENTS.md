@@ -195,9 +195,12 @@ Use `pnpm` for everything (`pnpm add`, `pnpm dlx shadcn@latest ...`). Never `npm
 - **Portaled popups** (Base UI menu, select, dialog, hover card) render outside the fixture:
   scan the popup on its own and exclude `[data-base-ui-portal]` from the page scan; an open
   modal Select also renders focus guards that axe's `aria-hidden-focus` flags, so exclude
-  `[data-base-ui-focus-guard]` too. Playwright leaves the pointer where the previous test put
-  it, which opens delay-0 tooltips and hover cards on the next render: `userEvent.unhover` the
-  trigger or park the pointer on inert text first.
+  `[data-base-ui-focus-guard]` too. `tests/setup.ts` parks the pointer just outside the
+  viewport before every test (the `parkPointer` browser command in `vitest.config.ts`; the tester
+  iframe fills the viewport, so no point inside it is safe), so no fixture inherits a hover
+  from an earlier test or file. Within a test Playwright leaves the pointer where the last
+  action put it, which opens delay-0 tooltips and hover cards on the next render:
+  `userEvent.unhover` the trigger or hover inert text before the next scan.
 - **Timers** use `vi.useFakeTimers()` as upstream does. Fake only what you need (`toFake`)
   and, with timers faked, drive clicks with `element.click()` inside `act` because
   `userEvent` awaits real timers (`tests/browser/ai/reasoning.test.tsx`).

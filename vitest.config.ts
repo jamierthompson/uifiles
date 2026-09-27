@@ -1,6 +1,24 @@
 import { fileURLToPath } from "node:url"
 import { playwright } from "@vitest/browser-playwright"
 import { defineConfig } from "vitest/config"
+import type { BrowserCommand } from "vitest/node"
+
+/**
+ * Moves the pointer just outside the viewport; `tests/setup.ts` calls it
+ * before every browser test. Playwright leaves the pointer wherever the last
+ * test (in this file or the one before it in the same page) put it, and a
+ * fixture rendered under it picks up `:hover` a frame or more later. The
+ * tester iframe fills the viewport, so no point inside it is safe.
+ */
+const parkPointer: BrowserCommand<[]> = async ({ page }) => {
+  await page.mouse.move(-1, -1)
+}
+
+declare module "vitest/browser" {
+  interface BrowserCommands {
+    parkPointer: () => Promise<void>
+  }
+}
 
 export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL(".", import.meta.url)) } },
@@ -81,6 +99,7 @@ export default defineConfig({
             provider: playwright(),
             instances: [{ browser: "chromium" }],
             headless: true,
+            commands: { parkPointer },
           },
         },
       },
