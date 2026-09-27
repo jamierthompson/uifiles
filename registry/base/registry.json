@@ -19,10 +19,9 @@
         "cn",
         "class-variance-authority",
         "lucide-react",
-        "@base-ui/react",
-        "next-themes"
+        "@base-ui/react"
       ],
-      "devDependencies": ["tw-animate-css", "shadcn"],
+      "devDependencies": ["tw-animate-css"],
       "registryDependencies": ["utils", "font-geist", "font-heading-geist"],
       "files": [],
       "cssVars": {
@@ -50,10 +49,10 @@
           "muted-foreground": "oklch(0.53 0 0)",
           "accent": "oklch(0.97 0 0)",
           "accent-foreground": "oklch(0.205 0 0)",
-          "destructive": "oklch(0.577 0.245 27.325)",
+          "destructive": "oklch(0.52 0.245 27.325)",
           "border": "oklch(0.922 0 0)",
           "input": "oklch(0.922 0 0)",
-          "ring": "oklch(0.708 0 0)",
+          "ring": "oklch(0.64 0 0)",
           "chart-1": "oklch(0.87 0 0)",
           "chart-2": "oklch(0.556 0 0)",
           "chart-3": "oklch(0.439 0 0)",
@@ -84,7 +83,7 @@
           "muted-foreground": "oklch(0.708 0 0)",
           "accent": "oklch(0.269 0 0)",
           "accent-foreground": "oklch(0.985 0 0)",
-          "destructive": "oklch(0.704 0.191 22.216)",
+          "destructive": "oklch(0.74 0.191 22.216)",
           "border": "oklch(1 0 0 / 10%)",
           "input": "oklch(1 0 0 / 15%)",
           "ring": "oklch(0.556 0 0)",
@@ -113,10 +112,18 @@
           },
           "html": {
             "@apply font-sans": {}
+          },
+          "@media (prefers-reduced-motion: reduce)": {
+            "*, ::before, ::after": {
+              "animation-duration": "0.01ms !important",
+              "animation-iteration-count": "1 !important",
+              "transition-duration": "0.01ms !important",
+              "scroll-behavior": "auto !important"
+            }
           }
         }
       },
-      "docs": "Tokens are generated from app/globals.css by `pnpm registry:build`; do not edit cssVars by hand."
+      "docs": "Dark mode is class-based: add `dark` to `<html>`, for example with next-themes (not installed by this item). `@layer base` ships a `prefers-reduced-motion` guard that collapses every animation and transition. The cssVars are generated from the registry's app/globals.css; do not edit them by hand."
     }
   ]
 }
