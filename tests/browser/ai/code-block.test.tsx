@@ -471,8 +471,14 @@ describe("codeBlock", () => {
   })
 
   it("sizes the gutter for one line and for ten thousand lines", async () => {
-    const digits = (root: ParentNode) =>
-      root
+    // Both blocks mount fresh. Rerendering a one-line block into 10,000 lines
+    // makes React place 9,999 new siblings, and each placement walks the
+    // pending siblings after it (getHostSibling): quadratic, and over 5 s
+    // under v8 coverage, against about 1 s for a fresh mount.
+    const digits = (id: string) =>
+      page
+        .getByTestId(id)
+        .element()
         .querySelector<HTMLElement>("pre > code")
         ?.style.getPropertyValue("--line-digits")
     const lines = (count: number) =>
@@ -481,25 +487,24 @@ describe("codeBlock", () => {
       <main>
         <CodeBlock
           code="one"
+          data-testid="one"
           language={"" as BundledLanguage}
           showLineNumbers
         />
-      </main>
-    )
-    expect(digits(screen.container)).toBe("1")
-
-    await screen.rerender(
-      <main>
         <CodeBlock
           code={lines(10_000)}
+          data-testid="many"
           language={"" as BundledLanguage}
           showLineNumbers
         />
       </main>
     )
-    expect(digits(screen.container)).toBe("5")
-    expect(lineSpans(screen.container)).toHaveLength(10_000)
-    await highlighted(screen.container)
+    expect(digits("one")).toBe("1")
+    expect(digits("many")).toBe("5")
+    expect(lineSpans(page.getByTestId("many").element())).toHaveLength(10_000)
+    for (const block of screen.container.querySelectorAll("[data-testid]")) {
+      await highlighted(block)
+    }
   })
 
   it("renders empty code as a single empty line", async () => {
