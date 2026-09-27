@@ -5,16 +5,18 @@
       "name": "chat",
       "type": "registry:block",
       "title": "Chat",
-      "description": "Complete AI chat block for AI SDK useChat: a MessageScroller transcript that follows streamed output and anchors each user turn, an Empty state with one-click Suggestions, user text in Bubbles, assistant parts rendered as Message Response (Streamdown markdown), Reasoning (collapsible thinking), Tool (tool-* and dynamic-tool calls with input and output) and file parts as Attachments, a shimmering Marker while a request is pending, and a Prompt Input composer with attachments and a submit button that becomes stop while streaming. Ships as a composable Chat component (plus ChatMessages, ChatMessage, ChatMessagePart, ChatToolPart, ChatAttachments, ChatEmpty, ChatThinkingMarker, ChatComposer exports), a scripted demo conversation built with @shadcn/helpers createChat that streams with no API key, and an app/chat page that wires them together. Use it to start a chatbot, assistant or agent UI, then replace the demo transport with your own route.",
+      "description": "AI chat block for AI SDK useChat: a MessageScroller transcript that follows streamed output, an Empty state with one-click Suggestions, user text in Bubbles, assistant parts as Message Response (Streamdown), Reasoning, Tool (tool-* and dynamic-tool) and Attachments, a shimmering Marker while a request is pending, an error row with Retry on failure, and a Prompt Input composer with attachments whose submit button becomes Stop while a response is in flight (given onStop). Ships as a composable Chat component (plus ChatMessages, ChatMessage, ChatMessagePart, ChatToolPart, ChatAttachments, ChatEmpty, ChatThinkingMarker, ChatErrorMarker and ChatComposer exports), a scripted demo conversation built with @shadcn/helpers createChat that streams with no API key, and an app/chat page wiring it up. Use it to start a chatbot, assistant or agent UI, then swap the demo transport for your own route.",
       "dependencies": [
         "ai@^7",
         "@ai-sdk/react@^4",
         "@shadcn/helpers@^0.2",
+        "cn",
         "lucide-react"
       ],
       "registryDependencies": [
         "attachment",
         "bubble",
+        "button",
         "empty",
         "marker",
         "message",
@@ -33,7 +35,7 @@
         },
         {
           "path": "chat/lib/demo-conversation.ts",
-          "type": "registry:component",
+          "type": "registry:lib",
           "target": "lib/demo-conversation.ts"
         },
         {
@@ -42,7 +44,7 @@
           "target": "app/chat/page.tsx"
         }
       ],
-      "docs": "The page installs at app/chat/page.tsx and streams a scripted conversation through @shadcn/helpers, so it works without an API key. To connect a model, replace `transport` in the page with `new DefaultChatTransport({ api: \"/api/chat\" })` from `ai` and add a route that returns `result.toUIMessageStreamResponse()`. Chat fills its parent: render it inside a height-constrained container (the page uses h-svh). Suggestions are submitted as-is when clicked. Streamdown needs `@source \"../node_modules/streamdown/dist/*.js\"` in your globals.css (see @uifiles/response).",
+      "docs": "Built for the Base UI styles (base-nova): it composes the base-nova wrappers from components/ui and the @uifiles AI items, which rely on Base UI's render prop and event signatures, so it does not work on Radix or React Aria styles. The page installs at app/chat/page.tsx and streams a scripted conversation through @shadcn/helpers, so it works without an API key. To connect a model, replace `transport` in the page with `new DefaultChatTransport({ api: \"/api/chat\" })` from `ai` and add a route that returns `result.toUIMessageStreamResponse()`. Pass `error` and `onRetry={regenerate}` from `useChat` so a failed request renders a row with its message and a Retry button; when `status` is \"error\" and no `error` is given the row still appears with a generic \"Something went wrong.\" (Retry only when `onRetry` is passed), and a rejected `onRetry` (`regenerate` rejects when there is nothing to regenerate) is reported through `console.error`, never as an unhandled rejection; after an error the composer shows a plain Submit again. While a response is in flight, Enter, the submit button and a programmatic `form.requestSubmit()` submit nothing and the draft and attachments are kept (ChatComposer returns `false` from `onSubmit`); if you pass `onStop` to Chat or ChatComposer (the page passes `stop` from `useChat`) the submit button becomes a Stop button that calls it, and without `onStop` it keeps the Submit name and a press does nothing. The page does not return `sendMessage`'s promise from `onSubmit` (it settles only once the answer has streamed) and ChatComposer does not wait for it either, so sent attachments leave the composer as soon as the message is sent and a file attached while an answer streams stays. If your `onSubmit` returns a promise that rejects, from the composer or a suggestion click, the rejection is reported through `console.error`, never as an unhandled rejection; if it throws synchronously the error is reported the same way and the composer keeps the draft and attachments. Once the chat is no longer generating (after Stop, or a stream that ended early) parts still marked streaming or running are shown settled, and a tool call left in input-available reads Pending; a tool call whose input has not started shows the Tool item's \"No input yet\" placeholder. Approval-requested tool calls are shown but not wired: compose @uifiles/confirmation with `addToolApprovalResponse` from `useChat` to add human-in-the-loop approvals. Chat fills its parent: render it inside a height-constrained container (the page uses h-svh). Suggestions are submitted as-is when clicked. CSS: the CLI adds @uifiles/response's stylesheet lines to your globals.css with this block: `@import \"streamdown/styles.css\"`, `@import \"katex/dist/katex.min.css\"` (without it every formula renders twice) and the `.katex-display` overflow rule. Add `@source \"../node_modules/streamdown/dist/*.js\"` yourself, next to your `@import \"tailwindcss\"` and with the path relative to your CSS file, so Streamdown's Tailwind classes compile. See @uifiles/response for what each line does.",
       "categories": ["ai", "chat", "block"]
     }
   ]

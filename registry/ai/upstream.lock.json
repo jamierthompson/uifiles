@@ -1,4 +1,10 @@
 {
+  "branch": {
+    "source": "https://elements.ai-sdk.dev/api/registry/message.json",
+    "sha256": "db7d416e1515b8e3f39390119192bdd4f11647ed8bae92d1588726dc4227b568",
+    "fetchedAt": "2026-09-26",
+    "upstream": "message"
+  },
   "chain-of-thought": {
     "source": "https://elements.ai-sdk.dev/api/registry/chain-of-thought.json",
     "sha256": "5ccfddc925c98161c2508f63632380bb9976bfe95ffede4b9332451dcb6f0b70",
@@ -24,11 +30,6 @@
     "sha256": "ef122d0a025ad8d04e3fb38bc6ba6546bfe1e9f4aa27dd1d443758a743399c3b",
     "fetchedAt": "2026-09-26"
   },
-  "conversation": {
-    "source": "https://elements.ai-sdk.dev/api/registry/conversation.json",
-    "sha256": "ac2589ea88b2a231c049a639d150e01af4ecd3022677a53fc21f3c3e3af3b150",
-    "fetchedAt": "2026-09-26"
-  },
   "image": {
     "source": "https://elements.ai-sdk.dev/api/registry/image.json",
     "sha256": "9360ca3e8945a64cc8d5c71a9304d7c8371d66f52b535f838bfe3ef3f55291ce",
@@ -37,11 +38,6 @@
   "inline-citation": {
     "source": "https://elements.ai-sdk.dev/api/registry/inline-citation.json",
     "sha256": "9aec10df2f14d1e6db58bfb6dec0232231031d029e2bb3e1dd5b44cbb667b047",
-    "fetchedAt": "2026-09-26"
-  },
-  "message": {
-    "source": "https://elements.ai-sdk.dev/api/registry/message.json",
-    "sha256": "db7d416e1515b8e3f39390119192bdd4f11647ed8bae92d1588726dc4227b568",
     "fetchedAt": "2026-09-26"
   },
   "model-selector": {
@@ -69,10 +65,11 @@
     "sha256": "f2047dec91f18c922c56c04edc53398d981ac43fa47be583703d9138fbdb03e8",
     "fetchedAt": "2026-09-26"
   },
-  "shimmer": {
-    "source": "https://elements.ai-sdk.dev/api/registry/shimmer.json",
-    "sha256": "24bcb9b1dd45d616bd50dc6500e9f414ccabf440efb249e8d92522344b9057d6",
-    "fetchedAt": "2026-09-26"
+  "response": {
+    "source": "https://elements.ai-sdk.dev/api/registry/message.json",
+    "sha256": "db7d416e1515b8e3f39390119192bdd4f11647ed8bae92d1588726dc4227b568",
+    "fetchedAt": "2026-09-26",
+    "upstream": "message"
   },
   "sources": {
     "source": "https://elements.ai-sdk.dev/api/registry/sources.json",
