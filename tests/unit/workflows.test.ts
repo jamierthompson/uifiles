@@ -257,6 +257,7 @@ describe(".github/dependabot.yml", () => {
         string,
         { "applies-to"?: string; "update-types"?: string[] }
       >
+      ignore?: Array<{ "dependency-name": string; "update-types"?: string[] }>
     }>
   }
   const doc = parse(read(".github/dependabot.yml")) as Dependabot
@@ -277,5 +278,16 @@ describe(".github/dependabot.yml", () => {
     const groups = Object.values(npm?.groups ?? {})
     expect(groups).toHaveLength(1)
     expect(groups[0]?.["update-types"]).toEqual(["minor", "patch"])
+  })
+
+  it("holds @types/node to the runtime major and katex to the minor its renderers use", () => {
+    const npm = doc.updates.find((u) => u["package-ecosystem"] === "npm")
+    const ignored = (name: string) =>
+      npm?.ignore?.find((i) => i["dependency-name"] === name)?.["update-types"]
+    expect(ignored("@types/node")).toEqual(["version-update:semver-major"])
+    expect(ignored("katex")).toEqual([
+      "version-update:semver-major",
+      "version-update:semver-minor",
+    ])
   })
 })

@@ -13,3 +13,12 @@ updates:
       minor-and-patch:
         applies-to: version-updates
         update-types: ["minor", "patch"]
+    ignore:
+      # Matches the Node 24 runtime pinned in .nvmrc; bump with the runtime.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # Only here for katex/dist/katex.min.css, which must match the KaTeX that
+      # rehype-katex and mermaid render with (^0.16). In 0.x a minor is breaking.
+      - dependency-name: "katex"
+        update-types:
+          ["version-update:semver-major", "version-update:semver-minor"]
