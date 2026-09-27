@@ -9,6 +9,7 @@
  * is restored before the check.
  */
 import { afterEach, beforeEach } from "vitest"
+import { commands } from "vitest/browser"
 import { cleanup } from "vitest-browser-react"
 import {
   type ConsoleGuard,
@@ -21,12 +22,22 @@ export type { ConsoleLevel }
 // Vitest loads this file twice in the browser: as the setup file and again
 // through a test's `@/tests/setup` import. One guard on globalThis serves both
 // instances, so the console is proxied and the hooks register once.
-const store = globalThis as unknown as { __uifilesConsoleGuard?: ConsoleGuard }
+const store = globalThis as unknown as {
+  __uifilesConsoleGuard?: ConsoleGuard
+  __uifilesPointerParking?: true
+}
 store.__uifilesConsoleGuard ??= installConsoleGuard(
   { beforeEach, afterEach },
   cleanup
 )
 const guard: ConsoleGuard = store.__uifilesConsoleGuard
+
+// Every test starts with the pointer off the page, so no fixture inherits a
+// hover from wherever the previous test or file left it.
+if (!store.__uifilesPointerParking) {
+  store.__uifilesPointerParking = true
+  beforeEach(() => commands.parkPointer())
+}
 
 /**
  * Opts the current test out of the console guard for these levels (both when
