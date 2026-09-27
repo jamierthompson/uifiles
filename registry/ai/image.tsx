@@ -5,8 +5,9 @@ import type { GeneratedFile } from "ai"
 import { cn } from "cn"
 
 export type ImageProps = GeneratedFile & {
-  className?: string
-  alt?: string
+  className?: string | undefined
+  /** Text alternative for the generated image; pass "" only when it is decorative. */
+  alt: string
 }
 
 export const Image = ({
@@ -14,16 +15,16 @@ export const Image = ({
   uint8Array: _uint8Array,
   mediaType,
   providerMetadata: _providerMetadata,
+  alt,
+  className,
   ...props
-}: ImageProps) => (
-  // biome-ignore lint/performance/noImgElement: the source is an inline data: URL from the model, which next/image cannot optimize
-  <img
-    {...props}
-    alt={props.alt}
-    className={cn(
-      "h-auto max-w-full overflow-hidden rounded-md",
-      props.className
-    )}
-    src={`data:${mediaType};base64,${base64}`}
-  />
-)
+}: ImageProps) =>
+  base64 ? (
+    // biome-ignore lint/performance/noImgElement: the source is an inline data: URL from the model, which next/image cannot optimize
+    <img
+      {...props}
+      alt={alt}
+      className={cn("h-auto max-w-full overflow-hidden rounded-md", className)}
+      src={`data:${mediaType || "image/png"};base64,${base64}`}
+    />
+  ) : null

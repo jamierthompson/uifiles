@@ -4,25 +4,33 @@
 
 import { cn } from "cn"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
-import type { ComponentProps, HTMLAttributes, ReactElement } from "react"
+import type { ComponentProps, HTMLAttributes, ReactNode } from "react"
 import {
+  Children,
   createContext,
+  Fragment,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group"
 
 interface MessageBranchContextType {
+  /** The requested index before clamping; content clamps it against its own child count. */
+  branchIndex: number
   currentBranch: number
   totalBranches: number
+  /** The count MessageBranch read off its own children; undefined when it could not see the content. */
+  derivedTotal: number | undefined
   goToPrevious: () => void
   goToNext: () => void
-  branches: ReactElement[]
-  setBranches: (branches: ReactElement[]) => void
+  registerTotal: (total: number) => void
 }
 
 const MessageBranchContext = createContext<MessageBranchContextType | null>(
@@ -41,50 +49,144 @@ const useMessageBranch = () => {
   return context
 }
 
+const clampBranch = (index: number, total: number) =>
+  total === 0 ? 0 : Math.min(Math.max(index, 0), total - 1)
+
+// Children.toArray drops null/boolean children (conditional branches),
+// resolves Server Component children (keyless lazy nodes) and keys every
+// element, so a branch keeps its identity across navigation.
+const branchesOf = (children: ReactNode) => Children.toArray(children)
+
+const LAZY = Symbol.for("react.lazy")
+const MEMO = Symbol.for("react.memo")
+const FORWARD_REF = Symbol.for("react.forward_ref")
+
+/**
+ * The component behind an element type. A Server Component hands its client
+ * children over as lazy types (the Flight client's reference to the module
+ * export), which React resolves only when it renders them; memo and
+ * forwardRef wrap a component in an object.
+ */
+function componentOf(type: unknown): unknown {
+  if (typeof type !== "object" || type === null || !("$$typeof" in type)) {
+    return type
+  }
+  if (type.$$typeof === MEMO && "type" in type) return componentOf(type.type)
+  if (type.$$typeof === FORWARD_REF && "render" in type) {
+    return componentOf(type.render)
+  }
+  if (
+    type.$$typeof === LAZY &&
+    "_init" in type &&
+    "_payload" in type &&
+    typeof type._init === "function"
+  ) {
+    // A module still loading throws its promise: MessageBranch suspends on
+    // it, as React would on the element itself a moment later, and counts
+    // once it is in.
+    return componentOf(type._init(type._payload))
+  }
+  return type
+}
+
+/**
+ * The branch count of the first MessageBranchContent among `children`, looked
+ * for through fragments and host elements. Reading it while rendering keeps
+ * the selector and page count in server HTML; a content rendered by a custom
+ * component cannot be seen here and registers its count after mount instead.
+ */
+function countBranches(children: ReactNode): number | undefined {
+  for (const child of Children.toArray(children)) {
+    if (!isValidElement<{ children?: ReactNode }>(child)) continue
+    if (componentOf(child.type) === MessageBranchContent) {
+      return branchesOf(child.props.children).length
+    }
+    if (child.type === Fragment || typeof child.type === "string") {
+      const nested = countBranches(child.props.children)
+      if (nested !== undefined) return nested
+    }
+  }
+  return undefined
+}
+
 export type MessageBranchProps = HTMLAttributes<HTMLDivElement> & {
-  defaultBranch?: number
-  onBranchChange?: (branchIndex: number) => void
+  branch?: number | undefined
+  defaultBranch?: number | undefined
+  onBranchChange?: ((branchIndex: number) => void) | undefined
 }
 
 export const MessageBranch = ({
+  branch,
   defaultBranch = 0,
   onBranchChange,
   className,
+  children,
   ...props
 }: MessageBranchProps) => {
-  const [currentBranch, setCurrentBranch] = useState(defaultBranch)
-  const [branches, setBranches] = useState<ReactElement[]>([])
+  const onBranchChangeRef = useRef(onBranchChange)
+  useEffect(() => {
+    onBranchChangeRef.current = onBranchChange
+  })
+  const [uncontrolledBranch, setUncontrolledBranch] = useState(defaultBranch)
+  const [registeredTotal, setRegisteredTotal] = useState(0)
+  const derivedTotal = countBranches(children)
+  const totalBranches = derivedTotal ?? registeredTotal
+  const isControlled = branch !== undefined
+  const branchIndex = isControlled ? branch : uncontrolledBranch
+  const currentBranch = clampBranch(branchIndex, totalBranches)
 
-  const handleBranchChange = useCallback(
-    (newBranch: number) => {
-      setCurrentBranch(newBranch)
-      onBranchChange?.(newBranch)
+  // A controlled branch that clamping moved (out of range, or the list
+  // shrank below it) is reported once, so the parent's state follows what
+  // is shown; the ref keeps StrictMode's replayed effect from reporting the
+  // same clamp twice.
+  const reportedClampRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!isControlled || totalBranches === 0 || branch === currentBranch) {
+      reportedClampRef.current = null
+      return
+    }
+    const clamp = `${branch}>${currentBranch}`
+    if (reportedClampRef.current === clamp) return
+    reportedClampRef.current = clamp
+    onBranchChangeRef.current?.(currentBranch)
+  }, [isControlled, branch, currentBranch, totalBranches])
+
+  const setBranch = useCallback(
+    (next: number) => {
+      if (!isControlled) setUncontrolledBranch(next)
+      onBranchChangeRef.current?.(next)
     },
-    [onBranchChange]
+    [isControlled]
   )
 
   const goToPrevious = useCallback(() => {
-    const newBranch =
-      currentBranch > 0 ? currentBranch - 1 : branches.length - 1
-    handleBranchChange(newBranch)
-  }, [currentBranch, branches.length, handleBranchChange])
+    if (totalBranches === 0) return
+    setBranch(currentBranch > 0 ? currentBranch - 1 : totalBranches - 1)
+  }, [currentBranch, totalBranches, setBranch])
 
   const goToNext = useCallback(() => {
-    const newBranch =
-      currentBranch < branches.length - 1 ? currentBranch + 1 : 0
-    handleBranchChange(newBranch)
-  }, [currentBranch, branches.length, handleBranchChange])
+    if (totalBranches === 0) return
+    setBranch(currentBranch < totalBranches - 1 ? currentBranch + 1 : 0)
+  }, [currentBranch, totalBranches, setBranch])
 
   const contextValue = useMemo<MessageBranchContextType>(
     () => ({
-      branches,
+      branchIndex,
       currentBranch,
+      derivedTotal,
       goToNext,
       goToPrevious,
-      setBranches,
-      totalBranches: branches.length,
+      registerTotal: setRegisteredTotal,
+      totalBranches,
     }),
-    [branches, currentBranch, goToNext, goToPrevious]
+    [
+      branchIndex,
+      currentBranch,
+      derivedTotal,
+      goToNext,
+      goToPrevious,
+      totalBranches,
+    ]
   )
 
   return (
@@ -92,7 +194,9 @@ export const MessageBranch = ({
       <div
         className={cn("grid w-full gap-2 [&>div]:pb-0", className)}
         {...props}
-      />
+      >
+        {children}
+      </div>
     </MessageBranchContext.Provider>
   )
 }
@@ -101,28 +205,29 @@ export type MessageBranchContentProps = HTMLAttributes<HTMLDivElement>
 
 export const MessageBranchContent = ({
   children,
+  className,
   ...props
 }: MessageBranchContentProps) => {
-  const { currentBranch, setBranches, branches } = useMessageBranch()
-  const childrenArray = useMemo(
-    () => (Array.isArray(children) ? children : [children]),
-    [children]
-  )
+  const { branchIndex, derivedTotal, registerTotal } = useMessageBranch()
+  const branches = branchesOf(children)
+  const currentBranch = clampBranch(branchIndex, branches.length)
 
-  // Use useEffect to update branches when they change
-  useEffect(() => {
-    if (branches.length !== childrenArray.length) {
-      setBranches(childrenArray)
-    }
-  }, [childrenArray, branches, setBranches])
+  // Only content MessageBranch could not count itself registers, before
+  // paint so the selector does not flash in.
+  useLayoutEffect(() => {
+    if (derivedTotal !== undefined) return
+    registerTotal(branches.length)
+    return () => registerTotal(0)
+  }, [derivedTotal, branches.length, registerTotal])
 
-  return childrenArray.map((branch, index) => (
+  return branches.map((branch, index) => (
     <div
       className={cn(
         "grid gap-2 overflow-hidden [&>div]:pb-0",
-        index === currentBranch ? "block" : "hidden"
+        index === currentBranch ? "block" : "hidden",
+        className
       )}
-      key={branch.key}
+      key={isValidElement(branch) ? branch.key : index}
       {...props}
     >
       {branch}
@@ -201,7 +306,7 @@ export const MessageBranchNext = ({
   )
 }
 
-export type MessageBranchPageProps = HTMLAttributes<HTMLSpanElement>
+export type MessageBranchPageProps = ComponentProps<typeof ButtonGroupText>
 
 export const MessageBranchPage = ({
   className,
@@ -217,7 +322,7 @@ export const MessageBranchPage = ({
       )}
       {...props}
     >
-      {currentBranch + 1} of {totalBranches}
+      {totalBranches === 0 ? 0 : currentBranch + 1} of {totalBranches}
     </ButtonGroupText>
   )
 }

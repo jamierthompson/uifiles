@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import {
   MessageBranch,
   MessageBranchContent,
@@ -7,6 +8,8 @@ import {
   MessageBranchSelector,
 } from "@/registry/ai/branch"
 import { MessageResponse } from "@/registry/ai/response"
+
+export const metadata: Metadata = { title: "Message Branch" }
 
 const branches = [
   {
@@ -26,7 +29,7 @@ const branches = [
 export default function BranchPreview() {
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">branch</h1>
+      <h1 className="font-heading text-xl font-semibold">Message Branch</h1>
       <MessageBranch defaultBranch={0}>
         <MessageBranchContent>
           {branches.map((branch) => (
