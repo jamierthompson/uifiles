@@ -1,5 +1,5 @@
 import { createChat } from "@shadcn/helpers/ai-sdk"
-import type { UIMessage } from "ai"
+import { getMessageText } from "@/registry/blocks/chat/components/blocks/chat"
 
 /**
  * A scripted conversation for the chat block. `@shadcn/helpers` turns it into
@@ -62,14 +62,6 @@ export const transport = demoConversation.transport({
   fallback:
     "That is the end of the scripted demo. Swap `transport` for your own API route (`DefaultChatTransport`) to keep chatting.",
 })
-
-/** Concatenates the text parts of a message. */
-export function getMessageText(message: UIMessage) {
-  return message.parts
-    .filter((part) => part.type === "text")
-    .map((part) => part.text)
-    .join("")
-}
 
 /** The scripted opening question, offered as a one-click suggestion. */
 export const demoSuggestions = demoConversation.get(1).map(getMessageText)
