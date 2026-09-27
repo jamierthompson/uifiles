@@ -4,23 +4,36 @@ import { AXE_TAGS } from "./axe-tags"
 
 export { AXE_TAGS }
 
+const nextFrame = () =>
+  new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+
+const isFiniteRunning = (animation: Animation) =>
+  animation.playState === "running" &&
+  animation.timeline === document.timeline &&
+  animation.effect?.getTiming().iterations !== Infinity
+
 /**
  * Waits for finite, time-based animations to finish so axe samples colours
  * at rest. Scroll-driven animations never finish and infinite ones (spinners,
- * shimmer) never settle, so both are skipped; a cancelled animation rejects
- * and is ignored.
+ * shimmer) never settle, so both are skipped.
+ *
+ * One snapshot of `getAnimations()` is not enough. A hover under a pointer the
+ * previous test left parked lands a frame or more after render and starts a
+ * transition the snapshot missed, and a transition retargeted mid-flight is
+ * cancelled (its `finished` rejects) while its replacement runs from the old
+ * colour. So each round waits two frames for pending style and hover updates,
+ * then waits out whatever is running, until a round finds nothing.
  */
 export async function settle(): Promise<void> {
-  await Promise.all(
-    document
-      .getAnimations()
-      .filter(
-        (animation) =>
-          animation.timeline === document.timeline &&
-          animation.effect?.getTiming().iterations !== Infinity
-      )
-      .map((animation) => animation.finished.catch(() => undefined))
-  )
+  for (;;) {
+    await nextFrame()
+    await nextFrame()
+    const running = document.getAnimations().filter(isFiniteRunning)
+    if (running.length === 0) return
+    await Promise.all(
+      running.map((animation) => animation.finished.catch(() => undefined))
+    )
+  }
 }
 
 export type RunAxeOptions = Omit<axe.RunOptions, "runOnly">

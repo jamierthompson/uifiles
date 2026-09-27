@@ -149,6 +149,8 @@ Use `pnpm` for everything (`pnpm add`, `pnpm dlx shadcn@latest ...`). Never `npm
   plus best-practice, `target-size` enabled, animations settled), `runAxe()`, `settle()`, and
   `withDark()` for the dark theme. Do not copy a `settle` or `axe.run` into a test file. Run
   axe in every meaningful state (closed, open, streaming, error) and once under `withDark()`.
+  `settle()` repeats until a round (two frames, then waiting out every finite running
+  animation) finds nothing running, so late hovers and retargeted transitions are waited for.
   `withDark()` flips the class with transitions off, as next-themes'
   `disableTransitionOnChange` does, and restyles skipped `content-visibility: auto` subtrees
   (message scroller items) so none of them fades from light to dark under axe.

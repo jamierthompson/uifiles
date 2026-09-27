@@ -84,6 +84,48 @@ describe("settle()", () => {
       running.every((animation) => animation.playState === "finished")
     ).toBe(true)
   })
+
+  it("waits for a transition that starts after it is called, as a late hover does", async () => {
+    const screen = await render(
+      <main>
+        <p style={{ color: "rgb(0, 0, 0)", transition: "color 300ms" }}>
+          Hovered late
+        </p>
+      </main>
+    )
+    const text = screen.getByText("Hovered late").element() as HTMLElement
+    const settled = settle()
+    requestAnimationFrame(() => {
+      text.style.color = "rgb(255, 0, 0)"
+    })
+    await settled
+    expect(text.getAnimations()).toEqual([])
+    expect(getComputedStyle(text).color).toBe("rgb(255, 0, 0)")
+  })
+
+  it("waits for the transition that replaces one cancelled mid-flight", async () => {
+    const screen = await render(
+      <main>
+        <p style={{ color: "rgb(0, 0, 0)", transition: "color 300ms" }}>
+          Retargeted
+        </p>
+      </main>
+    )
+    const text = screen.getByText("Retargeted").element() as HTMLElement
+    expect(getComputedStyle(text).color).toBe("rgb(0, 0, 0)")
+    text.style.color = "rgb(255, 0, 0)"
+    const [first] = text.getAnimations()
+    expect(first?.playState).toBe("running")
+    const settled = settle()
+    // A new target mid-flight cancels the running transition, whose
+    // `finished` rejects, and starts another from the current colour.
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    text.style.color = "rgb(0, 0, 255)"
+    expect(first?.playState).toBe("idle")
+    await settled
+    expect(text.getAnimations()).toEqual([])
+    expect(getComputedStyle(text).color).toBe("rgb(0, 0, 255)")
+  })
 })
 
 describe("runAxe() and expectNoViolations()", () => {
