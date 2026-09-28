@@ -6,7 +6,7 @@ also contains the third-party material listed below.
 
 AI Elements (https://github.com/vercel/ai-elements)
   Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0;
-  the full licence text is in licenses/APACHE-2.0-ai-elements.txt. Files
+  the full license text is in licenses/APACHE-2.0-ai-elements.txt. Files
   under registry/ai/ are derived from AI Elements. Each carries a header
   comment naming the upstream file and the modifications made (ported from
   Radix UI to Base UI, dependencies re-pointed at the uifiles registry). The

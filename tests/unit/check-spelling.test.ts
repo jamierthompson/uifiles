@@ -28,6 +28,17 @@ describe("scripts/check-spelling.ts word rules", () => {
   it.each([
     // the -our family and what is built on it
     ["colour", "color"],
+    ["discoloured", "discolored"],
+    ["recolour", "recolor"],
+    ["misbehaviour", "misbehavior"],
+    ["unfavourable", "unfavorable"],
+    // a listed word behind a prefix
+    ["unlabelled", "unlabeled"],
+    ["mislabelled", "mislabeled"],
+    ["refuelled", "refueled"],
+    ["unrivalled", "unrivaled"],
+    ["disorganise", "disorganize"],
+    ["unrecognised", "unrecognized"],
     ["colours", "colors"],
     ["colourful", "colorful"],
     ["behaviour", "behavior"],
@@ -78,7 +89,6 @@ describe("scripts/check-spelling.ts word rules", () => {
     ["practising", "practicing"],
     ["catalogue", "catalog"],
     ["cataloguing", "cataloging"],
-    ["dialogue", "dialog"],
     // the rest
     ["grey", "gray"],
     ["greyed", "grayed"],
@@ -103,6 +113,29 @@ describe("scripts/check-spelling.ts word rules", () => {
   it.each([
     // -ise words that are American too, with their inflections
     "otherwise",
+    // and behind a prefix
+    "unsupervised",
+    "imprecise",
+    "uncompromising",
+    "unsurprising",
+    "inadvisable",
+    "unadvised",
+    "overpromised",
+    "unpromising",
+    "undisguised",
+    "reappraise",
+    "unexercised",
+    "unrevised",
+    "improvise",
+    "improvised",
+    "liaise",
+    "liaising",
+    "braised",
+    "poise",
+    "counterpoise",
+    // American headwords the -ogue rule leaves alone
+    "dialogue",
+    "analogue",
     "likewise",
     "clockwise",
     "promise",
@@ -230,10 +263,12 @@ describe("scripts/check-spelling.ts on text", () => {
     expect(fixText(fixText(text))).toBe(fixText(text))
   })
 
-  it("does not read a token out of a longer word", () => {
-    // "colouring" is caught as a whole; "discolour" is not a word we rewrite
-    // from the middle, and letters inside other words never match.
-    expect(checkText("recolour")).toEqual([])
+  it("reads a stem inside a longer word, never letters inside another word", () => {
+    // "colouring" and "recolour" are caught as wholes; letters that only
+    // look like a word inside another word never match.
+    expect(checkText("recolour")).toEqual([
+      { path: "", line: 1, word: "recolour", replacement: "recolor" },
+    ])
     expect(checkText("colouring")).toEqual([
       { path: "", line: 1, word: "colouring", replacement: "coloring" },
     ])
@@ -255,12 +290,12 @@ describe("scripts/check-spelling.ts file selection", () => {
       "scripts/sync-tokens.ts",
       "package.json",
       ".env.example",
+      "NOTICE",
     ]) {
       expect(isChecked(path), path).toBe(true)
     }
     for (const path of [
       "LICENSE",
-      "NOTICE",
       "licenses/APACHE-2.0-ai-elements.txt",
       ".claude/skills/shadcn/SKILL.md",
       "skills-lock.json",

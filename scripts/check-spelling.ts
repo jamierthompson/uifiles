@@ -35,7 +35,6 @@ export type Finding = {
 export const SKIPPED = [
   "LICENSE",
   "licenses/",
-  "NOTICE", // quotes upstream licence names verbatim
   ".claude/skills/", // vendored, installed verbatim from skills-lock.json
   "skills-lock.json",
   "pnpm-lock.yaml",
@@ -97,6 +96,8 @@ const ISE_EXCEPTIONS = new Set([
   "appraise",
   "apprise",
   "arise",
+  "bourgeoise",
+  "braise",
   "bruise",
   "cerise",
   "chastise",
@@ -105,6 +106,7 @@ const ISE_EXCEPTIONS = new Set([
   "comprise",
   "compromise",
   "concise",
+  "counterpoise",
   "cruise",
   "demise",
   "denise",
@@ -116,6 +118,7 @@ const ISE_EXCEPTIONS = new Set([
   "eloise",
   "enfranchise",
   "enterprise",
+  "equipoise",
   "excise",
   "exercise",
   "exorcise",
@@ -126,8 +129,10 @@ const ISE_EXCEPTIONS = new Set([
   "highrise",
   "improvise",
   "incise",
+  "liaise",
   "louise",
   "malaise",
+  "marquise",
   "merchandise",
   "moonrise",
   "mortise",
@@ -152,6 +157,20 @@ const ISE_EXCEPTIONS = new Set([
 ])
 
 const ISE = /^([a-z]+)is(e|es|ed|er|ers|ing|ation|ations|able)$/
+
+/**
+ * Prefixes a word may carry in front of a listed word or stem, so that
+ * "unsupervised" passes like "supervised" and "unlabelled" is rewritten like
+ * "labelled". Longer prefixes come first so "under" is not read as "un".
+ */
+const PREFIX = /^(counter|under|over|semi|non|mis|dis|pre|sub|re|un|in|im)/
+
+/** Whether an `-ise` stem is American too, on its own or behind a prefix. */
+function isIseException(stem: string): boolean {
+  if (ISE_EXCEPTIONS.has(stem)) return true
+  const prefix = PREFIX.exec(stem)?.[0]
+  return prefix !== undefined && ISE_EXCEPTIONS.has(stem.slice(prefix.length))
+}
 
 /** Verbs whose British past and participle double the final l. */
 const SINGLE_L_STEMS = [
@@ -294,10 +313,9 @@ function buildWords(): Map<string, string> {
   noun("offence", "offense")
   noun("pretence", "pretense")
   eVerb("practise", "practice")
-  // -ogue → -og
+  // -ogue → -og; "dialogue" and "analogue" stay, they are the American
+  // headwords too ("dialog" and "analog" are the computing senses)
   eVerb("catalogue", "catalog")
-  noun("dialogue", "dialog")
-  noun("analogue", "analog")
   // the rest
   verb("grey", "gray")
   add("greyer", "grayer")
@@ -351,19 +369,25 @@ export const WORDS: ReadonlyMap<string, string> = buildWords()
 export function american(word: string): string | undefined {
   const listed = WORDS.get(word)
   if (listed !== undefined) return listed
+  // A listed word behind a prefix ("unlabelled", "refuelled"); the -ise rule
+  // below handles its own prefixes, since "improvise" must not become
+  // "im" + "provise".
+  const prefix = PREFIX.exec(word)?.[0]
+  if (prefix !== undefined) {
+    const rest = WORDS.get(word.slice(prefix.length))
+    if (rest !== undefined) return `${prefix}${rest}`
+  }
+  // An -our stem anywhere in the word: "discoloured", "misbehaviour".
   for (const stem of OUR_STEMS) {
-    if (word.startsWith(stem)) {
-      return `${stem.slice(0, -3)}or${word.slice(stem.length)}`
+    const at = word.indexOf(stem)
+    if (at >= 0) {
+      return `${word.slice(0, at)}${stem.slice(0, -3)}or${word.slice(at + stem.length)}`
     }
   }
   const ise = ISE.exec(word)
   if (ise?.[1] !== undefined && ise[2] !== undefined) {
     const stem = `${ise[1]}ise`
-    if (
-      stem.length >= 6 &&
-      !stem.endsWith("wise") &&
-      !ISE_EXCEPTIONS.has(stem)
-    ) {
+    if (stem.length >= 6 && !stem.endsWith("wise") && !isIseException(stem)) {
       return `${ise[1]}iz${ise[2]}`
     }
   }
@@ -428,8 +452,11 @@ export function fixText(text: string): string {
     .join("\n")
 }
 
+/** Text files without an extension that are checked all the same. */
+const EXTENSIONLESS = new Set(["NOTICE"])
+
 export function isChecked(path: string): boolean {
-  if (!EXTENSIONS.test(path)) return false
+  if (!EXTENSIONS.test(path) && !EXTENSIONLESS.has(path)) return false
   return !SKIPPED.some((skip) =>
     skip.endsWith("/") ? path.startsWith(skip) : path === skip
   )
