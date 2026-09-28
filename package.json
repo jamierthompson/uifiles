@@ -23,6 +23,7 @@
     "build": "pnpm registry:build && next build",
     "start": "next start",
     "lint": "biome check",
+    "check:spelling": "node scripts/check-spelling.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
@@ -33,7 +34,7 @@
     "registry:sync": "node scripts/sync-tokens.ts && node scripts/generate-aliases.ts",
     "registry:validate": "shadcn registry validate",
     "registry:build": "node scripts/sync-tokens.ts && shadcn registry validate && shadcn build",
-    "gate": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm registry:validate && pnpm test && pnpm build"
+    "gate": "pnpm format:check && pnpm lint && pnpm check:spelling && pnpm typecheck && pnpm registry:validate && pnpm test && pnpm build"
   },
   "dependencies": {
     "@ai-sdk/react": "^4.0.117",

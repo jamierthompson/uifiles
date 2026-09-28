@@ -42,7 +42,7 @@ Node 24 (`.nvmrc`), pnpm 11.
 pnpm install
 pnpm registry:build   # tokens → validate → public/r
 pnpm dev              # docs + registry on http://localhost:3000
-pnpm gate             # the CI checks: format, lint, typecheck, registry validate, tests, build
+pnpm gate             # the CI checks: format, lint, spelling, typecheck, registry validate, tests, build
 pnpm test:e2e         # Playwright + axe over every preview page at desktop and phone width; locally it builds the registry and starts the dev server (or reuses one), in CI it runs against `pnpm start`
 ```
 

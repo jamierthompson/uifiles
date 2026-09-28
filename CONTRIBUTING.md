@@ -38,7 +38,7 @@ pnpm dev                                # http://localhost:3000
 ## Before opening a PR
 
 ```bash
-pnpm gate        # format:check → lint → typecheck → registry:validate → test → build
+pnpm gate        # format:check → lint → check:spelling → typecheck → registry:validate → test → build
 pnpm test:e2e    # Playwright + axe over every preview page (CI runs this too)
 ```
 

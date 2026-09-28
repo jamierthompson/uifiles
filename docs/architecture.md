@@ -296,7 +296,7 @@ palette classes, and never alpha-faded text for information-bearing content.
   preview that needs a third party fails the same way everywhere), and waits for hydration
   (React's fiber key on `<main>`) rather than `networkidle`. It runs against the site the
   Playwright config starts: `pnpm start` in CI, `pnpm registry:build && pnpm dev` locally.
-- **Gate** (`pnpm gate`): `format:check → lint → typecheck → registry:validate → test → build`.
+- **Gate** (`pnpm gate`): `format:check → lint → check:spelling → typecheck → registry:validate → test → build`.
   CI (`.github/workflows/ci.yml`) runs the same steps with `pnpm registry:build` before the
   tests, so the built-output checks run, and the tests under coverage (`pnpm test:coverage`,
   per-file thresholds of 80% lines, 80% functions, 70% branches over `registry/**` and
