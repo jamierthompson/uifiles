@@ -518,6 +518,18 @@ SOFTWARE.`
     expect(read("NOTICE")).not.toContain("LICENSE-ai-elements")
   })
 
+  it("every registry/ai item opens its docs with the AI Elements derivation, so the CLI shows it on install", () => {
+    const opening =
+      "Derived from Vercel AI Elements (Apache-2.0, Copyright 2023 Vercel, Inc.); ported to Base UI and maintained by uifiles. "
+    const { items } = JSON.parse(read("registry/ai/registry.json")) as {
+      items: { name: string; docs?: string }[]
+    }
+    expect(items.length).toBe(aiItems.length)
+    for (const item of items) {
+      expect(item.docs?.startsWith(opening), item.name).toBe(true)
+    }
+  })
+
   it("every registry/ai source carries the two-line Apache header verbatim", () => {
     const header =
       /^\/\/ Derived from Vercel AI Elements [\w-]+\.tsx \(Apache-2\.0, Copyright 2023 Vercel, Inc\.\)\.\n\/\/ Modified for uifiles: ported from Radix UI to Base UI; dependencies point at @uifiles\.\n/

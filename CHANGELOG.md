@@ -9,6 +9,8 @@ design, so releases are Git tags that consumers can pin on the GitHub install pa
 ### Changed
 
 - The GitHub owner is now `jamiethompsondesign`: install from `jamiethompsondesign/uifiles` (the old path redirects). Every item uifiles ships carries an `author` field.
+- Every `registry/ai` item's `docs` now opens by naming its origin, Vercel AI Elements
+  (Apache-2.0), so the CLI shows the attribution on install, next to the `author` of the port.
 - Light `--destructive` darkens from `oklch(0.52 0.245 27.325)` to `oklch(0.45 0.245 27.325)`
   so destructive text meets WCAG AA (4.69:1) on its hover tint in the destructive button,
   the destructive badge as a link and the interactive destructive bubble; it was 3.85:1.
