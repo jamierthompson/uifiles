@@ -1,5 +1,6 @@
 import { CheckIcon, ListTodoIcon, MessageSquareIcon, XIcon } from "lucide-react"
 import type { Metadata } from "next"
+import { Demo } from "@/app/_components/demo"
 import {
   Queue,
   QueueItem,
@@ -57,8 +58,10 @@ export default function QueuePreview() {
   const pending = todos.filter((todo) => todo.status !== "completed")
 
   return (
-    <>
-      <h1 className="font-heading text-xl font-semibold">Queue</h1>
+    <Demo
+      description="Two collapsible sections with counts: pending tasks, and messages queued to send with their attachments. Each row has its own actions."
+      title="Tasks and queued messages"
+    >
       <Queue>
         <QueueSection>
           <QueueSectionTrigger>
@@ -137,6 +140,6 @@ export default function QueuePreview() {
           </QueueSectionContent>
         </QueueSection>
       </Queue>
-    </>
+    </Demo>
   )
 }

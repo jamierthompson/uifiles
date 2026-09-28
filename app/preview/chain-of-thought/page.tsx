@@ -1,6 +1,7 @@
 "use client"
 
 import { ImageIcon, SearchIcon, WrenchIcon } from "lucide-react"
+import { Demo } from "@/app/_components/demo"
 import {
   ChainOfThought,
   ChainOfThoughtContent,
@@ -57,52 +58,50 @@ function LatencyChart() {
 
 export default function ChainOfThoughtPreview() {
   return (
-    <>
-      <h1 className="font-heading text-xl font-semibold">Chain of Thought</h1>
-      <div className="rounded-lg border p-4">
-        <ChainOfThought defaultOpen>
-          <ChainOfThoughtHeader>
-            Investigating slow checkout
-          </ChainOfThoughtHeader>
-          <ChainOfThoughtContent>
-            <ChainOfThoughtStep
-              description="Looking for recent reports of checkout latency."
-              icon={SearchIcon}
-              label="Searching incident history"
-              status="complete"
-            >
-              <ChainOfThoughtSearchResults>
-                <ChainOfThoughtSearchResult>
-                  INC-2291 checkout p95 regression
-                </ChainOfThoughtSearchResult>
-                <ChainOfThoughtSearchResult>
-                  runbook: edge cache misses
-                </ChainOfThoughtSearchResult>
-                <ChainOfThoughtSearchResult>
-                  PR #4410 pricing service
-                </ChainOfThoughtSearchResult>
-              </ChainOfThoughtSearchResults>
-            </ChainOfThoughtStep>
-            <ChainOfThoughtStep
-              description="Pulled p95 by region for the last hour."
-              icon={ImageIcon}
-              label="Comparing latency across regions"
-              status="complete"
-            >
-              <ChainOfThoughtImage caption="p95 latency by region, last 60 minutes">
-                <LatencyChart />
-              </ChainOfThoughtImage>
-            </ChainOfThoughtStep>
-            <ChainOfThoughtStep
-              description="syd and fra are 2-3x slower; both route pricing calls cross-region."
-              icon={WrenchIcon}
-              label="Checking the pricing service deployment"
-              status="active"
-            />
-            <ChainOfThoughtStep label="Proposing a fix" status="pending" />
-          </ChainOfThoughtContent>
-        </ChainOfThought>
-      </div>
-    </>
+    <Demo
+      description="Steps in every status: complete with search results, complete with an image, active, and pending. The header collapses the trace."
+      title="An investigation, open by default"
+    >
+      <ChainOfThought defaultOpen>
+        <ChainOfThoughtHeader>Investigating slow checkout</ChainOfThoughtHeader>
+        <ChainOfThoughtContent>
+          <ChainOfThoughtStep
+            description="Looking for recent reports of checkout latency."
+            icon={SearchIcon}
+            label="Searching incident history"
+            status="complete"
+          >
+            <ChainOfThoughtSearchResults>
+              <ChainOfThoughtSearchResult>
+                INC-2291 checkout p95 regression
+              </ChainOfThoughtSearchResult>
+              <ChainOfThoughtSearchResult>
+                runbook: edge cache misses
+              </ChainOfThoughtSearchResult>
+              <ChainOfThoughtSearchResult>
+                PR #4410 pricing service
+              </ChainOfThoughtSearchResult>
+            </ChainOfThoughtSearchResults>
+          </ChainOfThoughtStep>
+          <ChainOfThoughtStep
+            description="Pulled p95 by region for the last hour."
+            icon={ImageIcon}
+            label="Comparing latency across regions"
+            status="complete"
+          >
+            <ChainOfThoughtImage caption="p95 latency by region, last 60 minutes">
+              <LatencyChart />
+            </ChainOfThoughtImage>
+          </ChainOfThoughtStep>
+          <ChainOfThoughtStep
+            description="syd and fra are 2-3x slower; both route pricing calls cross-region."
+            icon={WrenchIcon}
+            label="Checking the pricing service deployment"
+            status="active"
+          />
+          <ChainOfThoughtStep label="Proposing a fix" status="pending" />
+        </ChainOfThoughtContent>
+      </ChainOfThought>
+    </Demo>
   )
 }

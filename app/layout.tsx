@@ -51,7 +51,7 @@ export default function RootLayout({
         geist.variable
       )}
     >
-      <body>
+      <body className="flex min-h-svh flex-col">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

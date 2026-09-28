@@ -4,16 +4,29 @@ import { fileURLToPath } from "node:url"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { PreviewShell } from "@/app/_components/preview-shell"
 import { GET as llmsTxt } from "@/app/llms.txt/route"
 import HomePage from "@/app/page"
+import PreviewLayout from "@/app/preview/layout"
+import PreviewIndex from "@/app/preview/page"
 import robots from "@/app/robots"
 import {
   baseUrl,
+  hasPreviewPage,
   isUpstreamAlias,
   loadRegistry,
+  previewGroups,
   type RegistryItem,
   type SiteEnv,
 } from "@/lib/registry"
+import { type PreviewGroup, previewEntry } from "@/lib/site"
+
+// The preview shell reads the current item from the route segment, which
+// only the App Router provides; each test below sets it.
+const route = vi.hoisted(() => ({ segment: null as string | null }))
+vi.mock("next/navigation", () => ({
+  useSelectedLayoutSegment: () => route.segment,
+}))
 
 const root = process.cwd()
 const read = (rel: string) => readFileSync(join(root, rel), "utf8")
@@ -316,15 +329,34 @@ describe("home page catalog", () => {
     expect(isUpstreamAlias(fork)).toBe(false)
   })
 
-  it("renders the alias badge on @uifiles/button but not on @uifiles/base", () => {
+  it("links every previewable item to its preview and every alias to its shadcn/ui docs, in a section per catalog group", () => {
     const html = renderToStaticMarkup(createElement(HomePage))
-    const rows = html.split("<li")
-    const baseRow = rows.find((li) => li.includes(">@uifiles/base</span>"))
-    expect(baseRow, "base row rendered").toBeDefined()
-    expect(baseRow).not.toContain("alias → shadcn/ui")
-    const buttonRow = rows.find((li) => li.includes(">@uifiles/button</span>"))
-    expect(buttonRow, "button row rendered").toBeDefined()
-    expect(buttonRow).toContain("alias → shadcn/ui")
+    for (const item of registry.items.filter(hasPreviewPage)) {
+      expect(html, item.name).toContain(`href="/preview/${item.name}"`)
+    }
+    expect(html).toContain(">@uifiles/button</span>")
+    expect(html).toContain(
+      'href="https://ui.shadcn.com/docs/components/base/button"'
+    )
+    expect(html).not.toContain('href="/preview/button"')
+    expect(html).toContain(">@uifiles/base</span>")
+    expect(html).not.toContain('href="/preview/base"')
+    const order = [
+      "chat",
+      "agent",
+      "code",
+      "media",
+      "blocks",
+      "primitives",
+      "base",
+    ]
+    const positions = order.map((id) => html.indexOf(`id="${id}"`))
+    expect(positions.every((index) => index !== -1)).toBe(true)
+    expect(positions).toEqual([...positions].sort((a, b) => a - b))
+    // Every section is reachable from the catalog nav, primitives included.
+    for (const id of order.slice(0, -1)) {
+      expect(html, id).toContain(`href="#${id}"`)
+    }
   })
 
   // A sideways-scrolling <pre> at phone width is a scroll region without a
@@ -338,7 +370,7 @@ describe("home page catalog", () => {
     expect(pre).not.toMatch(/\boverflow-x-(auto|scroll)\b/)
   })
 
-  it("links the previews, the registry index and llms.txt from the header", () => {
+  it("links the previews, the registry index and llms.txt from the header and footer, with one h1 and one main", () => {
     const html = renderToStaticMarkup(createElement(HomePage))
     expect(html).toMatch(/<a [^>]*href="\/preview"/)
     expect(html).toMatch(/<a [^>]*href="\/r\/registry\.json"/)
@@ -387,22 +419,72 @@ describe("preview routes", () => {
     }
   })
 
-  it("every preview page has one <h1>, and it reads the registry item's title", () => {
-    const headings = Object.fromEntries(
-      dirs("app/preview").map((name) => [
-        name,
-        [
-          ...read(`app/preview/${name}/page.tsx`).matchAll(
-            /<h1\b[^>]*>([\s\S]*?)<\/h1>/g
-          ),
-        ].map((match) => match[1]?.replace(/\s+/g, " ").trim()),
-      ])
+  // The shell renders the item's title as the page's only <h1>, from the
+  // registry, so the pages hold nothing but their demos.
+  it("no preview page renders an <h1> of its own", () => {
+    const withH1 = dirs("app/preview").filter((name) =>
+      /<h1\b/.test(read(`app/preview/${name}/page.tsx`))
     )
-    expect(headings).toEqual(
-      Object.fromEntries(
-        dirs("app/preview").map((name) => [name, [byName(name).title]])
+    expect(withH1).toEqual([])
+  })
+
+  it("the preview shell renders each item's registry title as the one <h1>, its install command, its links and previous/next in catalog order", () => {
+    const groups: PreviewGroup[] = previewGroups(registry.items).map(
+      (group) => ({
+        id: group.id,
+        label: group.label,
+        description: group.description,
+        items: group.items.map(previewEntry),
+      })
+    )
+    const flat = groups.flatMap((group) => group.items)
+    expect(flat.map((entry) => entry.name).sort()).toEqual(dirs("app/preview"))
+    for (const [index, entry] of flat.entries()) {
+      route.segment = entry.name
+      const html = renderToStaticMarkup(
+        createElement(
+          PreviewShell,
+          { groups } as React.ComponentProps<typeof PreviewShell>,
+          createElement("p", null, "demos")
+        )
       )
+      const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/g) ?? []
+      expect(h1, entry.name).toHaveLength(1)
+      expect(h1[0]).toContain(`>${byName(entry.name).title}<`)
+      expect(html).toContain("<p>demos</p>")
+      expect(html).toContain(
+        `pnpm dlx shadcn@latest add @uifiles/${entry.name}`
+      )
+      expect(html).toContain(`href="/r/${entry.name}.json"`)
+      expect(html.match(/<main\b/g)).toHaveLength(1)
+      // The sidebar and the phone menu both mark the current item.
+      expect(html.match(/aria-current="page"/g)).toHaveLength(2)
+      const previous = flat[index - 1]
+      const next = flat[index + 1]
+      expect(html.includes(">Previous<"), entry.name).toBe(Boolean(previous))
+      expect(html.includes(">Next<"), entry.name).toBe(Boolean(next))
+      if (previous) expect(html).toContain(`href="${previous.href}"`)
+      if (next) expect(html).toContain(`href="${next.href}"`)
+    }
+    route.segment = null
+  })
+
+  it("the shell renders the index page without an item header, and the index links every preview", () => {
+    route.segment = null
+    const html = renderToStaticMarkup(
+      createElement(PreviewLayout, null, createElement(PreviewIndex))
     )
+    expect(html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/g)).toEqual([
+      expect.stringContaining(">Components<"),
+    ])
+    expect(html).not.toContain(">Previous<")
+    expect(html).not.toContain(">Next<")
+    // Only the header's "Components" link is current: no item is.
+    expect(html.match(/aria-current="page"/g)).toHaveLength(1)
+    for (const name of dirs("app/preview")) {
+      expect(html, name).toContain(`href="/preview/${name}"`)
+    }
+    expect(html.match(/<main\b/g)).toHaveLength(1)
   })
 
   it("names a preview in its layout after the registry item, and the layout only passes the page through", async () => {

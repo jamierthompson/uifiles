@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Demo } from "@/app/_components/demo"
 import {
   CodeBlock,
   CodeBlockActions,
@@ -82,49 +83,58 @@ export function CodeBlockDemo() {
 
   return (
     <>
-      <CodeBlock code={sample.code} language={language} showLineNumbers>
-        <CodeBlockHeader>
-          <CodeBlockTitle>
-            <CodeBlockFilename>{sample.filename}</CodeBlockFilename>
-          </CodeBlockTitle>
-          <CodeBlockActions>
-            <CodeBlockLanguageSelector
-              items={languageLabels}
-              onValueChange={(value) => {
-                if (value) setLanguage(value)
-              }}
-              value={language}
-            >
-              <CodeBlockLanguageSelectorTrigger aria-label="Language">
-                <CodeBlockLanguageSelectorValue />
-              </CodeBlockLanguageSelectorTrigger>
-              <CodeBlockLanguageSelectorContent>
-                {(Object.keys(languageLabels) as Language[]).map((key) => (
-                  <CodeBlockLanguageSelectorItem key={key} value={key}>
-                    {languageLabels[key]}
-                  </CodeBlockLanguageSelectorItem>
-                ))}
-              </CodeBlockLanguageSelectorContent>
-            </CodeBlockLanguageSelector>
-            <CodeBlockCopyButton aria-label="Copy code" />
-          </CodeBlockActions>
-        </CodeBlockHeader>
-      </CodeBlock>
-      <h2 className="font-heading text-lg font-semibold">Without header</h2>
-      <CodeBlock
-        code={`{ "city": "Melbourne", "unit": "celsius" }`}
-        language="json"
-      />
-      <h2 className="font-heading text-lg font-semibold">Long lines</h2>
-      <p className="text-sm text-muted-foreground">
-        A block that overflows becomes a focusable, labeled scroll region so
-        keyboard users can reach the rest of the line.
-      </p>
-      <CodeBlock
-        aria-label="Fetch example"
-        code={`const response = await fetch("https://api.example.com/v1/models?provider=openai&capability=tool-calling&context=200000&sort=price&order=asc&limit=50", { headers: { Authorization: \`Bearer \${token}\` } })`}
-        language="typescript"
-      />
+      <Demo
+        description="A header with the file name, a language selector that swaps the sample, and a copy button. Line numbers on."
+        title="With header"
+      >
+        <CodeBlock code={sample.code} language={language} showLineNumbers>
+          <CodeBlockHeader>
+            <CodeBlockTitle>
+              <CodeBlockFilename>{sample.filename}</CodeBlockFilename>
+            </CodeBlockTitle>
+            <CodeBlockActions>
+              <CodeBlockLanguageSelector
+                items={languageLabels}
+                onValueChange={(value) => {
+                  if (value) setLanguage(value)
+                }}
+                value={language}
+              >
+                <CodeBlockLanguageSelectorTrigger aria-label="Language">
+                  <CodeBlockLanguageSelectorValue />
+                </CodeBlockLanguageSelectorTrigger>
+                <CodeBlockLanguageSelectorContent>
+                  {(Object.keys(languageLabels) as Language[]).map((key) => (
+                    <CodeBlockLanguageSelectorItem key={key} value={key}>
+                      {languageLabels[key]}
+                    </CodeBlockLanguageSelectorItem>
+                  ))}
+                </CodeBlockLanguageSelectorContent>
+              </CodeBlockLanguageSelector>
+              <CodeBlockCopyButton aria-label="Copy code" />
+            </CodeBlockActions>
+          </CodeBlockHeader>
+        </CodeBlock>
+      </Demo>
+      <Demo
+        description="Just the highlighted code, for a value inline in a transcript."
+        title="Without header"
+      >
+        <CodeBlock
+          code={`{ "city": "Melbourne", "unit": "celsius" }`}
+          language="json"
+        />
+      </Demo>
+      <Demo
+        description="A block that overflows becomes a focusable, labeled scroll region so keyboard users can reach the rest of the line."
+        title="Long lines"
+      >
+        <CodeBlock
+          aria-label="Fetch example"
+          code={`const response = await fetch("https://api.example.com/v1/models?provider=openai&capability=tool-calling&context=200000&sort=price&order=asc&limit=50", { headers: { Authorization: \`Bearer \${token}\` } })`}
+          language="typescript"
+        />
+      </Demo>
     </>
   )
 }

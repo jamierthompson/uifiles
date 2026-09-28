@@ -1,28 +1,29 @@
-import Link from "next/link"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { PreviewShell } from "@/app/_components/preview-shell"
+import { SiteFooter } from "@/app/_components/site-footer"
+import { SiteHeader } from "@/app/_components/site-header"
+import { loadRegistry, previewGroups } from "@/lib/registry"
+import { type PreviewGroup, previewEntry } from "@/lib/site"
 
 export default function PreviewLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Read at build time (every preview is prerendered) and handed to the
+  // client shell, which picks the current item from the route segment.
+  const groups: PreviewGroup[] = previewGroups(loadRegistry().items).map(
+    (group) => ({
+      id: group.id,
+      label: group.label,
+      description: group.description,
+      items: group.items.map(previewEntry),
+    })
+  )
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-3xl flex-col gap-8 px-4 py-10">
-      <nav
-        aria-label="Previews"
-        className="flex items-center justify-between gap-4 text-sm"
-      >
-        <div className="flex items-center gap-4">
-          <Link className="inline-block py-1 underline" href="/">
-            uifiles
-          </Link>
-          <Link className="inline-block py-1 underline" href="/preview">
-            All previews
-          </Link>
-        </div>
-        <ThemeToggle />
-      </nav>
-      {children}
-    </main>
+    <>
+      <SiteHeader active="components" />
+      <PreviewShell groups={groups}>{children}</PreviewShell>
+      <SiteFooter />
+    </>
   )
 }

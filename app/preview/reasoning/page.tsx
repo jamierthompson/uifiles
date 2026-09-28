@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Demo } from "@/app/_components/demo"
 import { Button } from "@/components/ui/button"
 import {
   Reasoning,
@@ -77,13 +78,8 @@ export default function ReasoningPreview() {
 
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">Reasoning</h1>
-
-      <section className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            Streaming (auto-opens, auto-closes 1s after the stream ends)
-          </h2>
+      <Demo
+        actions={
           <Button
             onClick={() => setRun((n) => n + 1)}
             size="sm"
@@ -91,29 +87,32 @@ export default function ReasoningPreview() {
           >
             Restart stream
           </Button>
-        </div>
+        }
+        description="Opens itself while the thought streams in and closes one second after it ends."
+        title="Streaming"
+      >
         <StreamingReasoning key={run} />
-      </section>
+      </Demo>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Finished (duration supplied, opened by default)
-        </h2>
+      <Demo
+        description="A duration was supplied, so the trigger reads how long the model thought. Open by default; the fence, table and formula scroll in their own boxes."
+        title="Finished, open"
+      >
         <Reasoning defaultOpen duration={7}>
           <ReasoningTrigger />
           <ReasoningContent>{finishedText}</ReasoningContent>
         </Reasoning>
-      </section>
+      </Demo>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Finished, unknown duration, collapsed
-        </h2>
+      <Demo
+        description="No duration, so the trigger only says the model thought. Collapsed until opened."
+        title="Finished, collapsed"
+      >
         <Reasoning>
           <ReasoningTrigger />
           <ReasoningContent>{fullText}</ReasoningContent>
         </Reasoning>
-      </section>
+      </Demo>
     </>
   )
 }

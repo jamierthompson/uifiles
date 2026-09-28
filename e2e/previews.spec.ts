@@ -59,6 +59,64 @@ for (const name of previews) {
   }
 }
 
+// The shell marks the current item in whichever component list the width
+// shows (the sidebar from 1024 px, the disclosure below it) and pages to the
+// next item in catalog order; the title and heading follow the navigation.
+test("the preview shell marks the current item and pages to the next one", async ({
+  page,
+}) => {
+  const problems = collectPageProblems(page)
+  await gotoHydrated(page, "/preview/branch")
+  const phone = (page.viewportSize()?.width ?? 0) < 1024
+  if (phone) {
+    await expect(
+      page.getByRole("navigation", { name: "Components" })
+    ).toBeHidden()
+    await page.getByText("Browse components").click()
+  }
+  const list = page.getByRole("navigation", {
+    name: phone ? "Components menu" : "Components",
+  })
+  await expect(list).toBeVisible()
+  const current = list.locator('a[aria-current="page"]')
+  await expect(current).toHaveCount(1)
+  await expect(current).toHaveText("Message Branch")
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Message Branch" })
+  ).toBeVisible()
+  await expect(
+    page.getByRole("link", { name: "Registry JSON" })
+  ).toHaveAttribute("href", "/r/branch.json")
+  await expect(page.locator("pre").first()).toHaveText(
+    "pnpm dlx shadcn@latest add @uifiles/branch"
+  )
+
+  const pager = page.getByRole("navigation", {
+    name: "Previous and next component",
+  })
+  const next = pager.getByRole("link", { name: /^Next/ })
+  const nextTitle = (await next.textContent())?.replace(/^Next/, "").trim()
+  expect(nextTitle).toBeTruthy()
+  await next.click()
+  await expect(page).toHaveTitle(
+    new RegExp(`^${escapeRegExp(nextTitle ?? "")} · `)
+  )
+  await expect(
+    page.getByRole("heading", { level: 1, name: nextTitle ?? "" })
+  ).toBeVisible()
+  if (phone) {
+    // The disclosure closes again after a navigation.
+    await expect(
+      page.getByRole("navigation", { name: "Components menu" })
+    ).toBeHidden()
+  } else {
+    await expect(list.locator('a[aria-current="page"]')).toHaveText(
+      nextTitle ?? ""
+    )
+  }
+  expect(problems).toEqual([])
+})
+
 // The selector and its count come from the server, not from the first client
 // render: a Server Component page hands MessageBranchContent over as a client
 // reference, and the branch count must survive that. A raw request opens no

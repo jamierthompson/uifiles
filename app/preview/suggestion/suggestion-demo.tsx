@@ -17,8 +17,7 @@ export function SuggestionDemo() {
   const [selected, setSelected] = useState<string | null>(null)
 
   return (
-    <>
-      <h2 className="text-sm font-medium">Suggestions</h2>
+    <div className="flex flex-col gap-3">
       <Suggestions>
         {suggestions.map((suggestion) => (
           <Suggestion
@@ -31,6 +30,6 @@ export function SuggestionDemo() {
       <p className="text-xs text-muted-foreground">
         {selected ? `Selected: ${selected}` : "Pick a suggestion."}
       </p>
-    </>
+    </div>
   )
 }

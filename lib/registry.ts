@@ -60,31 +60,266 @@ export function isUpstreamAlias(item: RegistryItem) {
   return item.type === "registry:ui" && !item.files?.length
 }
 
-export const TYPE_LABELS: Record<string, string> = {
-  "registry:base": "Design system",
-  "registry:theme": "Themes",
-  "registry:font": "Fonts",
-  "registry:ui": "UI primitives",
-  "registry:component": "Components",
-  "registry:block": "Blocks",
-  "registry:hook": "Hooks",
-  "registry:lib": "Utilities",
-  "registry:item": "Project files",
+/**
+ * The sections the catalog is read in: the docs home, the preview sidebar and
+ * `/llms.txt` all list items by group, in this order. AI components fall into
+ * the first four by their registry `categories`, the `chat` block into
+ * `blocks`, the file-less shadcn/ui aliases into `primitives`, the
+ * `registry:base` item into `base`; a component with none of the categories
+ * lands in `other`, which the tests keep empty.
+ */
+export type CatalogGroupId =
+  | "chat"
+  | "agent"
+  | "code"
+  | "media"
+  | "blocks"
+  | "primitives"
+  | "base"
+  | "other"
+
+export type CatalogGroup = {
+  id: CatalogGroupId
+  label: string
+  /** One line under the label, written for someone choosing where to look. */
+  description: string
+  items: RegistryItem[]
 }
 
-export function groupByType(items: RegistryItem[]) {
-  const groups = new Map<string, RegistryItem[]>()
+export const CATALOG_GROUPS: Record<
+  CatalogGroupId,
+  { label: string; description: string }
+> = {
+  chat: {
+    label: "Chat",
+    description:
+      "The composer, streamed responses, citations, sources and branching that a conversation is made of.",
+  },
+  agent: {
+    label: "Agent",
+    description:
+      "Plans, tasks, tool calls, queues and approvals that show what an agent is doing and let a person step in.",
+  },
+  code: {
+    label: "Code",
+    description: "Highlighted code for chat and agent output.",
+  },
+  media: {
+    label: "Media",
+    description: "Images a model generated.",
+  },
+  blocks: {
+    label: "Blocks",
+    description:
+      "Complete surfaces assembled from the components, installed as pages you then wire to your own route.",
+  },
+  primitives: {
+    label: "Primitives",
+    description:
+      "Every shadcn/ui primitive under the @uifiles namespace, resolved upstream against your style.",
+  },
+  base: {
+    label: "Design system",
+    description:
+      "The config, tokens and fonts every item is built on. Run it once with shadcn init.",
+  },
+  other: {
+    label: "More components",
+    description: "Components outside the groups above.",
+  },
+}
+
+export const CATALOG_GROUP_ORDER: readonly CatalogGroupId[] = [
+  "chat",
+  "agent",
+  "code",
+  "media",
+  "blocks",
+  "primitives",
+  "base",
+  "other",
+]
+
+/**
+ * Which registry category decides a component's group when it carries
+ * several: every AI component is tagged `chat`, so the more specific tag wins.
+ * Later entries take precedence.
+ */
+const CATEGORY_GROUPS: ReadonlyArray<
+  [category: string, group: CatalogGroupId]
+> = [
+  ["chat", "chat"],
+  ["media", "media"],
+  ["code", "code"],
+  ["agent", "agent"],
+]
+
+export function catalogGroupOf(item: RegistryItem): CatalogGroupId {
+  if (item.type === "registry:base") return "base"
+  if (item.type === "registry:block") return "blocks"
+  if (isUpstreamAlias(item)) return "primitives"
+  let group: CatalogGroupId = "other"
+  const categories = item.categories ?? []
+  for (const [category, candidate] of CATEGORY_GROUPS) {
+    if (categories.includes(category)) group = candidate
+  }
+  return group
+}
+
+/** Sorts by the title people read, falling back to the name. */
+function byTitle(a: RegistryItem, b: RegistryItem) {
+  return (a.title ?? a.name).localeCompare(b.title ?? b.name, "en")
+}
+
+/**
+ * The catalog in reading order: only the groups that have items, each with
+ * its items sorted by title.
+ */
+export function catalogGroups(items: RegistryItem[]): CatalogGroup[] {
+  const buckets = new Map<CatalogGroupId, RegistryItem[]>()
   for (const item of items) {
-    const list = groups.get(item.type) ?? []
+    const id = catalogGroupOf(item)
+    const list = buckets.get(id) ?? []
     list.push(item)
-    groups.set(item.type, list)
+    buckets.set(id, list)
   }
-  const order = Object.keys(TYPE_LABELS)
-  const rank = (type: string) => {
-    const index = order.indexOf(type)
-    return index === -1 ? order.length : index
+  return CATALOG_GROUP_ORDER.flatMap((id) => {
+    const list = buckets.get(id)
+    if (!list?.length) return []
+    return [{ id, ...CATALOG_GROUPS[id], items: [...list].sort(byTitle) }]
+  })
+}
+
+/**
+ * Items rendered under `/preview/<name>`: everything that ships files except
+ * the base item (`tests/unit/registry.test.ts` holds both directions of that
+ * rule against `app/preview`).
+ */
+export function hasPreviewPage(item: RegistryItem) {
+  return item.type !== "registry:base" && (item.files?.length ?? 0) > 0
+}
+
+/** The preview sidebar and the home's component sections: previewable items, grouped. */
+export function previewGroups(items: RegistryItem[]): CatalogGroup[] {
+  return catalogGroups(items.filter(hasPreviewPage))
+}
+
+/**
+ * The shadcn/ui aliases in sections, so the 63 of them can be scanned. The
+ * map is by hand: a primitive that is not in it lands in "Other", and the
+ * unit tests fail on that so a new alias is placed on purpose.
+ */
+export const PRIMITIVE_GROUPS: ReadonlyArray<{
+  label: string
+  names: readonly string[]
+}> = [
+  {
+    label: "Buttons & inputs",
+    names: [
+      "button",
+      "button-group",
+      "toggle",
+      "toggle-group",
+      "input",
+      "input-group",
+      "input-otp",
+      "textarea",
+      "checkbox",
+      "radio-group",
+      "switch",
+      "slider",
+      "select",
+      "native-select",
+      "combobox",
+      "calendar",
+      "field",
+      "form",
+      "label",
+    ],
+  },
+  {
+    label: "Overlays & menus",
+    names: [
+      "dialog",
+      "alert-dialog",
+      "sheet",
+      "drawer",
+      "popover",
+      "hover-card",
+      "tooltip",
+      "dropdown-menu",
+      "context-menu",
+      "menubar",
+      "command",
+    ],
+  },
+  {
+    label: "Navigation",
+    names: ["breadcrumb", "navigation-menu", "pagination", "sidebar", "tabs"],
+  },
+  {
+    label: "Layout",
+    names: [
+      "accordion",
+      "aspect-ratio",
+      "card",
+      "collapsible",
+      "item",
+      "resizable",
+      "scroll-area",
+      "separator",
+    ],
+  },
+  {
+    label: "Data display",
+    names: ["avatar", "badge", "carousel", "chart", "kbd", "table"],
+  },
+  {
+    label: "Feedback",
+    names: [
+      "alert",
+      "empty",
+      "progress",
+      "skeleton",
+      "spinner",
+      "sonner",
+      "toast",
+    ],
+  },
+  {
+    label: "Chat",
+    names: [
+      "message",
+      "message-scroller",
+      "bubble",
+      "attachment",
+      "marker",
+      "questionnaire",
+    ],
+  },
+  { label: "Utilities", names: ["direction"] },
+]
+
+export type PrimitiveGroup = { label: string; items: RegistryItem[] }
+
+/** The aliases among `items` in `PRIMITIVE_GROUPS` order, plus "Other" for any the map lacks. */
+export function primitiveGroups(items: RegistryItem[]): PrimitiveGroup[] {
+  const aliases = items.filter(isUpstreamAlias)
+  const byName = new Map(aliases.map((item) => [item.name, item]))
+  const placed = new Set<string>()
+  const groups: PrimitiveGroup[] = []
+  for (const group of PRIMITIVE_GROUPS) {
+    const list = group.names.flatMap((name) => {
+      const item = byName.get(name)
+      if (!item) return []
+      placed.add(name)
+      return [item]
+    })
+    if (list.length) groups.push({ label: group.label, items: list })
   }
-  return [...groups.entries()].sort(([a], [b]) => rank(a) - rank(b))
+  const other = aliases.filter((item) => !placed.has(item.name))
+  if (other.length) groups.push({ label: "Other", items: other })
+  return groups
 }
 
 const LOCAL_ORIGIN = "http://localhost:3000"

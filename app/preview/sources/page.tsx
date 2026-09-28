@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Demo } from "@/app/_components/demo"
 import {
   Source,
   Sources,
@@ -27,12 +28,11 @@ const sources = [
 
 export default function SourcesPreview() {
   return (
-    <>
-      <h1 className="font-heading text-xl font-semibold">Sources</h1>
-      <p className="text-sm text-muted-foreground">
-        Collapsed by default; the trigger reveals the links the answer drew on.
-      </p>
-      <div className="rounded-xl border p-4">
+    <Demo
+      description="Collapsed by default; the trigger reveals the links the answer drew on. A source without a title is labeled with its hostname."
+      title="Under an answer"
+    >
+      <div>
         <p className="mb-4 text-sm">
           The AI SDK UI package ships a <code>useChat</code> hook that streams
           assistant messages into React state, and shadcn registries can host
@@ -51,6 +51,6 @@ export default function SourcesPreview() {
           </SourcesContent>
         </Sources>
       </div>
-    </>
+    </Demo>
   )
 }

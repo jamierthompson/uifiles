@@ -8,6 +8,19 @@ design, so releases are Git tags that consumers can pin on the GitHub install pa
 
 ### Changed
 
+- The docs site is redesigned. The home groups the catalog by what an item is for (Chat,
+  Agent, Code, Media, Blocks, Primitives, Design system) instead of by registry type, with a
+  card per component linking to its preview, the 63 primitives in sections that link to their
+  shadcn/ui docs, copy buttons on the install commands and a catalog nav with counts. Every
+  page shares a sticky header (skip link, wordmark, Components and GitHub, the theme toggle)
+  and a footer with the registry index, `llms.txt` and GitHub.
+- `/preview` is a components index in the same groups, and every `/preview/<name>` page sits
+  in a shell: a grouped component list that marks the current item (a sidebar from 1024 px, a
+  disclosure above the content below it), a header with the item's title, description, install
+  command, registry JSON and source links and what it installs with, previous and next in
+  catalog order, and each demo in a titled section with a short description of the state it
+  shows.
+- `/llms.txt` lists items under the same groups, each with the group's one-line description.
 - The GitHub owner is now `jamiethompsondesign`: install from `jamiethompsondesign/uifiles` (the old path redirects). Every item uifiles ships carries an `author` field.
 - Every `registry/ai` item's `docs` now opens by naming its origin, Vercel AI Elements
   (Apache-2.0), so the CLI shows the attribution on install, next to the `author` of the port.

@@ -1,5 +1,6 @@
 import type { LanguageModelUsage } from "ai"
 import type { Metadata } from "next"
+import { Demo } from "@/app/_components/demo"
 import {
   Context,
   ContextCacheUsage,
@@ -70,16 +71,14 @@ const scenarios = [
 
 export default function ContextPreview() {
   return (
-    <>
-      <h1 className="font-heading text-xl font-semibold">Context</h1>
-      <p className="text-sm text-muted-foreground">
-        Hover the percentage to see token usage and estimated cost for the
-        current model.
-      </p>
-      <div className="flex flex-col gap-4">
+    <Demo
+      description="Hover or focus the percentage for token usage by kind and the estimated cost for the current model."
+      title="Two points in a conversation"
+    >
+      <div className="flex flex-col divide-y">
         {scenarios.map((scenario) => (
           <div
-            className="flex items-center justify-between rounded-xl border p-4"
+            className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
             key={scenario.label}
           >
             <span className="text-sm">{scenario.label}</span>
@@ -106,6 +105,6 @@ export default function ContextPreview() {
           </div>
         ))}
       </div>
-    </>
+    </Demo>
   )
 }

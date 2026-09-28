@@ -30,6 +30,15 @@ test("the chat preview is operable with the keyboard alone", async ({
   await expect(toolHeader).toBeVisible()
   await expect(toolHeader).toHaveAttribute("aria-expanded", "false")
 
+  // The skip link is the first tab stop and lands on <main>, past the header
+  // and the component list; from there the composer is within reach.
+  await page.keyboard.press("Tab")
+  await expect(
+    page.getByRole("link", { name: "Skip to content" })
+  ).toBeFocused()
+  await page.keyboard.press("Enter")
+  await expect(page.locator("main")).toBeFocused()
+
   const composer = page.getByRole("textbox")
   await tabTo(page, composer, "Tab")
   await page.keyboard.type("Can you give me the short version?")

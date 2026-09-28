@@ -70,7 +70,7 @@ the first release.
 | `registry/ai`                         | 18 AI Elements components ported to Base UI                                      |
 | `registry/blocks`                     | The `chat` block                                                                 |
 | `registry/components`, `hooks`, `lib` | Our own (empty today)                                                            |
-| `app`                                 | Docs site, `/preview/<item>` pages, `llms.txt`                                   |
+| `app`                                 | Docs site: home, `/preview` index, `/preview/<item>` pages, `llms.txt`           |
 | `tests`, `e2e`                        | Vitest unit and browser tests (axe), Playwright over every preview               |
 | `skills/uifiles`                      | Agent skill                                                                      |
 
