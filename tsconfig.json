@@ -34,5 +34,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", ".claude", "public/r"]
+  "exclude": ["node_modules", ".claude", "public/r", "packages/*/dist"]
 }

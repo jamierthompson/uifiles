@@ -6,6 +6,16 @@ design, so releases are Git tags that consumers can pin on the GitHub install pa
 
 ## [Unreleased]
 
+### Added
+
+- The `uifiles` CLI (`packages/uifiles`, the `uifiles` package on npm, no dependencies):
+  `pnpm dlx uifiles@latest init` writes `"@uifiles": "https://uifiles.dev/r/{name}.json"` into
+  the `registries` of `components.json`, which the shadcn CLI needs to resolve
+  `@uifiles/<name>` until the shadcn registry directory lists `uifiles` (a fresh project
+  otherwise fails with `Unknown registry "@uifiles"`). `--cwd <dir>` points at the file,
+  `--url <origin>` targets a self-hosted registry, `--force` replaces an entry that points
+  elsewhere; the file's other keys, indentation and final newline are kept.
+
 ### Changed
 
 - The docs site is redesigned. The home groups the catalog by what an item is for (Chat,
@@ -21,6 +31,8 @@ design, so releases are Git tags that consumers can pin on the GitHub install pa
   catalog order, and each demo in a titled section with a short description of the state it
   shows.
 - `/llms.txt` lists items under the same groups, each with the group's one-line description.
+- The README's install section is now "Getting started": `shadcn init` with the base,
+  `uifiles init`, `shadcn add`. The interim GitHub-path instructions are gone.
 - The GitHub owner is now `jamiethompsondesign`: install from `jamiethompsondesign/uifiles` (the old path redirects). Every item uifiles ships carries an `author` field.
 - Every `registry/ai` item's `docs` now opens by naming its origin, Vercel AI Elements
   (Apache-2.0), so the CLI shows the attribution on install, next to the `author` of the port.

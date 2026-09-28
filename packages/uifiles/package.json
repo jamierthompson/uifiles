@@ -1,0 +1,41 @@
+{
+  "name": "uifiles",
+  "version": "0.1.0",
+  "description": "Sets a project up for the @uifiles shadcn registry: `uifiles init` writes the registry into components.json so that `shadcn add @uifiles/<name>` resolves.",
+  "keywords": [
+    "shadcn",
+    "registry",
+    "base-ui",
+    "uifiles",
+    "cli"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Jamie Thompson",
+    "email": "jamie@jamiethompson.design",
+    "url": "https://jamiethompson.design"
+  },
+  "homepage": "https://uifiles.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jamiethompsondesign/uifiles.git",
+    "directory": "packages/uifiles"
+  },
+  "bugs": {
+    "url": "https://github.com/jamiethompsondesign/uifiles/issues"
+  },
+  "type": "module",
+  "bin": {
+    "uifiles": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "prepublishOnly": "pnpm build"
+  }
+}

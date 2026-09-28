@@ -74,7 +74,11 @@ export default defineConfig({
   test: {
     coverage: {
       provider: "v8",
-      include: ["registry/**/*.{ts,tsx}", "lib/**/*.ts"],
+      include: [
+        "registry/**/*.{ts,tsx}",
+        "lib/**/*.ts",
+        "packages/*/src/**/*.ts",
+      ],
       // Pages are exercised by the Playwright suite, not by component tests.
       exclude: ["registry/**/page.tsx"],
       reporter: ["text", "json-summary"],

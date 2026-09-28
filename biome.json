@@ -12,6 +12,7 @@
       "!node_modules",
       "!.next",
       "!public/r",
+      "!packages/*/dist",
       "!playwright-report",
       "!test-results",
       "!.claude/skills",

@@ -653,37 +653,40 @@ describe("docs accuracy", () => {
     expect(hits).toEqual([])
   })
 
-  it("README's GitHub-path caveat names exactly the items that depend on @uifiles/*", () => {
-    const namespaced = registry.items
-      .filter((item) =>
-        (item.registryDependencies ?? []).some((dep) =>
-          dep.startsWith("@uifiles/")
-        )
-      )
-      .map((item) => item.name)
-      .sort()
-    expect(namespaced).toEqual(["chat", "reasoning", "tool"])
+  it("README's Getting started lists the three commands in order: shadcn init with the base, uifiles init, shadcn add", () => {
     const readme = read("README.md")
-    const excepted =
-      /every AI component except ([^;]+); not the\s+`chat` block/.exec(
-        readme
-      )?.[1]
-    expect(
-      [...(excepted ?? "").matchAll(/`([^`]+)`/g)].map((match) => match[1])
-    ).toEqual(namespaced.filter((name) => name !== "chat"))
+    const section =
+      /^## Getting started\n([\s\S]*?)^## /m.exec(readme)?.[1] ?? ""
+    expect(section).not.toBe("")
+    const commands = [...section.matchAll(/^pnpm dlx [^\n#]+/gm)].map((m) =>
+      m[0].trim()
+    )
+    expect(commands.slice(0, 3)).toEqual([
+      "pnpm dlx shadcn@latest init https://uifiles.dev/r/base.json",
+      "pnpm dlx uifiles@latest init",
+      expect.stringMatching(/^pnpm dlx shadcn@latest add @uifiles\/[\w-]+/),
+    ])
+    for (const name of commands[2]?.match(/@uifiles\/([\w-]+)/g) ?? []) {
+      expect(() => byName(name.slice("@uifiles/".length)), name).not.toThrow()
+    }
+    expect(section).toContain('Unknown registry "@uifiles"')
+    for (const flag of ["--cwd", "--url", "--force"]) {
+      expect(section, flag).toContain(flag)
+    }
   })
 
-  it("README pins the GitHub install example to a tag that the changelog releases, on an item the GitHub path can install", () => {
+  it("README no longer carries the interim GitHub-path instructions, and the CLI package's README gives the same three commands", () => {
     const readme = read("README.md")
-    expect(readme).not.toContain("#v1.0.0")
-    const example = readme.match(
-      /jamiethompsondesign\/uifiles\/([\w-]+)#(v[\d.]+)/
+    expect(readme).not.toMatch(/GitHub path/i)
+    expect(readme).not.toMatch(/jamiethompsondesign\/uifiles\/[\w-]+#v/)
+    expect(readme).not.toContain("directory lists `@uifiles`")
+    const commands = (text: string) =>
+      [...text.matchAll(/^pnpm dlx (?:shadcn|uifiles)@latest [^\n#]+/gm)]
+        .map((m) => m[0].trim())
+        .slice(0, 3)
+    expect(commands(read("packages/uifiles/README.md"))).toEqual(
+      commands(readme)
     )
-    expect(example, "GitHub-path example present").not.toBeNull()
-    const [, name, tag] = example as RegExpMatchArray
-    expect(read("CHANGELOG.md")).toContain(`## [${tag?.slice(1)}]`)
-    const deps = byName(name ?? "").registryDependencies ?? []
-    expect(deps.filter((d) => d.startsWith("@uifiles/"))).toEqual([])
   })
 
   it("README does not claim `pnpm gate` is everything CI runs, and names each CI-only script", () => {

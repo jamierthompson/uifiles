@@ -1,5 +1,5 @@
 {
-  "name": "uifiles",
+  "name": "uifiles-site",
   "version": "0.1.0",
   "description": "A shadcn/ui registry on Base UI: every shadcn primitive under one namespace, AI components ported from Vercel AI Elements, and the tokens that tie them together.",
   "private": true,
@@ -34,6 +34,7 @@
     "registry:sync": "node scripts/sync-tokens.ts && node scripts/generate-aliases.ts",
     "registry:validate": "shadcn registry validate",
     "registry:build": "node scripts/sync-tokens.ts && shadcn registry validate && shadcn build",
+    "cli:build": "pnpm --filter uifiles build",
     "gate": "pnpm format:check && pnpm lint && pnpm check:spelling && pnpm typecheck && pnpm registry:validate && pnpm test && pnpm build"
   },
   "dependencies": {

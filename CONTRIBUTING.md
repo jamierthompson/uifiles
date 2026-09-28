@@ -32,6 +32,11 @@ pnpm dev                                # http://localhost:3000
 - **Overlap policy.** Do not port `message`, `conversation`, `attachments`, `shimmer` or
   `loader` from AI Elements; shadcn ships them. The resolution table is in
   `docs/architecture.md`.
+- **The `uifiles` CLI.** `packages/uifiles` is a workspace package published to npm as
+  `uifiles`; its one source file is `src/cli.ts` (Node built-ins only, no dependencies).
+  `pnpm cli:build` compiles it into the gitignored `dist/`; `tests/unit/cli.test.ts` covers
+  the command and compiles the bin with the real `tsc` to prove the published file runs.
+  Bump its `version` and publish with `pnpm --filter uifiles publish`.
 - **Docs.** If a change alters a command, a count or a rule, update `AGENTS.md`,
   `README.md` and `docs/` in the same PR. `tests/unit/site.test.ts` checks some of them.
 

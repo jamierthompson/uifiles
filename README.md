@@ -5,34 +5,36 @@ AI chat and agent components ported from Vercel AI Elements, a `chat` block, and
 `registry:base` item carrying the design tokens. Components are files copied into your
 project by the shadcn CLI, not a dependency you import.
 
-## Use it
+## Getting started
+
+Three commands in a Next.js project, or any React project on Tailwind CSS v4:
 
 ```bash
-pnpm dlx shadcn@latest init https://uifiles.dev/r/base.json
+pnpm dlx shadcn@latest init https://uifiles.dev/r/base.json   # config, tokens, fonts
+pnpm dlx uifiles@latest init                                    # registers @uifiles in components.json
 pnpm dlx shadcn@latest add @uifiles/button @uifiles/prompt-input
 ```
 
-Items can also be installed straight from GitHub, with no hosting involved, pinned to a tag
-or branch:
+The first command creates `components.json` on Base UI (`base-nova`) and writes the tokens
+and fonts into your `globals.css`. The second adds the `@uifiles` registry to
+`components.json`; without it the shadcn CLI stops at `Unknown registry "@uifiles"`, because
+it resolves a namespace through `components.json` or the shadcn registry directory, and the
+directory does not list `uifiles` yet. The third copies items into your project;
+`pnpm dlx shadcn@latest search @uifiles` lists them all.
 
-```bash
-pnpm dlx shadcn@latest add jamiethompsondesign/uifiles/response#v0.1.0
-```
-
-Until the shadcn registry directory lists `@uifiles`, the GitHub path works for items that
-have no `@uifiles/*` dependency of their own (every AI component except `reasoning` and
-`tool`; not the `chat` block), because the CLI resolves namespaced dependencies through the
-directory or a `components.json` entry. The hosted path has no such limit.
-
-For coding agents: `pnpm dlx skills add jamiethompsondesign/uifiles` installs the skill, the
-registry index at `/r/registry.json` works with the shadcn MCP server as is, and `/llms.txt`
-indexes everything.
+`uifiles init` takes `--cwd <dir>` when `components.json` lives elsewhere, `--url <origin>`
+for a self-hosted registry, and `--force` to replace an entry that points elsewhere. It is
+the `uifiles` package on npm, built from `packages/uifiles` here, with no dependencies.
 
 Items that render markdown (`response`, `reasoning`, the `chat` block) need Streamdown's
 `@source` line in your `globals.css`, which you add yourself; the CLI adds the Streamdown and
 KaTeX stylesheet imports and a `.katex-display` overflow rule when it installs them. The
 post-install notes are in the `docs` of
 [`@uifiles/response`](https://uifiles.dev/r/response.json).
+
+For coding agents: `pnpm dlx skills add jamiethompsondesign/uifiles` installs the skill, the
+registry index at `/r/registry.json` works with the shadcn MCP server as is, and `/llms.txt`
+indexes everything.
 
 ## Develop it
 
@@ -45,6 +47,9 @@ pnpm dev              # docs + registry on http://localhost:3000
 pnpm gate             # the CI checks: format, lint, spelling, typecheck, registry validate, tests, build
 pnpm test:e2e         # Playwright + axe over every preview page at desktop and phone width; locally it builds the registry and starts the dev server (or reuses one), in CI it runs against `pnpm start`
 ```
+
+The `uifiles` CLI is a workspace package: `pnpm cli:build` compiles `packages/uifiles/src`
+into its gitignored `dist/`, and `pnpm --filter uifiles publish` builds and publishes it.
 
 CI (`.github/workflows/ci.yml`) runs the same steps as `pnpm gate`, with `pnpm registry:build`
 before the unit and browser tests under coverage (`pnpm test:coverage`), then checks that the
@@ -73,6 +78,7 @@ the first release.
 | `app`                                 | Docs site: home, `/preview` index, `/preview/<item>` pages, `llms.txt`           |
 | `tests`, `e2e`                        | Vitest unit and browser tests (axe), Playwright over every preview               |
 | `skills/uifiles`                      | Agent skill                                                                      |
+| `packages/uifiles`                    | The `uifiles` CLI on npm (`uifiles init`)                                        |
 
 ## Licenses
 

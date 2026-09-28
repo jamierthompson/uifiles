@@ -38,6 +38,9 @@ next-env.d.ts
 # registry build output (built by `pnpm registry:build`; served from Vercel)
 /public/r/
 
+# the uifiles CLI build output (built by `pnpm cli:build`; published, never committed)
+/packages/*/dist/
+
 # tests
 /playwright-report/
 /test-results/
