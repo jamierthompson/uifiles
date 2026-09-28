@@ -82,7 +82,7 @@ export function dependencyLink(dependency: string): DependencyLink {
   }
 }
 
-/** What the preview shell needs to know about an item; serialisable, so a server layout can hand it to the client shell. */
+/** What the preview shell needs to know about an item; serializable, so a server layout can hand it to the client shell. */
 export type PreviewEntry = {
   name: string
   title: string

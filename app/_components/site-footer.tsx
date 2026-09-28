@@ -3,7 +3,7 @@ import { GITHUB_URL } from "@/lib/site"
 const LINK =
   "inline-flex items-center py-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
 
-/** Machine-readable entry points and the licence note, on every page. */
+/** Machine-readable entry points and the license note, on every page. */
 function SiteFooter() {
   return (
     <footer className="border-t">

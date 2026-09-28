@@ -15,7 +15,7 @@ type DemoProps = {
 /**
  * One demo on a preview page: a titled section with the component on a
  * framed surface, so every state reads the same way across the site. The
- * frame keeps the page's colours (no pattern behind the component), so what
+ * frame keeps the page's colors (no pattern behind the component), so what
  * axe measures here is what the component ships with.
  */
 function Demo({ title, description, actions, className, children }: DemoProps) {

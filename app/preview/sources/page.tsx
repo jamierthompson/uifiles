@@ -29,7 +29,7 @@ const sources = [
 export default function SourcesPreview() {
   return (
     <Demo
-      description="Collapsed by default; the trigger reveals the links the answer drew on. A source without a title is labelled with its hostname."
+      description="Collapsed by default; the trigger reveals the links the answer drew on. A source without a title is labeled with its hostname."
       title="Under an answer"
     >
       <div>
