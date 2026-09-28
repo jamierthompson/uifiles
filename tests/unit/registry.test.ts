@@ -262,6 +262,21 @@ describe("source registry", () => {
     }
   })
 
+  // `shadcn init <base.json>` deep-merges a registry:base item's `config` into
+  // the components.json it writes, `registries` included, so a project set up
+  // from the base item resolves `@uifiles/<name>` with no further step. The URL
+  // is the hosted registry, the same origin as the index's homepage.
+  it("registers @uifiles in the consumer's components.json through the base item's config", () => {
+    const index = JSON.parse(
+      readFileSync(join(root, "registry.json"), "utf8")
+    ) as { homepage: string }
+    const base = registry.items.find((item) => item.name === "base") as
+      { config?: { registries?: Record<string, string> } } | undefined
+    expect(base?.config?.registries).toEqual({
+      "@uifiles": `${index.homepage}/r/{name}.json`,
+    })
+  })
+
   // An alias installs upstream shadcn/ui, so it names no author of its own.
   it("credits the maintainer as author on every item uifiles ships and on none of the aliases", () => {
     for (const item of registry.items) {
@@ -737,6 +752,20 @@ describe("built output (public/r)", () => {
       expect([...builtNames].sort()).toEqual([...names].sort())
       expect(index.name).toBe("uifiles")
       expect(index.homepage).toMatch(/^https:\/\//)
+    }
+  )
+
+  // The CLI reads the built file, so the entry has to survive `shadcn build`.
+  it.skipIf(!built && !inCI)(
+    "the built base item keeps the @uifiles registry entry in its config",
+    () => {
+      expectBuilt()
+      const json = JSON.parse(readFileSync(join(dir, "base.json"), "utf8")) as {
+        config?: { registries?: Record<string, string> }
+      }
+      expect(json.config?.registries).toEqual({
+        "@uifiles": "https://uifiles.dev/r/{name}.json",
+      })
     }
   )
 

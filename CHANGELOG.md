@@ -8,6 +8,11 @@ design, so releases are Git tags that consumers can pin on the GitHub install pa
 
 ### Changed
 
+- The base item's `config` carries the `@uifiles` registry entry, so
+  `pnpm dlx shadcn@latest init https://uifiles.dev/r/base.json` registers the namespace in
+  `components.json` and `shadcn add @uifiles/<name>` works in a fresh project with no further
+  step; before, the add stopped at `Unknown registry "@uifiles"` until the entry was added by
+  hand.
 - The docs site is redesigned. The home groups the catalog by what an item is for (Chat,
   Agent, Code, Media, Blocks, Primitives, Design system) instead of by registry type, with a
   card per component linking to its preview, the 63 primitives in sections that link to their

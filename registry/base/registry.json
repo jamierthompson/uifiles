@@ -6,7 +6,7 @@
       "type": "registry:base",
       "title": "uifiles",
       "author": "Jamie Thompson <jamie@jamiethompson.design> (https://jamiethompson.design)",
-      "description": "The uifiles design system: shadcn on Base UI (Nova), the uifiles tokens, Geist type, and project config. Run `shadcn init @uifiles/base` in a new project, then add components.",
+      "description": "The uifiles design system: shadcn on Base UI (Nova), the uifiles tokens, Geist type, and project config, with the @uifiles registry registered in components.json. Run `shadcn init https://uifiles.dev/r/base.json` in a new project, then add components.",
       "config": {
         "style": "base-nova",
         "iconLibrary": "lucide",
@@ -14,7 +14,10 @@
           "baseColor": "neutral"
         },
         "menuColor": "default",
-        "menuAccent": "subtle"
+        "menuAccent": "subtle",
+        "registries": {
+          "@uifiles": "https://uifiles.dev/r/{name}.json"
+        }
       },
       "dependencies": [
         "cn",

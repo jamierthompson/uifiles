@@ -12,6 +12,11 @@ pnpm dlx shadcn@latest init https://uifiles.dev/r/base.json
 pnpm dlx shadcn@latest add @uifiles/button @uifiles/prompt-input
 ```
 
+The first command creates `components.json` on Base UI (`base-nova`), writes the tokens and
+fonts into your `globals.css`, and registers `@uifiles` in `components.json` (the base item
+carries the entry in its `config`, which `shadcn init` merges in), so the second resolves
+with no further step. `pnpm dlx shadcn@latest search @uifiles` lists every item.
+
 Items can also be installed straight from GitHub, with no hosting involved, pinned to a tag
 or branch:
 
