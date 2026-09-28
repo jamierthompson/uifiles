@@ -341,7 +341,8 @@ describe("built-output checks (tests/unit/registry.test.ts)", () => {
     expect(ci.out).toContain(
       "public/r/registry.json is missing: run pnpm registry:build before the tests"
     )
-    expect(ci.out).toMatch(/2 failed/)
+    // Every built-output test fails there, none skips: the three in registry.test.ts.
+    expect(ci.out).toMatch(/3 failed/)
 
     const local = runWithoutBuild(
       "tests/unit/registry.test.ts",
