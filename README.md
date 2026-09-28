@@ -78,6 +78,6 @@ the first release.
 
 MIT (see `LICENSE`). Files under `components/ui/` are the shadcn/ui base-nova components,
 MIT (c) shadcn. Files under `registry/ai/` are derived from Vercel AI Elements and stay
-Apache-2.0 (c) Vercel, Inc.; the full licence text is in
+Apache-2.0 (c) Vercel, Inc.; the full license text is in
 `licenses/APACHE-2.0-ai-elements.txt`. `NOTICE` lists every third-party component,
 including the vendored agent skills.
