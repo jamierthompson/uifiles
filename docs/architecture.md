@@ -251,13 +251,17 @@ Departures from Nova, each made for WCAG AA contrast and measured with axe-core:
   uses shiki's `github-light-high-contrast` and `github-dark-high-contrast` themes because
   GitHub's default light theme renders some tokens at 3.48:1.
 - `--destructive` and light `--ring` depart from Nova for AA. Light `--destructive`
-  `oklch(0.577 0.245 27.325)` → `oklch(0.52 0.245 27.325)`: `text-destructive` on
-  `bg-destructive/10` (button, badge, bubble, dropdown item, attachment media) 3.99:1 → 4.68:1,
-  on white 4.76:1 → 5.62:1, `text-destructive/80` (attachment error description) 4.12:1 → 4.64:1,
-  `/90` (alert description) 4.49:1 → 5.21:1; the `hover:bg-destructive/20` tint is 3.86:1
-  (transient; needs L ≤ 0.465). Dark `--destructive` `oklch(0.704 0.191 22.216)` →
-  `oklch(0.74 0.191 22.216)`: `/80` on card 4.37:1 → 4.66:1, `hover:bg-destructive/30` 4.36:1 →
-  4.55:1 (Chromium paints the tint at 4.43:1). Light `--ring` `oklch(0.708 0 0)` →
+  `oklch(0.577 0.245 27.325)` → `oklch(0.45 0.245 27.325)` (`#b80000`), set by the tightest
+  pair, `text-destructive` on the light hover tint `bg-destructive/20` (button hover, badge
+  link hover, interactive bubble hover): 3.31:1 → 4.69:1 (L ≤ 0.465 clears 4.5:1; 0.45 leaves
+  margin for Chromium's painting). The rest follow: on `bg-destructive/10` (button, badge,
+  bubble, dropdown item, attachment media) 3.99:1 → 5.74:1, on white 4.76:1 → 6.91:1,
+  `text-destructive/80` (attachment error description) 4.12:1 → 5.35:1, `/90` (alert
+  description) 4.49:1 → 6.21:1. Forking `@uifiles/button` was rejected: the same `/20` hover
+  pair is in the vendored badge and bubble too, and one token fixes all three. Dark
+  `--destructive` `oklch(0.704 0.191 22.216)` → `oklch(0.74 0.191 22.216)`: `/80` on card
+  4.37:1 → 4.66:1, `hover:bg-destructive/30` 4.36:1 → 4.55:1 (Chromium paints the tint at
+  4.43:1). Light `--ring` `oklch(0.708 0 0)` →
   `oklch(0.64 0 0)`: the 1px `focus-visible:border-ring` 2.59:1 → 3.36:1 on white and 3.08:1 on
   `bg-muted` (WCAG 1.4.11); the `ring-ring/50` halo stays decoration. `--input`/`--border`
   (1.26:1 light, 1.47:1 dark) are unchanged pending a design decision; `oklch(0.66 0 0)` and
@@ -319,7 +323,7 @@ palette classes, and never alpha-faded text for information-bearing content.
   installed under `.claude/skills/` from `skills-lock.json` and attributed in `NOTICE`.
 - For agents building with the system: `/r/registry.json` with retrieval-quality descriptions
   makes the MCP `list`/`search`/`view`/`add` tools work with no extra code; `/llms.txt` indexes
-  every item with its URL; `skills/uifiles/SKILL.md` (`pnpm dlx skills add jamierthompson/uifiles`)
+  every item with its URL; `skills/uifiles/SKILL.md` (`pnpm dlx skills add jamiethompsondesign/uifiles`)
   gives the workflow and the rules (search first, read the real API, semantic tokens, Base UI
   composition).
 - The repository's own `components.json` maps `@uifiles` to `http://localhost:3000/r/{name}.json`

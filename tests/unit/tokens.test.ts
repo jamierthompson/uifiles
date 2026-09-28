@@ -859,8 +859,6 @@ describe("contrast (WCAG 2.x, gamma-space compositing)", () => {
     "light chart-2 on chart-3": "chart ramp adjacent steps",
     "light chart-3 on chart-4": "chart ramp adjacent steps",
     "light chart-4 on chart-5": "chart ramp adjacent steps",
-    "light destructive on destructive/20":
-      "hover tint; clears only at --destructive L <= 0.465",
     "light ring/50 on background":
       "halo is decoration; the 1px border-ring carries the indicator",
     "dark border on background": "oklch(1 0 0 / 10%) borders; 34% would pass",
@@ -913,11 +911,13 @@ describe("contrast (WCAG 2.x, gamma-space compositing)", () => {
     ).toEqual([])
   })
 
-  it("light text-destructive clears AA at rest, on the /10 tint and through /80 and /90 alpha with margin", () => {
-    expect(light.destructive).toBe("oklch(0.52 0.245 27.325)")
+  it("light text-destructive clears AA at rest, on the /10 and /20 hover tints and through /80 and /90 alpha with margin", () => {
+    expect(light.destructive).toBe("oklch(0.45 0.245 27.325)")
     for (const [fg, surfaces] of [
       ["destructive", ["background"]],
       ["destructive", ["destructive/10"]],
+      ["destructive", ["destructive/20"]],
+      ["destructive", ["card", "destructive/20"]],
       ["destructive", ["card", "destructive/10"]],
       ["destructive/80", ["card"]],
       ["destructive/90", ["card"]],

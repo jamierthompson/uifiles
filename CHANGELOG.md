@@ -6,6 +6,13 @@ design, so releases are Git tags that consumers can pin on the GitHub install pa
 
 ## [Unreleased]
 
+### Changed
+
+- The GitHub owner is now `jamiethompsondesign`: install from `jamiethompsondesign/uifiles` (the old path redirects). Every item uifiles ships carries an `author` field.
+- Light `--destructive` darkens from `oklch(0.52 0.245 27.325)` to `oklch(0.45 0.245 27.325)`
+  so destructive text meets WCAG AA (4.69:1) on its hover tint in the destructive button,
+  the destructive badge as a link and the interactive destructive bubble; it was 3.85:1.
+
 ## [0.1.0] - 2026-09-26
 
 ### Added
@@ -187,5 +194,5 @@ design, so releases are Git tags that consumers can pin on the GitHub install pa
   item's dependencies; the upstream lock listed unported items; `upstream-diff.yml` masked
   the script's exit code behind a pipe; e2e waited on `networkidle`.
 
-[Unreleased]: https://github.com/jamierthompson/uifiles/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/jamierthompson/uifiles/releases/tag/v0.1.0
+[Unreleased]: https://github.com/jamiethompsondesign/uifiles/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/jamiethompsondesign/uifiles/releases/tag/v0.1.0

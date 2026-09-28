@@ -1,8 +1,12 @@
+<!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
 
 # uifiles
 
@@ -53,7 +57,7 @@ Use `pnpm` for everything (`pnpm add`, `pnpm dlx shadcn@latest ...`). Never `npm
 | `tests/unit/`, `tests/browser/`, `e2e/`               | Vitest unit tests; Vitest browser-mode tests (one per item plus `blocks/chat`, `theme`, `tokens`, `button`, `a11y-helper`); Playwright specs with `e2e/helpers.ts` and the runner-free `e2e/origin.ts`.                                                                                                       |
 | `.github/workflows/`                                  | `ci.yml` (the gate plus e2e, above) and `upstream-diff.yml` (weekly drift check that files or comments on an `upstream` issue).                                                                                                                                                                               |
 | `public/r/`                                           | Build output. Never edit; never commit.                                                                                                                                                                                                                                                                       |
-| `skills/uifiles/`                                     | The skill consumers install with `pnpm dlx skills add jamierthompson/uifiles`.                                                                                                                                                                                                                                |
+| `skills/uifiles/`                                     | The skill consumers install with `pnpm dlx skills add jamiethompsondesign/uifiles`.                                                                                                                                                                                                                           |
 | `LICENSE`, `licenses/`, `NOTICE`                      | MIT for the repository. `licenses/APACHE-2.0-ai-elements.txt` is the Apache-2.0 copy the AI Elements ports require, kept out of the root because GitHub's licence detector scans every root `LICENSE*` file and reports "Other" when two match. `NOTICE` lists every third-party file set and vendored skill. |
 | `docs/architecture.md`, `docs/porting-ai-elements.md` | Decisions, the AI Elements resolution table, intentional divergences and token departures; the per-file port checklist.                                                                                                                                                                                       |
 
@@ -149,6 +153,11 @@ Use `pnpm` for everything (`pnpm add`, `pnpm dlx shadcn@latest ...`). Never `npm
   plus best-practice, `target-size` enabled, animations settled), `runAxe()`, `settle()`, and
   `withDark()` for the dark theme. Do not copy a `settle` or `axe.run` into a test file. Run
   axe in every meaningful state (closed, open, streaming, error) and once under `withDark()`.
+  `settle()` repeats until a round (two frames, then waiting out every finite running
+  animation) finds nothing running, so late hovers and retargeted transitions are waited for.
+  `withDark()` flips the class with transitions off, as next-themes'
+  `disableTransitionOnChange` does, and restyles skipped `content-visibility: auto` subtrees
+  (message scroller items) so none of them fades from light to dark under axe.
 - **Fixtures sit in `<main>`**; never disable the `region` or `color-contrast` rules. Scope with
   `exclude` or fix the colour.
 - **Console must be clean.** `tests/setup.ts` runs before every browser test; a `console.error`
@@ -190,9 +199,12 @@ Use `pnpm` for everything (`pnpm add`, `pnpm dlx shadcn@latest ...`). Never `npm
 - **Portaled popups** (Base UI menu, select, dialog, hover card) render outside the fixture:
   scan the popup on its own and exclude `[data-base-ui-portal]` from the page scan; an open
   modal Select also renders focus guards that axe's `aria-hidden-focus` flags, so exclude
-  `[data-base-ui-focus-guard]` too. Playwright leaves the pointer where the previous test put
-  it, which opens delay-0 tooltips and hover cards on the next render: `userEvent.unhover` the
-  trigger or park the pointer on inert text first.
+  `[data-base-ui-focus-guard]` too. `tests/setup.ts` parks the pointer just outside the
+  viewport before every test (the `parkPointer` browser command in `vitest.config.ts`; the tester
+  iframe fills the viewport, so no point inside it is safe), so no fixture inherits a hover
+  from an earlier test or file. Within a test Playwright leaves the pointer where the last
+  action put it, which opens delay-0 tooltips and hover cards on the next render:
+  `userEvent.unhover` the trigger or hover inert text before the next scan.
 - **Timers** use `vi.useFakeTimers()` as upstream does. Fake only what you need (`toFake`)
   and, with timers faked, drive clicks with `element.click()` inside `act` because
   `userEvent` awaits real timers (`tests/browser/ai/reasoning.test.tsx`).

@@ -5,14 +5,18 @@
   "private": true,
   "type": "module",
   "license": "MIT",
-  "author": "Jamie Thompson",
+  "author": {
+    "name": "Jamie Thompson",
+    "email": "jamie@jamiethompson.design",
+    "url": "https://jamiethompson.design"
+  },
   "homepage": "https://uifiles.dev",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jamierthompson/uifiles.git"
+    "url": "git+https://github.com/jamiethompsondesign/uifiles.git"
   },
   "bugs": {
-    "url": "https://github.com/jamierthompson/uifiles/issues"
+    "url": "https://github.com/jamiethompsondesign/uifiles/issues"
   },
   "scripts": {
     "dev": "next dev",

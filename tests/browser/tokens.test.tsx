@@ -3,6 +3,7 @@
 // token change that breaks contrast in a consumer's install fails here first.
 import { FileIcon } from "lucide-react"
 import { describe, expect, it } from "vitest"
+import { userEvent } from "vitest/browser"
 import { render } from "vitest-browser-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
@@ -155,6 +156,53 @@ describe.each(fixtures)("%s", (_name, Fixture) => {
   })
 })
 
+// The light hover tint (`bg-destructive/20` behind `text-destructive`) is the
+// tightest destructive pair; axe only sees it while the pointer is over the
+// control, so each one is hovered explicitly.
+function DestructiveHoverTargets() {
+  return (
+    <main className="flex flex-wrap items-start gap-2 p-6">
+      <Button variant="destructive">Delete</Button>
+      <Badge variant="destructive" render={<a href="#failed" />}>
+        Failed
+      </Badge>
+      <Bubble variant="destructive">
+        <BubbleContent render={<button type="button" />}>
+          Message failed to send
+        </BubbleContent>
+      </Bubble>
+    </main>
+  )
+}
+
+const hoverTargets = [
+  ["destructive button", "button", "Delete"],
+  ["destructive badge link", "link", "Failed"],
+  ["interactive destructive bubble", "button", "Message failed to send"],
+] as const
+
+describe.each(hoverTargets)("hovered %s", (_name, role, name) => {
+  async function hover() {
+    const screen = await render(<DestructiveHoverTargets />)
+    const target = screen.getByRole(role, { name })
+    await userEvent.hover(target)
+    // Guards against a vacuous pass: axe must sample the hovered state.
+    await expect.poll(() => target.element().matches(":hover")).toBe(true)
+  }
+
+  it("passes axe in the light theme", async () => {
+    await hover()
+    await expectNoViolations()
+  })
+
+  it("passes axe in the dark theme", async () => {
+    await withDark(async () => {
+      await hover()
+      await expectNoViolations()
+    })
+  })
+})
+
 describe("token wiring", () => {
   it("applies the dark tokens through the class variant", async () => {
     await withDark(async () => {
@@ -169,7 +217,7 @@ describe("token wiring", () => {
     const screen = await render(<Buttons />)
     const button = screen.getByRole("button", { name: "destructive" })
     await expect.element(button).toHaveStyle({
-      color: "oklch(0.52 0.245 27.325)",
+      color: "oklch(0.45 0.245 27.325)",
     })
     await withDark(async () => {
       await expect.element(button).toHaveStyle({
@@ -264,14 +312,20 @@ describe("destructive token as axe measures it", () => {
   it("lands the light token where docs/architecture.md §4 says", async () => {
     await render(<Swatches />)
     const ratio = await measured()
-    expect(ratio["on-background"]).toBeCloseTo(5.62, 1)
-    expect(ratio["tint-10"]).toBeCloseTo(4.68, 1)
-    expect(ratio["alpha-80"]).toBeCloseTo(4.64, 1)
-    expect(ratio["alpha-90"]).toBeCloseTo(5.21, 1)
-    expect(ratio["on-muted"]).toBeCloseTo(5.15, 1)
-    // The hover tint is the documented shortfall.
-    expect(ratio["tint-20"]).toBeCloseTo(3.86, 1)
-    for (const id of ["on-background", "tint-10", "alpha-80", "alpha-90"]) {
+    expect(ratio["on-background"]).toBeCloseTo(6.91, 1)
+    expect(ratio["tint-10"]).toBeCloseTo(5.74, 1)
+    expect(ratio["tint-20"]).toBeCloseTo(4.69, 1)
+    expect(ratio["alpha-80"]).toBeCloseTo(5.35, 1)
+    expect(ratio["alpha-90"]).toBeCloseTo(6.21, 1)
+    expect(ratio["on-muted"]).toBeCloseTo(6.34, 1)
+    for (const id of [
+      "on-background",
+      "tint-10",
+      "tint-20",
+      "alpha-80",
+      "alpha-90",
+      "on-muted",
+    ]) {
       expect(ratio[id], id).toBeGreaterThanOrEqual(4.5)
     }
   })

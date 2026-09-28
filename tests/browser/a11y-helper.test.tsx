@@ -84,6 +84,48 @@ describe("settle()", () => {
       running.every((animation) => animation.playState === "finished")
     ).toBe(true)
   })
+
+  it("waits for a transition that starts after it is called, as a late hover does", async () => {
+    const screen = await render(
+      <main>
+        <p style={{ color: "rgb(0, 0, 0)", transition: "color 300ms" }}>
+          Hovered late
+        </p>
+      </main>
+    )
+    const text = screen.getByText("Hovered late").element() as HTMLElement
+    const settled = settle()
+    requestAnimationFrame(() => {
+      text.style.color = "rgb(255, 0, 0)"
+    })
+    await settled
+    expect(text.getAnimations()).toEqual([])
+    expect(getComputedStyle(text).color).toBe("rgb(255, 0, 0)")
+  })
+
+  it("waits for the transition that replaces one cancelled mid-flight", async () => {
+    const screen = await render(
+      <main>
+        <p style={{ color: "rgb(0, 0, 0)", transition: "color 300ms" }}>
+          Retargeted
+        </p>
+      </main>
+    )
+    const text = screen.getByText("Retargeted").element() as HTMLElement
+    expect(getComputedStyle(text).color).toBe("rgb(0, 0, 0)")
+    text.style.color = "rgb(255, 0, 0)"
+    const [first] = text.getAnimations()
+    expect(first?.playState).toBe("running")
+    const settled = settle()
+    // A new target mid-flight cancels the running transition, whose
+    // `finished` rejects, and starts another from the current colour.
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    text.style.color = "rgb(0, 0, 255)"
+    expect(first?.playState).toBe("idle")
+    await settled
+    expect(text.getAnimations()).toEqual([])
+    expect(getComputedStyle(text).color).toBe("rgb(0, 0, 255)")
+  })
 })
 
 describe("runAxe() and expectNoViolations()", () => {
@@ -125,6 +167,49 @@ describe("withDark()", () => {
     expect(document.documentElement.classList.contains("dark")).toBe(false)
   })
 
+  it("switches the theme without starting transitions, as next-themes does with disableTransitionOnChange", async () => {
+    const screen = await render(
+      <main>
+        <p className="text-muted-foreground transition-colors">Muted</p>
+      </main>
+    )
+    const text = screen.getByText("Muted").element()
+    const light = getComputedStyle(text).color
+    await withDark(async () => {
+      expect(text.getAnimations()).toEqual([])
+      expect(getComputedStyle(text).color).not.toBe(light)
+    })
+    expect(text.getAnimations()).toEqual([])
+    expect(getComputedStyle(text).color).toBe(light)
+  })
+
+  it("restyles an element inside a skipped content-visibility subtree at once", async () => {
+    const screen = await render(
+      <main>
+        <div data-testid="spacer" />
+        <div className="[contain-intrinsic-size:auto_10rem] [content-visibility:auto]">
+          <p className="text-muted-foreground transition-colors">Skipped</p>
+        </div>
+      </main>
+    )
+    const text = screen.getByText("Skipped").element()
+    const light = getComputedStyle(text).color
+    // Push the item out of view so the browser skips its subtree, as the
+    // message scroller does with its items.
+    const spacer = screen.getByTestId("spacer").element() as HTMLElement
+    spacer.style.height = "20000px"
+    await expect
+      .poll(() => text.checkVisibility({ contentVisibilityAuto: true }))
+      .toBe(false)
+    await withDark(async () => {
+      await settle()
+      // axe reads the colour like this; before the fix the read started a
+      // transition that stayed frozen at the light colour.
+      expect(getComputedStyle(text).color).not.toBe(light)
+      expect(text.getAnimations()).toEqual([])
+    })
+  })
+
   it("removes the dark class when fn throws", async () => {
     await expect(
       withDark(async () => {
@@ -160,6 +245,31 @@ describe("cleanup between tests (vitest-browser-react runs cleanup in beforeEach
     await userEvent.unhover(trigger)
     await expect.element(page.getByText("80K / 200K")).not.toBeInTheDocument()
     await expectNoViolations()
+  })
+})
+
+describe("pointer parking (tests/setup.ts)", () => {
+  const Cover = ({ label }: { label: string }) => (
+    <main>
+      <button type="button" className="fixed inset-0">
+        {label}
+      </button>
+    </main>
+  )
+
+  it("a test can leave the pointer over the page", async () => {
+    const screen = await render(<Cover label="Hovered" />)
+    const button = screen.getByRole("button", { name: "Hovered" })
+    await userEvent.hover(button)
+    expect(button.element().matches(":hover")).toBe(true)
+  })
+
+  it("the next test starts with the pointer off the page", async () => {
+    const screen = await render(<Cover label="Fresh" />)
+    await settle()
+    expect(
+      screen.getByRole("button", { name: "Fresh" }).element().matches(":hover")
+    ).toBe(false)
   })
 })
 

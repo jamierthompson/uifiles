@@ -4,23 +4,36 @@ import { AXE_TAGS } from "./axe-tags"
 
 export { AXE_TAGS }
 
+const nextFrame = () =>
+  new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+
+const isFiniteRunning = (animation: Animation) =>
+  animation.playState === "running" &&
+  animation.timeline === document.timeline &&
+  animation.effect?.getTiming().iterations !== Infinity
+
 /**
  * Waits for finite, time-based animations to finish so axe samples colours
  * at rest. Scroll-driven animations never finish and infinite ones (spinners,
- * shimmer) never settle, so both are skipped; a cancelled animation rejects
- * and is ignored.
+ * shimmer) never settle, so both are skipped.
+ *
+ * One snapshot of `getAnimations()` is not enough. A hover under a pointer the
+ * previous test left parked lands a frame or more after render and starts a
+ * transition the snapshot missed, and a transition retargeted mid-flight is
+ * cancelled (its `finished` rejects) while its replacement runs from the old
+ * colour. So each round waits two frames for pending style and hover updates,
+ * then waits out whatever is running, until a round finds nothing.
  */
 export async function settle(): Promise<void> {
-  await Promise.all(
-    document
-      .getAnimations()
-      .filter(
-        (animation) =>
-          animation.timeline === document.timeline &&
-          animation.effect?.getTiming().iterations !== Infinity
-      )
-      .map((animation) => animation.finished.catch(() => undefined))
-  )
+  for (;;) {
+    await nextFrame()
+    await nextFrame()
+    const running = document.getAnimations().filter(isFiniteRunning)
+    if (running.length === 0) return
+    await Promise.all(
+      running.map((animation) => animation.finished.catch(() => undefined))
+    )
+  }
 }
 
 export type RunAxeOptions = Omit<axe.RunOptions, "runOnly">
@@ -67,14 +80,35 @@ export async function expectNoViolations(
 }
 
 /**
+ * Sets or clears the `dark` class on `<html>` the way next-themes does with
+ * `disableTransitionOnChange` (which `components/theme-provider.tsx` sets):
+ * transitions are off while the class flips, so a theme switch never animates.
+ * next-themes forces style on `<body>` only; here every element is forced,
+ * because an element inside a skipped `content-visibility: auto` subtree
+ * (every message scroller item) is not restyled by a document-wide flush and
+ * would otherwise start its light-to-dark transition only when axe reads its
+ * colour, frozen at the light value while the subtree stays skipped.
+ */
+function setDark(dark: boolean): void {
+  const noTransitions = document.createElement("style")
+  noTransitions.textContent = "*,*::before,*::after{transition:none!important}"
+  document.head.append(noTransitions)
+  document.documentElement.classList.toggle("dark", dark)
+  for (const element of document.querySelectorAll("*")) {
+    getComputedStyle(element).color
+  }
+  noTransitions.remove()
+}
+
+/**
  * Runs `fn` with the `dark` class on `<html>`, matching what next-themes sets,
  * and removes it afterwards even when `fn` throws.
  */
 export async function withDark<T>(fn: () => Promise<T>): Promise<T> {
-  document.documentElement.classList.add("dark")
+  setDark(true)
   try {
     return await fn()
   } finally {
-    document.documentElement.classList.remove("dark")
+    setDark(false)
   }
 }
