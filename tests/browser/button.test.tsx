@@ -8,7 +8,7 @@ import "@/app/globals.css"
 
 type Rgb = [number, number, number]
 
-/** Paints a CSS colour through a canvas so the browser converts it to sRGB. */
+/** Paints a CSS color through a canvas so the browser converts it to sRGB. */
 function srgb(color: string): Rgb {
   const canvas = document.createElement("canvas")
   canvas.width = 1
@@ -21,7 +21,7 @@ function srgb(color: string): Rgb {
   return [r, g, b]
 }
 
-/** WCAG 2.x contrast ratio of two opaque sRGB colours. */
+/** WCAG 2.x contrast ratio of two opaque sRGB colors. */
 function contrast(a: Rgb, b: Rgb) {
   const luminance = (rgb: Rgb) => {
     const [r, g, b] = rgb.map((channel) => {
@@ -152,7 +152,7 @@ describe("keyboard focus", () => {
       await userEvent.tab()
       expect(document.activeElement).toBe(button)
       // The ring and border-color animate in (transition-all), so wait for
-      // the transitions to land before reading the settled colours.
+      // the transitions to land before reading the settled colors.
       await expect
         .poll(() => getComputedStyle(button).boxShadow)
         .toMatch(/0px 0px 0px 3px/)

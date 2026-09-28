@@ -259,8 +259,8 @@ const getHighlighter = (language: HighlightLanguage): Promise<Highlighter> => {
   return loaded
 }
 
-// Shiki packs the dual-theme colours as "#fff;--shiki-dark-bg:#0a0c10";
-// React needs the colour and the custom properties as separate style keys.
+// Shiki packs the dual-theme colors as "#fff;--shiki-dark-bg:#0a0c10";
+// React needs the color and the custom properties as separate style keys.
 const splitThemeStyle = (
   value: string | undefined,
   fallback: string
@@ -558,16 +558,16 @@ export const CodeBlockContent = ({
   }
 
   useEffect(() => {
-    let cancelled = false
+    let canceled = false
 
     highlightCode(text, language, (result) => {
-      if (!cancelled) {
+      if (!canceled) {
         setAsyncTokens(result)
       }
     })
 
     return () => {
-      cancelled = true
+      canceled = true
     }
   }, [text, language])
 

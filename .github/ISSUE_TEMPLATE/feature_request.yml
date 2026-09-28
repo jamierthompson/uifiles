@@ -13,7 +13,7 @@ body:
     id: source
     attributes:
       label: Does shadcn/ui or AI Elements already ship it?
-      description: uifiles favours shadcn when both exist and ports AI Elements items that have no shadcn equivalent.
+      description: uifiles favors shadcn when both exist and ports AI Elements items that have no shadcn equivalent.
       options:
         - shadcn/ui
         - AI Elements
@@ -25,6 +25,6 @@ body:
     id: why
     attributes:
       label: What should it do that the upstream item does not?
-      description: Prop, behaviour, accessibility or styling need, with an example of the UI you are building.
+      description: Prop, behavior, accessibility or styling need, with an example of the UI you are building.
     validations:
       required: true

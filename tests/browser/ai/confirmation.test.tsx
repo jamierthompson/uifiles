@@ -233,7 +233,7 @@ describe("ConfirmationRequest, ConfirmationAccepted, ConfirmationRejected", () =
     await expectNoViolations()
   })
 
-  it("colours only the rejected outcome with the destructive token", async () => {
+  it("colors only the rejected outcome with the destructive token", async () => {
     const outcome = (approved: boolean) => (
       <main>
         <Confirmation
@@ -249,27 +249,27 @@ describe("ConfirmationRequest, ConfirmationAccepted, ConfirmationRejected", () =
       getComputedStyle(document.documentElement)
         .getPropertyValue("--destructive")
         .trim()
-    const colourOf = (text: string) =>
+    const colorOf = (text: string) =>
       getComputedStyle(screen.getByText(text).element()).color
 
     const rejected = screen.getByText("You rejected deleting the branch.")
     await expect.element(rejected).toBeVisible()
     await expect.element(rejected).toHaveClass("text-destructive")
-    expect(colourOf("You rejected deleting the branch.")).toBe(token())
+    expect(colorOf("You rejected deleting the branch.")).toBe(token())
     await expectNoViolations()
     await withDark(async () => {
-      expect(colourOf("You rejected deleting the branch.")).toBe(token())
+      expect(colorOf("You rejected deleting the branch.")).toBe(token())
       await expectNoViolations()
     })
 
     await screen.rerender(outcome(true))
     const accepted = screen.getByText("You approved deleting the branch.")
     await expect.element(accepted).toBeVisible()
-    expect(colourOf("You approved deleting the branch.")).not.toBe(token())
+    expect(colorOf("You approved deleting the branch.")).not.toBe(token())
     expect(document.querySelector(".text-destructive")).toBeNull()
   })
 
-  it("merges className into the rejected outcome and lets it override the colour", async () => {
+  it("merges className into the rejected outcome and lets it override the color", async () => {
     const outcome = (className: string) => (
       <main>
         <Confirmation
@@ -289,7 +289,7 @@ describe("ConfirmationRequest, ConfirmationAccepted, ConfirmationRejected", () =
     await expect.element(rejected).toHaveClass("custom-rejected")
     await expect.element(rejected).toHaveClass("text-destructive")
 
-    // cn is tailwind-merge: the consumer's colour comes last and replaces
+    // cn is tailwind-merge: the consumer's color comes last and replaces
     // the destructive one instead of fighting it in the cascade.
     await screen.rerender(outcome("text-muted-foreground"))
     await expect.element(rejected).toHaveClass("text-muted-foreground")

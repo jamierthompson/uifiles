@@ -13,15 +13,15 @@ const isFiniteRunning = (animation: Animation) =>
   animation.effect?.getTiming().iterations !== Infinity
 
 /**
- * Waits for finite, time-based animations to finish so axe samples colours
+ * Waits for finite, time-based animations to finish so axe samples colors
  * at rest. Scroll-driven animations never finish and infinite ones (spinners,
  * shimmer) never settle, so both are skipped.
  *
  * One snapshot of `getAnimations()` is not enough. A hover under a pointer the
  * previous test left parked lands a frame or more after render and starts a
  * transition the snapshot missed, and a transition retargeted mid-flight is
- * cancelled (its `finished` rejects) while its replacement runs from the old
- * colour. So each round waits two frames for pending style and hover updates,
+ * canceled (its `finished` rejects) while its replacement runs from the old
+ * color. So each round waits two frames for pending style and hover updates,
  * then waits out whatever is running, until a round finds nothing.
  */
 export async function settle(): Promise<void> {
@@ -87,7 +87,7 @@ export async function expectNoViolations(
  * because an element inside a skipped `content-visibility: auto` subtree
  * (every message scroller item) is not restyled by a document-wide flush and
  * would otherwise start its light-to-dark transition only when axe reads its
- * colour, frozen at the light value while the subtree stays skipped.
+ * color, frozen at the light value while the subtree stays skipped.
  */
 function setDark(dark: boolean): void {
   const noTransitions = document.createElement("style")

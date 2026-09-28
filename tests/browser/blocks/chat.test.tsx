@@ -240,7 +240,7 @@ const transcriptAttachments = () =>
 
 /**
  * A transport that streams `chunks` with `gapMs` between them and stops
- * feeding once the request is aborted, so Stop is honoured.
+ * feeding once the request is aborted, so Stop is honored.
  */
 function timedTransport(
   chunks: UIMessageChunk[],
@@ -261,7 +261,7 @@ function timedTransport(
               }
               controller.close()
             } catch {
-              // The reader was cancelled.
+              // The reader was canceled.
             }
           })()
         },
@@ -296,7 +296,7 @@ function heldTransport(
                 for (const chunk of tail) controller.enqueue(chunk)
                 controller.close()
               } catch {
-                // The reader was cancelled.
+                // The reader was canceled.
               }
             },
             { once: true }

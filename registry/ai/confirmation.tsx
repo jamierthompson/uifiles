@@ -144,8 +144,8 @@ export const ConfirmationRejected = ({
   }
 
   // uifiles: upstream returns the children bare, so both outcomes read in
-  // the same foreground colour; the destructive token tells them apart at a
-  // glance (the wording still says which, so colour is not the only cue).
+  // the same foreground color; the destructive token tells them apart at a
+  // glance (the wording still says which, so color is not the only cue).
   return <span className={cn("text-destructive", className)}>{children}</span>
 }
 

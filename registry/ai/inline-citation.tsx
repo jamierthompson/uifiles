@@ -419,7 +419,7 @@ const emptySnap: CarouselSnap = {
   canScrollNext: false,
 }
 
-// Adding or removing slides makes embla re-initialise (`reInit`,
+// Adding or removing slides makes embla re-initialize (`reInit`,
 // `slidesChanged`) without emitting `select`, so all three events resync.
 const snapEvents = ["select", "reInit", "slidesChanged"] as const
 

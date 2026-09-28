@@ -27,7 +27,7 @@ $$
 c_{\\text{eff}} = h \\cdot c_{\\text{hit}} + (1 - h) \\cdot c_{\\text{miss}}
 $$
 
-A regularised logistic loss is wider than a phone, so it scrolls on its own instead of widening the page:
+A regularized logistic loss is wider than a phone, so it scrolls on its own instead of widening the page:
 
 $$
 \\mathcal{L}(\\theta) = -\\frac{1}{n} \\sum_{i=1}^{n} \\left[ y_i \\log \\sigma(\\theta^\\top x_i) + (1 - y_i) \\log\\left(1 - \\sigma(\\theta^\\top x_i)\\right) \\right] + \\lambda \\lVert \\theta \\rVert_2^2

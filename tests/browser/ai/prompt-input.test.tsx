@@ -2326,7 +2326,7 @@ describe("PromptInputTextarea", () => {
   })
 
   it("keeps the default aria-label over a consumer's visible label until it is unset", async () => {
-    function Labelled({ unsetDefault }: { unsetDefault: boolean }) {
+    function Labeled({ unsetDefault }: { unsetDefault: boolean }) {
       return (
         <main>
           <PromptInput onSubmit={() => {}}>
@@ -2341,14 +2341,14 @@ describe("PromptInputTextarea", () => {
         </main>
       )
     }
-    const screen = await render(<Labelled unsetDefault={false} />)
+    const screen = await render(<Labeled unsetDefault={false} />)
     expect(
       page.getByRole("textbox", { name: "Message" }).query()
     ).not.toBeNull()
     expect(
       page.getByRole("textbox", { name: "Your question" }).query()
     ).toBeNull()
-    await screen.rerender(<Labelled unsetDefault />)
+    await screen.rerender(<Labeled unsetDefault />)
     expect(
       page.getByRole("textbox", { name: "Your question" }).query()
     ).not.toBeNull()
@@ -2682,7 +2682,7 @@ describe("PromptInputActionAddScreenshot", () => {
       .mockRejectedValueOnce(
         new DOMException("Permission denied", "NotAllowedError")
       )
-      .mockRejectedValueOnce(new DOMException("cancelled", "AbortError"))
+      .mockRejectedValueOnce(new DOMException("canceled", "AbortError"))
     await render(<Composer />)
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       await openMenu()
@@ -2841,7 +2841,7 @@ describe("PromptInputSelect", () => {
           </PromptInputSelectContent>
         </PromptInputSelect>
         <PromptInputSelect defaultValue={gpt.value} items={models}>
-          <PromptInputSelectTrigger aria-label="Labelled">
+          <PromptInputSelectTrigger aria-label="Labeled">
             <PromptInputSelectValue />
           </PromptInputSelectTrigger>
           <PromptInputSelectContent>
@@ -2856,7 +2856,7 @@ describe("PromptInputSelect", () => {
     )
     await expect.poll(() => comboText("Raw")).toContain("gpt-4")
     await expect.poll(() => comboText("Empty")).toContain("Pick a model")
-    await expect.poll(() => comboText("Labelled")).toContain("GPT-5")
+    await expect.poll(() => comboText("Labeled")).toContain("GPT-5")
   })
 
   it("picking an item reports (value, details), renders the label, and survives submit", async () => {
@@ -2932,7 +2932,7 @@ describe("PromptInputHoverCard", () => {
   }
 
   // The pointer stays where the previous test left it, so park it off the
-  // trigger before measuring hover behaviour.
+  // trigger before measuring hover behavior.
   const parkPointer = () => userEvent.hover(page.getByText("Elsewhere"))
 
   it("renders the hover card aligned to the start, opens on hover, closes on unhover and passes axe", async () => {

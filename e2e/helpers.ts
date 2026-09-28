@@ -56,7 +56,7 @@ export async function settle(page: Page): Promise<void> {
     )
   })
   // Two frames so the last state change is laid out and painted before axe
-  // samples colours and geometry.
+  // samples colors and geometry.
   await page.evaluate(
     () =>
       new Promise<void>((resolve) => {
@@ -70,7 +70,7 @@ export async function settle(page: Page): Promise<void> {
  * before React runs, and the App Router records no hydration measure, so this
  * waits for React's fiber key on the `<main>` landmark (React attaches
  * `__reactFiber$…` to a host node when it hydrates it), then for fonts and
- * animations, which move the layout and colours axe samples. External
+ * animations, which move the layout and colors axe samples. External
  * requests are blocked before the first navigation.
  */
 export async function gotoHydrated(page: Page, path: string): Promise<void> {

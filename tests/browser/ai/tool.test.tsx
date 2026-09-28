@@ -227,7 +227,7 @@ describe("toolHeader", () => {
 
   it.each(states)(
     "shows the %s state as '%s' with a %s icon",
-    async (state, label, icon, colour) => {
+    async (state, label, icon, color) => {
       const screen = await render(
         <Tool>
           <ToolHeader state={state} title="test" type="tool-test" />
@@ -239,7 +239,7 @@ describe("toolHeader", () => {
       const badge = document.querySelector("[data-slot='badge']")
       const svg = badge?.querySelector("svg")
       expect(svg?.classList.contains(icon)).toBe(true)
-      if (colour) expect(svg?.classList.contains(colour)).toBe(true)
+      if (color) expect(svg?.classList.contains(color)).toBe(true)
     }
   )
 
@@ -375,7 +375,7 @@ describe("toolInput", () => {
       .toEqual(["{}", "null"])
   })
 
-  it("never throws for input JSON cannot serialise", async () => {
+  it("never throws for input JSON cannot serialize", async () => {
     const onError = vi.fn()
     const circular: { self?: unknown } = {}
     circular.self = circular
@@ -529,7 +529,7 @@ describe("toolOutput", () => {
     }
   )
 
-  it("renders output JSON cannot serialise without throwing", async () => {
+  it("renders output JSON cannot serialize without throwing", async () => {
     const onError = vi.fn()
     const screen = await render(
       <Boundary onError={onError}>

@@ -224,7 +224,7 @@ describe("branch rendered by a Server Component", () => {
 })
 
 /**
- * The App Router pipeline end to end: a Server Component tree is serialised
+ * The App Router pipeline end to end: a Server Component tree is serialized
  * by React's Flight server (in its own process, under the react-server
  * condition, with the client components as client references), decoded by
  * the Flight client Next uses for SSR, and prerendered by Fizz.

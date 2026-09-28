@@ -1,4 +1,4 @@
-// Renders every wrapper variant that reads a colour token under the light and
+// Renders every wrapper variant that reads a color token under the light and
 // the dark theme (`.dark` on <html>, as next-themes sets it) and runs axe, so a
 // token change that breaks contrast in a consumer's install fails here first.
 import { FileIcon } from "lucide-react"

@@ -28,7 +28,7 @@ export default function ImagePreview() {
       <p className="text-sm text-muted-foreground">
         Renders a generated image (base64 + media type) as a data URL.
       </p>
-      <Image {...generated} alt="A stylised sunset over mountains" />
+      <Image {...generated} alt="A stylized sunset over mountains" />
       <Image
         {...generated}
         alt="The same image constrained to 240px wide"

@@ -9,6 +9,11 @@ design, so releases are Git tags that consumers can pin on the GitHub install pa
 ### Changed
 
 - The GitHub owner is now `jamiethompsondesign`: install from `jamiethompsondesign/uifiles` (the old path redirects). Every item uifiles ships carries an `author` field.
+- Every `registry/ai` item's `docs` now opens by naming its origin, Vercel AI Elements
+  (Apache-2.0), so the CLI shows the attribution on install, next to the `author` of the port.
+- American spellings throughout (color, behavior, license, labeled): every item's
+  `description` and `docs`, the preview pages and their alt text, and the issue-template
+  labels. `pnpm check:spelling` keeps it so.
 - Light `--destructive` darkens from `oklch(0.52 0.245 27.325)` to `oklch(0.45 0.245 27.325)`
   so destructive text meets WCAG AA (4.69:1) on its hover tint in the destructive button,
   the destructive badge as a link and the interactive destructive bubble; it was 3.85:1.
@@ -114,7 +119,7 @@ design, so releases are Git tags that consumers can pin on the GitHub install pa
 - `sources` falls back to the hostname for an empty `title` and to the icon and title for
   empty `children`. `CheckpointTrigger` exposes its tooltip as an accessible description
   unless it repeats the button's name (its `aria-label`, or else the text its children
-  render); `ConfirmationRejected` renders in the destructive colour; `Suggestion` scrolls
+  render); `ConfirmationRejected` renders in the destructive color; `Suggestion` scrolls
   itself fully into view on focus.
 - `PromptInputTextarea` has `aria-label="Message"` by default; `PromptInputButton` tooltips
   open immediately and are exposed as accessible descriptions unless they repeat the button's

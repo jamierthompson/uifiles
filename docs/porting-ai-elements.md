@@ -33,7 +33,7 @@ Path: `registry/ai/<name>.tsx`. First lines:
 ```
 
 Keep the `"use client"` directive if upstream has it (add it when the port gains hooks that
-upstream did not have). The licence copy the header refers to lives at
+upstream did not have). The license copy the header refers to lives at
 `licenses/APACHE-2.0-ai-elements.txt`, deliberately outside the repository root, and `NOTICE`
 records the modifications; never add another `LICENSE*` file at the root.
 
@@ -160,10 +160,10 @@ the item's title; a `"use client"` page cannot.
 `vitest-browser-react`, locators, `userEvent` from `vitest/browser`, `expect.element` and
 `expect.poll`; `@/registry/default/ui/*` imports become `@/components/ui/*`; Radix
 expectations (`asChild`, `data-state`, `onSelect`) become their Base UI equivalents. Keep
-upstream's test names where the behaviour maps, and skip only tests of upstream APIs the
+upstream's test names where the behavior maps, and skip only tests of upstream APIs the
 port does not have (say which, in the PR). Then cover what upstream did not: every prop,
 every state in a union, controlled and uncontrolled modes, keyboard interaction, and error
-paths. Name each test by the behaviour it asserts, never by the bug or the review that
+paths. Name each test by the behavior it asserts, never by the bug or the review that
 prompted it.
 
 Accessibility assertions go through the shared helpers in `tests/a11y.ts`; do not copy a
@@ -199,13 +199,13 @@ it("announces the duration once thinking has finished", async () => {
 
 - `expectNoViolations()` runs WCAG 2.0/2.1/2.2 AA plus best-practice rules with
   `target-size` enabled, after `settle()` has waited for finite animations (so axe samples
-  colours at rest; infinite spinners and shimmer are skipped). `runAxe()` returns the raw
+  colors at rest; infinite spinners and shimmer are skipped). `runAxe()` returns the raw
   results when a test needs them. Run it in every meaningful state (closed, open,
   streaming, error) and once under `withDark()`.
 - Wrap every fixture in `<main>`. axe's `region` rule requires page content to sit in a
   landmark; a fixture that passes without one does so only because it contains nothing the
   rule counts, and the first `<p>` added to it fails. Never disable `region` or
-  `color-contrast`; scope with `exclude` or fix the colour.
+  `color-contrast`; scope with `exclude` or fix the color.
 - The console must stay clean. `tests/setup.ts` wraps `console.error` and `console.warn`
   around every browser test and fails the test at its end with the messages (React act, key
   and hydration warnings included). A test that asserts a warning calls `allowConsole("error")`
@@ -222,7 +222,7 @@ it("announces the duration once thinking has finished", async () => {
   (`locators.exact` is true; pass `{ exact: false }` or a RegExp for a substring), the
   viewport is 414×896, and the test timeout is 15 s. `screen.unmount()` returns a promise;
   await it, or a loop of renders produces "overlapping act() calls".
-  `expect.element(x).toHaveTextContent(y)` compares the whole (whitespace-normalised) text and
+  `expect.element(x).toHaveTextContent(y)` compares the whole (whitespace-normalized) text and
   stringifies a RegExp; use `toMatchTextContent` or `expect.poll(() => el.textContent)` for a
   substring. Browser `console.log` is not forwarded to the terminal.
 - Interaction uses `userEvent` from `vitest/browser`; timers use `vi.useFakeTimers()` as
@@ -247,7 +247,7 @@ pnpm registry:validate
 Run the browser file three times in a row to catch flakes. Then update
 `registry/ai/upstream.lock.json` for the item, open `/preview/<name>` in `pnpm dev` and look
 at it in both themes, and update the divergence list and the resolution table in
-`docs/architecture.md` §3 if the behaviour or the decision for the item changed.
+`docs/architecture.md` §3 if the behavior or the decision for the item changed.
 
 ## Do not port
 

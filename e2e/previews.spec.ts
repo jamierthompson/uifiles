@@ -63,7 +63,7 @@ for (const name of previews) {
 // render: a Server Component page hands MessageBranchContent over as a client
 // reference, and the branch count must survive that. A raw request opens no
 // page: nothing runs, so there is no console to collect, and the server
-// renders the same HTML whatever colour scheme the client prefers.
+// renders the same HTML whatever color scheme the client prefers.
 test("preview/branch serves its branch selector and count in the HTML", async ({
   request,
 }) => {

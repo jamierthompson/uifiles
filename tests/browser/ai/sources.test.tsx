@@ -164,7 +164,7 @@ describe("sourcesTrigger", () => {
     await expect.element(screen.getByText("Used 3 sources")).toBeVisible()
   })
 
-  it("pluralises the count", async () => {
+  it("pluralizes the count", async () => {
     const screen = await render(
       <main>
         <Sources>
@@ -402,7 +402,7 @@ describe("source", () => {
     await expect.element(link).toHaveAttribute("rel", "noreferrer noopener")
   })
 
-  it("lets React neutralise a javascript: href from a model-supplied source", async () => {
+  it("lets React neutralize a javascript: href from a model-supplied source", async () => {
     // React logs its own warning while it replaces the URL.
     allowConsole("error")
     const screen = await render(

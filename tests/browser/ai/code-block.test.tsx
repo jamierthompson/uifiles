@@ -25,7 +25,7 @@ import "@/app/globals.css"
 
 // Real shiki, instrumented: counts the highlighters created in this file,
 // records which grammars are requested (at creation or through loadLanguage)
-// and which code is tokenised, and can make the highlighter's start-up or one
+// and which code is tokenized, and can make the highlighter's start-up or one
 // grammar load fail on demand.
 const shiki = vi.hoisted(() => ({
   instances: 0,
@@ -79,7 +79,7 @@ const pre = (root: ParentNode = document) => root.querySelector("pre")
 const LIGHT_BG = "rgb(255, 255, 255)"
 const DARK_BG = "rgb(10, 12, 16)"
 
-// The theme background lands on the <pre> only once shiki has tokenised.
+// The theme background lands on the <pre> only once shiki has tokenized.
 const highlighted = (root: ParentNode = document, bg = LIGHT_BG) =>
   expect
     .poll(() => {
@@ -153,7 +153,7 @@ describe("shared highlighter", () => {
   it("keeps the raw text when the highlighter fails to start and starts it on the next mount", async () => {
     const { CodeBlock: ColdCodeBlock } = await coldCodeBlock()
     const before = shiki.instances
-    // The logged start-up failure is the behaviour under test.
+    // The logged start-up failure is the behavior under test.
     allowConsole("error")
     const errors = vi.spyOn(console, "error")
     shiki.failStart = true
@@ -221,12 +221,12 @@ describe("shared highlighter", () => {
       const block = page.getByTestId(id).element()
       await highlighted(block)
       const firstLine = lineSpans(block)[0]
-      const colours = new Set(
+      const colors = new Set(
         [...(firstLine?.querySelectorAll("span") ?? [])].map(
           (token) => token.style.color
         )
       )
-      expect(colours.size > 1, `${id} is tokenised by its grammar`).toBe(
+      expect(colors.size > 1, `${id} is tokenized by its grammar`).toBe(
         language !== "plaintext"
       )
       expect(
@@ -396,8 +396,8 @@ describe("codeBlock", () => {
       </main>
     )
     await late.unmount()
-    // The unmounted block's job is shared, not cancelled: the next caller
-    // gets its tokens and the code is tokenised once.
+    // The unmounted block's job is shared, not canceled: the next caller
+    // gets its tokens and the code is tokenized once.
     const tokens = await new Promise<{ tokens: unknown[][] }>((resolve) => {
       highlightCode(third, "javascript", resolve)
     })
@@ -608,7 +608,7 @@ describe("codeBlock", () => {
     expect(gutterWidth()).toBeCloseTo(twoDigits * 2, 0)
   })
 
-  it("renders line numbers in the full muted-foreground colour", async () => {
+  it("renders line numbers in the full muted-foreground color", async () => {
     const screen = await render(
       <main>
         <span className="text-muted-foreground" data-testid="reference">
@@ -626,7 +626,7 @@ describe("codeBlock", () => {
     expect(gutter.color).toBe(getComputedStyle(reference).color)
   })
 
-  it("applies the shiki theme background and colours in light and dark mode", async () => {
+  it("applies the shiki theme background and colors in light and dark mode", async () => {
     const errors = vi.spyOn(console, "error")
     const screen = await render(
       <main>
@@ -658,7 +658,7 @@ describe("codeBlock", () => {
     })
   })
 
-  it("tokenises a block once per mount, even under StrictMode", async () => {
+  it("tokenizes a block once per mount, even under StrictMode", async () => {
     const source = "const once = 1"
     const screen = await render(
       <StrictMode>
@@ -674,7 +674,7 @@ describe("codeBlock", () => {
   })
 
   it("renders an unknown language as plain text with one warning per language", async () => {
-    // The warning is the behaviour under test; nothing may reach console.error.
+    // The warning is the behavior under test; nothing may reach console.error.
     allowConsole("warn")
     const warn = vi.spyOn(console, "warn")
     const errors = vi.spyOn(console, "error")
@@ -741,7 +741,7 @@ describe("codeBlock", () => {
   })
 
   it("keeps the raw text when a grammar fails to load and retries on the next mount", async () => {
-    // The logged load failure is the behaviour under test.
+    // The logged load failure is the behavior under test.
     allowConsole("error")
     const errors = vi.spyOn(console, "error")
     shiki.failNext.add("ruby")
@@ -804,7 +804,7 @@ describe("highlightCode", () => {
   })
 
   it("forgets the callers of a failed highlight: the retry notifies only its own caller", async () => {
-    // The logged load failure is the behaviour under test. Haskell appears in
+    // The logged load failure is the behavior under test. Haskell appears in
     // no other test here, so its grammar is still unloaded in this module
     // whatever the order.
     allowConsole("error")
@@ -1195,7 +1195,7 @@ describe("codeBlockCopyButton", () => {
     expect(writeText).toHaveBeenLastCalledWith("const x = 1")
   })
 
-  it("honours a custom timeout", async () => {
+  it("honors a custom timeout", async () => {
     stubClipboard({ writeText: vi.fn().mockResolvedValue(undefined) })
     const screen = await render(
       <main>

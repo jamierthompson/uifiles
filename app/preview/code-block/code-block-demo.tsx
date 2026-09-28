@@ -117,7 +117,7 @@ export function CodeBlockDemo() {
       />
       <h2 className="font-heading text-lg font-semibold">Long lines</h2>
       <p className="text-sm text-muted-foreground">
-        A block that overflows becomes a focusable, labelled scroll region so
+        A block that overflows becomes a focusable, labeled scroll region so
         keyboard users can reach the rest of the line.
       </p>
       <CodeBlock

@@ -488,7 +488,7 @@ it("a silent test after the others", () => {
     })
   }
 
-  it("reads the probe's summary as plain text even when the environment forces colour", () => {
+  it("reads the probe's summary as plain text even when the environment forces color", () => {
     const { status, out } = runGuardProbe(probe, [], { FORCE_COLOR: "1" })
     expect(status, out).toBe(1)
     expect(out).not.toContain("\u001b[")
