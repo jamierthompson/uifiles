@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { SiteFooter } from "@/app/_components/site-footer"
 import { SiteHeader } from "@/app/_components/site-header"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 
 export const metadata: Metadata = { title: "Page not found" }
 
@@ -25,12 +25,15 @@ export default function NotFound() {
           <code className="font-mono">/preview/</code>.
         </p>
         <div className="flex flex-wrap gap-2 pt-2">
-          <Button render={<Link href="/" />} variant="outline">
+          <Link className={buttonVariants({ variant: "outline" })} href="/">
             Back to the catalog
-          </Button>
-          <Button render={<Link href="/preview" />} variant="ghost">
+          </Link>
+          <Link
+            className={buttonVariants({ variant: "ghost" })}
+            href="/preview"
+          >
             Browse components
-          </Button>
+          </Link>
         </div>
       </main>
       <SiteFooter />

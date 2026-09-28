@@ -5,7 +5,7 @@ import { ItemCard } from "@/app/_components/item-card"
 import { SiteFooter } from "@/app/_components/site-footer"
 import { SiteHeader } from "@/app/_components/site-header"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import {
   baseUrl,
   CATALOG_GROUPS,
@@ -113,13 +113,16 @@ export default function Page() {
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button render={<Link href="/preview" />}>
+            <Link className={buttonVariants()} href="/preview">
               Browse components
               <ArrowRightIcon data-icon="inline-end" />
-            </Button>
-            <Button render={<a href={GITHUB_URL} />} variant="outline">
+            </Link>
+            <a
+              className={buttonVariants({ variant: "outline" })}
+              href={GITHUB_URL}
+            >
               GitHub
-            </Button>
+            </a>
           </div>
         </section>
 
