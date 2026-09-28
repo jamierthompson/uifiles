@@ -32,7 +32,9 @@ base item's tokens, validates every file with `shadcn registry validate`, and ru
 `shadcn build` into `public/r/` (gitignored, built on Vercel and in CI).
 
 - **`@uifiles/base`** (`registry:base`, `registry/base/`). The one-command setup: `config`
-  (style `base-nova`, lucide, neutral base color, menu settings), `cssVars` (generated from
+  (style `base-nova`, lucide, neutral base color, menu settings, and the `@uifiles` entry
+  under `registries`, which `shadcn init` merges into the consumer's `components.json` so
+  `shadcn add @uifiles/<name>` resolves with no further step), `cssVars` (generated from
   `app/globals.css` by `scripts/sync-tokens.ts`, so the site and the item cannot drift),
   `css` (the stylesheet's `@layer base` defaults and reduced-motion guard, kept by hand;
   `tests/unit/tokens.test.ts` checks the guard against the stylesheet), and
@@ -342,8 +344,16 @@ palette classes, and never alpha-faded text for information-bearing content.
   `add --dry-run` from a scratch consumer); `init <base.json>` applies `config`, `cssVars` and
   the font item to a consumer (`--no-reinstall` for a non-interactive re-init).
 - The CLI resolves a namespaced dependency (`@uifiles/code-block`) only through the consumer's
-  `components.json` `registries` or the shadcn directory, so the GitHub path cannot install
-  `tool`, `reasoning` or `chat` until `@uifiles` is listed.
+  `components.json` `registries` (or its `package.json`) or the shadcn directory, so the GitHub
+  path cannot install `tool`, `reasoning` or `chat` in a project that has not applied the base
+  item, until `@uifiles` is listed in the directory.
+- shadcn 4.21 `init <base.json>` deep-merges the base item's `config` into the
+  `components.json` it writes, `registries` included (the item schema types `config` as the
+  raw config schema's `deepPartial`), and strips only the built-in registries. Verified
+  2026-09-28 with a real `shadcn init` from a scratch `create-next-app` project against
+  `pnpm dev`: with the entry in the base item the written file carries `"@uifiles"` and
+  `add @uifiles/response` and `add @uifiles/reasoning` (which depends on `@uifiles/response`)
+  resolve; without it `registries` is `{}` and the add stops at the unknown registry.
 - AI Elements: 49 components (`packages/elements/src/*.tsx`), Apache-2.0, unpinned npm
   dependencies, 24 shadcn primitives as `registryDependencies`; Base UI PR #450 open since
   2026-07-17.
