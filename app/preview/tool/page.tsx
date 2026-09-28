@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Demo } from "@/app/_components/demo"
 import {
   Tool,
   ToolContent,
@@ -22,44 +23,66 @@ const output = {
 export default function ToolPreview() {
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">Tool</h1>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">
-          input-streaming (no input received yet)
-        </h2>
+      <Demo
+        description={
+          <>
+            <code>input-streaming</code>: nothing has arrived yet, so the input
+            area shows a placeholder.
+          </>
+        }
+        title="Waiting for input"
+      >
         <Tool defaultOpen>
           <ToolHeader state="input-streaming" type="tool-get_weather" />
           <ToolContent>
             <ToolInput input={undefined} />
           </ToolContent>
         </Tool>
-      </section>
+      </Demo>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">
-          input-streaming (partial input)
-        </h2>
+      <Demo
+        description={
+          <>
+            <code>input-streaming</code>: the arguments so far, updated as they
+            stream.
+          </>
+        }
+        title="Input streaming"
+      >
         <Tool>
           <ToolHeader state="input-streaming" type="tool-get_weather" />
           <ToolContent>
             <ToolInput input={{ city: "Melb" }} />
           </ToolContent>
         </Tool>
-      </section>
+      </Demo>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">input-available</h2>
+      <Demo
+        description={
+          <>
+            <code>input-available</code>: the call is ready and has not returned
+            yet.
+          </>
+        }
+        title="Input complete"
+      >
         <Tool>
           <ToolHeader state="input-available" type="tool-get_weather" />
           <ToolContent>
             <ToolInput input={input} />
           </ToolContent>
         </Tool>
-      </section>
+      </Demo>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">output-available</h2>
+      <Demo
+        description={
+          <>
+            <code>output-available</code>: input and the result, both as
+            formatted JSON.
+          </>
+        }
+        title="Output available"
+      >
         <Tool defaultOpen>
           <ToolHeader state="output-available" type="tool-get_weather" />
           <ToolContent>
@@ -67,10 +90,16 @@ export default function ToolPreview() {
             <ToolOutput errorText={undefined} output={output} />
           </ToolContent>
         </Tool>
-      </section>
+      </Demo>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">output-error</h2>
+      <Demo
+        description={
+          <>
+            <code>output-error</code>: the error text in place of a result.
+          </>
+        }
+        title="Output error"
+      >
         <Tool defaultOpen>
           <ToolHeader state="output-error" type="tool-get_weather" />
           <ToolContent>
@@ -81,12 +110,17 @@ export default function ToolPreview() {
             />
           </ToolContent>
         </Tool>
-      </section>
+      </Demo>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">
-          dynamic-tool, custom title
-        </h2>
+      <Demo
+        description={
+          <>
+            <code>approval-requested</code>: a dynamic-tool part named by its
+            toolName and a title of its own.
+          </>
+        }
+        title="Dynamic tool, custom title"
+      >
         <Tool>
           <ToolHeader
             state="approval-requested"
@@ -98,7 +132,7 @@ export default function ToolPreview() {
             <ToolInput input={{ query: "Base UI collapsible" }} />
           </ToolContent>
         </Tool>
-      </section>
+      </Demo>
     </>
   )
 }

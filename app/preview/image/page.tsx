@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Demo } from "@/app/_components/demo"
 import { Image } from "@/registry/ai/image"
 
 export const metadata: Metadata = { title: "Image" }
@@ -24,16 +25,22 @@ const generated = {
 export default function ImagePreview() {
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">Image</h1>
-      <p className="text-sm text-muted-foreground">
-        Renders a generated image (base64 + media type) as a data URL.
-      </p>
-      <Image {...generated} alt="A stylized sunset over mountains" />
-      <Image
-        {...generated}
-        alt="The same image constrained to 240px wide"
-        className="w-60"
-      />
+      <Demo
+        description="A base64 payload and its media type from the AI SDK, rendered as a data URL at the width of its container."
+        title="Generated image"
+      >
+        <Image {...generated} alt="A stylized sunset over mountains" />
+      </Demo>
+      <Demo
+        description="The same image with a width class; the height follows."
+        title="Constrained width"
+      >
+        <Image
+          {...generated}
+          alt="The same image constrained to 240px wide"
+          className="w-60"
+        />
+      </Demo>
     </>
   )
 }

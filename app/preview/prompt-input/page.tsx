@@ -2,6 +2,7 @@
 
 import { FileIcon, GlobeIcon, MicIcon, XIcon } from "lucide-react"
 import { useState } from "react"
+import { Demo } from "@/app/_components/demo"
 import {
   Attachment,
   AttachmentAction,
@@ -119,82 +120,93 @@ export default function PromptInputPreview() {
 
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">Prompt Input</h1>
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium">Ready</h2>
-        <Suggestions>
-          {suggestions.map((suggestion) => (
-            <Suggestion
-              key={suggestion}
-              onClick={setDraft}
-              suggestion={suggestion}
-            />
-          ))}
-        </Suggestions>
-        <PromptInput
-          accept="image/*"
-          multiple
-          onError={setLastError}
-          onSubmit={handleSubmit}
-        >
-          <Attachments />
-          <PromptInputBody>
-            <PromptInputTextarea
-              onChange={(event) => setDraft(event.currentTarget.value)}
-              value={draft}
-            />
-          </PromptInputBody>
-          <PromptInputFooter>
-            <PromptInputTools>
-              <PromptInputActionMenu>
-                <PromptInputActionMenuTrigger aria-label="Add attachment" />
-                <PromptInputActionMenuContent>
-                  <PromptInputActionAddAttachments />
-                  <PromptInputActionAddScreenshot />
-                </PromptInputActionMenuContent>
-              </PromptInputActionMenu>
-              <PromptInputButton aria-label="Voice input" tooltip="Voice input">
-                <MicIcon />
-              </PromptInputButton>
-              <PromptInputButton tooltip={{ content: "Search the web" }}>
-                <GlobeIcon />
-                <span>Search</span>
-              </PromptInputButton>
-              <PromptInputSelect
-                items={models}
-                onValueChange={setModel}
-                value={model}
-              >
-                <PromptInputSelectTrigger aria-label="Model">
-                  <PromptInputSelectValue />
-                </PromptInputSelectTrigger>
-                <PromptInputSelectContent>
-                  {models.map((item) => (
-                    <PromptInputSelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </PromptInputSelectItem>
-                  ))}
-                </PromptInputSelectContent>
-              </PromptInputSelect>
-            </PromptInputTools>
-            <PromptInputSubmit status="ready" />
-          </PromptInputFooter>
-        </PromptInput>
-        {lastMessage ? (
-          <p className="text-xs text-muted-foreground">
-            Submitted: “{lastMessage.text}” with {lastMessage.files.length}{" "}
-            file(s)
-          </p>
-        ) : null}
-        {lastError ? (
-          <p className="text-xs text-muted-foreground">
-            Rejected ({lastError.code}): {lastError.message}
-          </p>
-        ) : null}
-      </section>
+      <Demo
+        description="Type, attach files from the menu, pick a model, then submit with Enter. A suggestion fills the draft; an empty submit is swallowed."
+        title="Ready"
+      >
+        <div className="flex flex-col gap-3">
+          <Suggestions>
+            {suggestions.map((suggestion) => (
+              <Suggestion
+                key={suggestion}
+                onClick={setDraft}
+                suggestion={suggestion}
+              />
+            ))}
+          </Suggestions>
+          <PromptInput
+            accept="image/*"
+            multiple
+            onError={setLastError}
+            onSubmit={handleSubmit}
+          >
+            <Attachments />
+            <PromptInputBody>
+              <PromptInputTextarea
+                onChange={(event) => setDraft(event.currentTarget.value)}
+                value={draft}
+              />
+            </PromptInputBody>
+            <PromptInputFooter>
+              <PromptInputTools>
+                <PromptInputActionMenu>
+                  <PromptInputActionMenuTrigger aria-label="Add attachment" />
+                  <PromptInputActionMenuContent>
+                    <PromptInputActionAddAttachments />
+                    <PromptInputActionAddScreenshot />
+                  </PromptInputActionMenuContent>
+                </PromptInputActionMenu>
+                <PromptInputButton
+                  aria-label="Voice input"
+                  tooltip="Voice input"
+                >
+                  <MicIcon />
+                </PromptInputButton>
+                <PromptInputButton tooltip={{ content: "Search the web" }}>
+                  <GlobeIcon />
+                  <span>Search</span>
+                </PromptInputButton>
+                <PromptInputSelect
+                  items={models}
+                  onValueChange={setModel}
+                  value={model}
+                >
+                  <PromptInputSelectTrigger aria-label="Model">
+                    <PromptInputSelectValue />
+                  </PromptInputSelectTrigger>
+                  <PromptInputSelectContent>
+                    {models.map((item) => (
+                      <PromptInputSelectItem
+                        key={item.value}
+                        value={item.value}
+                      >
+                        {item.label}
+                      </PromptInputSelectItem>
+                    ))}
+                  </PromptInputSelectContent>
+                </PromptInputSelect>
+              </PromptInputTools>
+              <PromptInputSubmit status="ready" />
+            </PromptInputFooter>
+          </PromptInput>
+          {lastMessage ? (
+            <p className="text-xs text-muted-foreground">
+              Submitted: “{lastMessage.text}” with {lastMessage.files.length}{" "}
+              file(s)
+            </p>
+          ) : null}
+          {lastError ? (
+            <p className="text-xs text-muted-foreground">
+              Rejected ({lastError.code}): {lastError.message}
+            </p>
+          ) : null}
+        </div>
+      </Demo>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium">Streaming</h2>
+      <Demo
+        description="While a response is in flight the submit button becomes Stop and the draft stays put."
+        title="Streaming"
+      >
         <PromptInput onSubmit={() => {}}>
           <Attachments />
           <PromptInputBody>
@@ -231,7 +243,7 @@ export default function PromptInputPreview() {
             <PromptInputSubmit onStop={() => {}} status="streaming" />
           </PromptInputFooter>
         </PromptInput>
-      </section>
+      </Demo>
     </>
   )
 }

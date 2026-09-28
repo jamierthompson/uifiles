@@ -2,6 +2,7 @@
 
 import type { ToolUIPart } from "ai"
 import { useState } from "react"
+import { Demo } from "@/app/_components/demo"
 import {
   Confirmation,
   ConfirmationAccepted,
@@ -68,19 +69,26 @@ function InteractiveConfirmation() {
 export default function ConfirmationPreview() {
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">Confirmation</h1>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">
-          approval-requested (interactive)
-        </h2>
+      <Demo
+        description={
+          <>
+            <code>approval-requested</code>: approve or reject, then reset to
+            ask again.
+          </>
+        }
+        title="Awaiting a decision"
+      >
         <InteractiveConfirmation />
-      </section>
+      </Demo>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">
-          approval-responded, accepted
-        </h2>
+      <Demo
+        description={
+          <>
+            <code>output-available</code> after an approval.
+          </>
+        }
+        title="Approved"
+      >
         <Confirmation
           approval={{ id: "call_02", approved: true }}
           state="output-available"
@@ -91,12 +99,17 @@ export default function ConfirmationPreview() {
             </ConfirmationAccepted>
           </ConfirmationTitle>
         </Confirmation>
-      </section>
+      </Demo>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">
-          output-error, approved (the tool ran and failed)
-        </h2>
+      <Demo
+        description={
+          <>
+            <code>output-error</code> after an approval: the tool ran and
+            failed.
+          </>
+        }
+        title="Approved, then failed"
+      >
         <Confirmation
           approval={{ id: "call_04", approved: true }}
           state="output-error"
@@ -107,12 +120,16 @@ export default function ConfirmationPreview() {
             </ConfirmationAccepted>
           </ConfirmationTitle>
         </Confirmation>
-      </section>
+      </Demo>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">
-          approval-responded, rejected
-        </h2>
+      <Demo
+        description={
+          <>
+            <code>output-denied</code> with the reason the person gave.
+          </>
+        }
+        title="Rejected"
+      >
         <Confirmation
           approval={{
             id: "call_03",
@@ -127,7 +144,7 @@ export default function ConfirmationPreview() {
             </ConfirmationRejected>
           </ConfirmationTitle>
         </Confirmation>
-      </section>
+      </Demo>
     </>
   )
 }

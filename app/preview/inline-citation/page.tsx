@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Demo } from "@/app/_components/demo"
 import {
   InlineCitation,
   InlineCitationCard,
@@ -48,14 +49,11 @@ const baseUiSources = [
 
 export default function InlineCitationPreview() {
   return (
-    <>
-      <h1 className="font-heading text-xl font-semibold">Inline Citation</h1>
-      <p className="text-sm text-muted-foreground">
-        Hover or focus a citation badge to peek at the source card; click, tap
-        or press Enter to pin it and move focus inside, where Tab reaches the
-        arrows that page through multiple sources and Escape closes it.
-      </p>
-      <div className="rounded-xl border p-4 text-sm leading-7">
+    <Demo
+      description="Hover or focus a citation badge to peek at the source card; click, tap or press Enter to pin it and move focus inside, where Tab reaches the arrows that page through several sources and Escape closes it."
+      title="Citations in a paragraph"
+    >
+      <div className="text-sm leading-7">
         <p>
           <InlineCitation>
             <InlineCitationText>
@@ -124,6 +122,6 @@ export default function InlineCitationPreview() {
           , which places open and close delays on the trigger.
         </p>
       </div>
-    </>
+    </Demo>
   )
 }

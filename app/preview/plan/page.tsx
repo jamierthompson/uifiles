@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Demo } from "@/app/_components/demo"
 import { Button } from "@/components/ui/button"
 import {
   Plan,
@@ -23,10 +24,10 @@ const steps = [
 export default function PlanPreview() {
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold">Plan</h1>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">Streaming</h2>
+      <Demo
+        description="Still being drafted: the header shimmers and the steps arrive as they are written."
+        title="Streaming"
+      >
         <Plan defaultOpen isStreaming>
           <PlanHeader>
             <div>
@@ -47,10 +48,12 @@ export default function PlanPreview() {
             </ol>
           </PlanContent>
         </Plan>
-      </section>
+      </Demo>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm text-muted-foreground">Complete</h2>
+      <Demo
+        description="Four steps and a footer to edit or approve. The trigger collapses the content."
+        title="Complete"
+      >
         <Plan defaultOpen>
           <PlanHeader>
             <div>
@@ -78,7 +81,7 @@ export default function PlanPreview() {
             <Button size="sm">Approve and run</Button>
           </PlanFooter>
         </Plan>
-      </section>
+      </Demo>
     </>
   )
 }

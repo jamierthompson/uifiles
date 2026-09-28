@@ -36,6 +36,35 @@ for (const scheme of COLOR_SCHEMES) {
   })
 }
 
+for (const scheme of COLOR_SCHEMES) {
+  test(`the components index in ${scheme} mode lists every group, passes axe, does not scroll sideways and logs nothing`, async ({
+    page,
+  }) => {
+    const problems = collectPageProblems(page)
+    await page.emulateMedia({ colorScheme: scheme })
+    await gotoHydrated(page, "/preview")
+    await expect(page.locator("html")).toHaveClass(
+      new RegExp(`\\b${scheme}\\b`)
+    )
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Components" })
+    ).toBeVisible()
+    for (const group of ["Chat", "Agent", "Code", "Media", "Blocks"]) {
+      await expect(
+        page.getByRole("heading", { level: 2, name: new RegExp(`^${group}`) })
+      ).toBeVisible()
+    }
+    await expect(page).toHaveTitle("Components · uifiles")
+    await expectNoAxeViolations(page)
+    const widths = await page.evaluate(() => ({
+      page: document.documentElement.scrollWidth,
+      viewport: document.documentElement.clientWidth,
+    }))
+    expect(widths.page).toBeLessThanOrEqual(widths.viewport)
+    expect(problems).toEqual([])
+  })
+}
+
 test("the home install command uses the public origin", async ({
   page,
   baseURL,

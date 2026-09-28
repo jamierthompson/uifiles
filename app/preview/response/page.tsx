@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Demo } from "@/app/_components/demo"
 import { MessageResponse } from "@/registry/ai/response"
 
 export const metadata: Metadata = { title: "Message Response" }
@@ -38,11 +39,13 @@ Tip: keep the chunk size small so partial output paints early. Links such as the
 
 export default function ResponsePreview() {
   return (
-    <>
-      <h1 className="font-heading text-xl font-semibold">Message Response</h1>
-      <div className="rounded-lg border p-4 text-sm">
+    <Demo
+      description="Headings, a fence, a table, inline and display math and a link, as Streamdown renders them. The wide formula scrolls in its own box."
+      title="Streamed markdown"
+    >
+      <div className="text-sm">
         <MessageResponse>{markdown}</MessageResponse>
       </div>
-    </>
+    </Demo>
   )
 }

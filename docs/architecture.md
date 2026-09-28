@@ -273,7 +273,7 @@ palette classes, and never alpha-faded text for information-bearing content.
 ## 5. Quality: tests, gate, CI, drift
 
 - **Unit** (`tests/unit/`, Vitest, Node): the registry invariants (unique names, descriptions, the `@uifiles/` fork rule, one alias per primitive, `dependencies` that match the imports of every item that ships files, in both directions, with a `css` `@import` or `@plugin` key counting as a use, and no `css` rule repeated from an `@uifiles/*` dependency, whether or not an `@layer` wraps either copy), the site's contracts (`baseUrl()`,
-  the alias badge, `/llms.txt`, license and doc accuracy) and the test tooling (the console
+  the catalog grouping, the home and the preview shell, `/llms.txt`, license and doc accuracy) and the test tooling (the console
   guard, a Vitest pre-bundle list that names every bare specifier a browser test can reach,
   following local imports into the `app/` pages the tests render, and the Playwright origin
   helpers).
@@ -285,18 +285,18 @@ palette classes, and never alpha-faded text for information-bearing content.
   fails any test that logs through `console.error` or `console.warn` unless it opted in with
   `allowConsole()`, including calls a console spy's mock implementation swallowed (the
   global `console` is the guard's proxy, so it knows every spy installed through it).
-- **End to end** (`e2e/`, Playwright): axe over every `/preview/<name>` page and the home, in
+- **End to end** (`e2e/`, Playwright): axe over every `/preview/<name>` page, the `/preview` index and the home, in
   light and dark and at desktop and 375 px phone width, as served by Next (server rendering
   and hydration, which the browser tests do not exercise), with console errors and warnings asserted empty, each preview's `<title>` starting with its item's registry title and no preview scrolling sideways (`<html>` `scrollWidth` at most its `clientWidth`, at desktop and at 375 px), plus
   the served HTML of `/preview/branch` (its branch selector and count), `/preview/response` at
   375 px in light and dark (its wide formula scrolls without widening the page, console
   clean), the registry endpoints,
-  `/llms.txt` and a keyboard walk of the chat preview. `e2e/helpers.ts` aborts every request
+  `/llms.txt`, the preview shell (the current item marked in the sidebar or, at phone width, in the disclosure, and the next link paging to the next item) and a keyboard walk of the chat preview. `e2e/helpers.ts` aborts every request
   to a host other than localhost, so the network can neither slow a run nor decide it (a
   preview that needs a third party fails the same way everywhere), and waits for hydration
   (React's fiber key on `<main>`) rather than `networkidle`. It runs against the site the
   Playwright config starts: `pnpm start` in CI, `pnpm registry:build && pnpm dev` locally.
-- **Gate** (`pnpm gate`): `format:check → lint → check:spelling → typecheck → registry:validate → test → build`.
+- **Gate** (`pnpm gate`): `format:check → lint → typecheck → registry:validate → test → build`.
   CI (`.github/workflows/ci.yml`) runs the same steps with `pnpm registry:build` before the
   tests, so the built-output checks run, and the tests under coverage (`pnpm test:coverage`,
   per-file thresholds of 80% lines, 80% functions, 70% branches over `registry/**` and
@@ -323,7 +323,8 @@ palette classes, and never alpha-faded text for information-bearing content.
   installed under `.claude/skills/` from `skills-lock.json` and attributed in `NOTICE`.
 - For agents building with the system: `/r/registry.json` with retrieval-quality descriptions
   makes the MCP `list`/`search`/`view`/`add` tools work with no extra code; `/llms.txt` indexes
-  every item with its URL; `skills/uifiles/SKILL.md` (`pnpm dlx skills add jamiethompsondesign/uifiles`)
+  every item with its URL under the same groups the docs home and the preview sidebar use
+  (`catalogGroups()` in `lib/registry.ts`: chat, agent, code, media, blocks, primitives, base); `skills/uifiles/SKILL.md` (`pnpm dlx skills add jamiethompsondesign/uifiles`)
   gives the workflow and the rules (search first, read the real API, semantic tokens, Base UI
   composition).
 - The repository's own `components.json` maps `@uifiles` to `http://localhost:3000/r/{name}.json`

@@ -2,6 +2,7 @@
 
 import { useChat } from "@ai-sdk/react"
 import { useEffect, useRef } from "react"
+import { Demo } from "@/app/_components/demo"
 import { Chat } from "@/registry/blocks/chat/components/blocks/chat"
 import {
   demoConversation,
@@ -30,8 +31,10 @@ export default function ChatPreview() {
   }, [sendMessage])
 
   return (
-    <>
-      <h1 className="font-heading text-xl font-semibold">Chat</h1>
+    <Demo
+      description="Streams a scripted opening answer on load with no API key. Send a message or pick a suggestion to continue; Stop cancels a response in flight."
+      title="Scripted conversation"
+    >
       <Chat
         className="h-[75svh]"
         error={error}
@@ -45,6 +48,6 @@ export default function ChatPreview() {
         status={status}
         suggestions={demoSuggestions}
       />
-    </>
+    </Demo>
   )
 }

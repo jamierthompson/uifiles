@@ -1,4 +1,4 @@
-import { baseUrl, groupByType, loadRegistry, TYPE_LABELS } from "@/lib/registry"
+import { baseUrl, catalogGroups, loadRegistry } from "@/lib/registry"
 
 export const dynamic = "force-static"
 
@@ -17,9 +17,11 @@ export function GET() {
     "- [Skill](https://github.com/jamiethompsondesign/uifiles/tree/main/skills/uifiles): `pnpm dlx skills add jamiethompsondesign/uifiles` gives coding agents the workflow and rules.",
     "",
   ]
-  for (const [type, items] of groupByType(registry.items)) {
-    lines.push(`## ${TYPE_LABELS[type] ?? type}`, "")
-    for (const item of items) {
+  // One section per catalog group, the order the docs home and the preview
+  // sidebar use, so an agent and a person read the same map.
+  for (const group of catalogGroups(registry.items)) {
+    lines.push(`## ${group.label}`, "", `${group.description}`, "")
+    for (const item of group.items) {
       lines.push(
         `- [${item.title ?? item.name}](${origin}/r/${item.name}.json): ${item.description ?? ""}`
       )

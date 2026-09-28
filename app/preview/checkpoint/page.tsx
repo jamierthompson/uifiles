@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Demo } from "@/app/_components/demo"
 import { Message, MessageContent } from "@/components/ui/message"
 import {
   Checkpoint,
@@ -25,8 +26,10 @@ const turns = [
 
 export default function CheckpointPreview() {
   return (
-    <>
-      <h1 className="font-heading text-xl font-semibold">Checkpoint</h1>
+    <Demo
+      description="A checkpoint after each assistant turn. The button carries a tooltip and restores the workspace to that point."
+      title="Between turns"
+    >
       <div className="flex flex-col gap-4">
         {turns.map((turn, index) => (
           <div className="flex flex-col gap-4" key={turn.id}>
@@ -49,6 +52,6 @@ export default function CheckpointPreview() {
           </div>
         ))}
       </div>
-    </>
+    </Demo>
   )
 }

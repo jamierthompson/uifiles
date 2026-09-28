@@ -893,9 +893,7 @@ describe("reasoningContent markdown surfaces", () => {
     // formula; the streaming demo above it keeps changing, so axe scans the
     // finished one.
     const finished = screen
-      .getByRole("heading", {
-        name: "Finished (duration supplied, opened by default)",
-      })
+      .getByRole("heading", { name: "Finished, open" })
       .element()
       .closest("section")
     expect(finished).not.toBeNull()

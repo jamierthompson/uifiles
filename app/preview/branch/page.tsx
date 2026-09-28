@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Demo } from "@/app/_components/demo"
 import {
   MessageBranch,
   MessageBranchContent,
@@ -28,8 +29,10 @@ const branches = [
 
 export default function BranchPreview() {
   return (
-    <>
-      <h1 className="font-heading text-xl font-semibold">Message Branch</h1>
+    <Demo
+      description="Arrow through the regenerations of one assistant turn; the selector shows which of the three is on screen."
+      title="Three alternative responses"
+    >
       <MessageBranch defaultBranch={0}>
         <MessageBranchContent>
           {branches.map((branch) => (
@@ -44,6 +47,6 @@ export default function BranchPreview() {
           <MessageBranchNext />
         </MessageBranchSelector>
       </MessageBranch>
-    </>
+    </Demo>
   )
 }
