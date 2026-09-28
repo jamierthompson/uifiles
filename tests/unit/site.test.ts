@@ -336,7 +336,7 @@ describe("home page catalog", () => {
     }
     expect(html).toContain(">@uifiles/button</span>")
     expect(html).toContain(
-      'href="https://ui.shadcn.com/docs/components/button"'
+      'href="https://ui.shadcn.com/docs/components/base/button"'
     )
     expect(html).not.toContain('href="/preview/button"')
     expect(html).toContain(">@uifiles/base</span>")

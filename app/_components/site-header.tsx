@@ -15,13 +15,22 @@ function NavLink({
   active?: boolean | undefined
   children: React.ReactNode
 }) {
+  const className = cn(
+    "inline-flex h-8 items-center rounded-md px-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+    active && "text-foreground"
+  )
+  // An external destination is a plain anchor; next/link is for routes.
+  if (/^https?:\/\//.test(href)) {
+    return (
+      <a className={className} href={href}>
+        {children}
+      </a>
+    )
+  }
   return (
     <Link
       aria-current={active ? "page" : undefined}
-      className={cn(
-        "inline-flex h-8 items-center rounded-md px-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-        active && "text-foreground"
-      )}
+      className={className}
       href={href}
     >
       {children}

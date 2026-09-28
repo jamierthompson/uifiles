@@ -236,7 +236,7 @@ export default function Page() {
               </p>
               <InstallCommand
                 command={initCommand(origin)}
-                label="Copy the init command"
+                label="Copy the init command for the design system"
               />
               <a
                 className="inline-flex w-fit items-center py-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"

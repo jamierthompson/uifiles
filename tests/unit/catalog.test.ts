@@ -178,7 +178,7 @@ describe("site helpers (lib/site.ts)", () => {
     expect(previewHref("branch")).toBe("/preview/branch")
     expect(registryJsonHref("branch")).toBe("/r/branch.json")
     expect(shadcnDocsHref("hover-card")).toBe(
-      "https://ui.shadcn.com/docs/components/hover-card"
+      "https://ui.shadcn.com/docs/components/base/hover-card"
     )
   })
 
@@ -219,7 +219,7 @@ describe("site helpers (lib/site.ts)", () => {
     })
     expect(dependencyLink("collapsible")).toEqual({
       label: "collapsible",
-      href: "https://ui.shadcn.com/docs/components/collapsible",
+      href: "https://ui.shadcn.com/docs/components/base/collapsible",
       external: true,
     })
   })

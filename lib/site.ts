@@ -6,8 +6,8 @@ export const GITHUB_URL = "https://github.com/jamiethompsondesign/uifiles"
 /** The branch the source links point at. */
 const GITHUB_BRANCH = "main"
 
-/** Where an upstream shadcn/ui alias is documented. */
-const SHADCN_DOCS = "https://ui.shadcn.com/docs/components"
+/** Where an upstream shadcn/ui alias is documented: the Base UI pages, which this registry builds on. */
+const SHADCN_DOCS = "https://ui.shadcn.com/docs/components/base"
 
 export const SITE_NAME = "uifiles"
 
