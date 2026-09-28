@@ -353,7 +353,7 @@ describe("built-output checks (tests/unit/registry.test.ts)", () => {
     expect(local.out).not.toMatch(/failed/)
   })
 
-  it("reads the child's summary as plain text even when the environment forces colour", () => {
+  it("reads the child's summary as plain text even when the environment forces color", () => {
     const local = runWithoutBuild(
       "tests/unit/registry.test.ts",
       "built output",
@@ -643,7 +643,7 @@ function consoleSilencers(source: string): string[] {
 }
 
 describe("browser tests and the console guard", () => {
-  it("recognises a console spy given a swallowing implementation, and nothing else", () => {
+  it("recognizes a console spy given a swallowing implementation, and nothing else", () => {
     for (const source of [
       `vi.spyOn(console, "error").mockImplementation(() => {})`,
       `vi.spyOn(console, 'warn')\n  .mockImplementationOnce(() => undefined)`,

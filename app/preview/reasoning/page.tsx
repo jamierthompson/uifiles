@@ -18,7 +18,7 @@ Recommend \`revalidate: 60\` and mention \`revalidateTag\` for instant invalidat
 
 // The finished demo also shows what scrolls in its own box at phone width
 // instead of widening the page: a fence with one long line, a table and a
-// display formula (the response preview's regularised logistic loss).
+// display formula (the response preview's regularized logistic loss).
 const finishedText = `${fullText}
 
 Checking the route config before answering:
@@ -29,11 +29,11 @@ export const revalidate = 60 // and revalidateTag("profile") in the rename actio
 
 | Caching strategy | Freshness guarantee | Origin load | Recommended for |
 | --- | --- | --- | --- |
-| \`no-store\` | Always fresh | Every request | Personalised dashboards |
+| \`no-store\` | Always fresh | Every request | Personalized dashboards |
 | \`revalidate: 60\` | Up to 60s stale | Once a minute | Profile pages |
 | \`force-cache\` | Until redeploy | Once per build | Reference data |
 
-If a model predicted which profiles get renamed, its regularised logistic loss would be:
+If a model predicted which profiles get renamed, its regularized logistic loss would be:
 
 $$
 \\mathcal{L}(\\theta) = -\\frac{1}{n} \\sum_{i=1}^{n} \\left[ y_i \\log \\sigma(\\theta^\\top x_i) + (1 - y_i) \\log\\left(1 - \\sigma(\\theta^\\top x_i)\\right) \\right] + \\lambda \\lVert \\theta \\rVert_2^2

@@ -22,7 +22,7 @@ const TALL_CODE = `\`\`\`ts\n${Array.from(
 const WIDE_TABLE = [
   "| Caching strategy | Freshness guarantee | Relative cost | Recommended for |",
   "| --- | --- | --- | --- |",
-  "| no-store | Always fresh | Highest | Personalised dashboards |",
+  "| no-store | Always fresh | Highest | Personalized dashboards |",
   "| force-cache | Until redeploy | Lowest | Reference data |",
 ].join("\n")
 
@@ -254,7 +254,7 @@ describe("messageResponse", () => {
     ).toBeNull()
   })
 
-  it("highlights with the high-contrast GitHub themes by default and honours a shikiTheme override", async () => {
+  it("highlights with the high-contrast GitHub themes by default and honors a shikiTheme override", async () => {
     await render(
       <main>
         <div data-testid="default">
@@ -267,7 +267,7 @@ describe("messageResponse", () => {
         </div>
       </main>
     )
-    // Shiki writes each token's light and dark colours as custom properties.
+    // Shiki writes each token's light and dark colors as custom properties.
     const keywordColors = (id: string) => {
       const token = [
         ...document.querySelectorAll<HTMLElement>(

@@ -22,7 +22,7 @@ pnpm dev                                # http://localhost:3000
   `description` is written for retrieval, a preview page under `app/preview/<name>/`, and a
   browser test with axe under `tests/browser/` that uses the helpers in `tests/a11y.ts`.
 - **Tests.** Port upstream's test file first, then cover every prop and state; name tests by
-  the behaviour they assert. `tests/setup.ts` fails a browser test that logs through
+  the behavior they assert. `tests/setup.ts` fails a browser test that logs through
   `console.error` or `console.warn` (`allowConsole()` opts a test that asserts a warning out).
   A test file must pass three runs in a row. The recipe, with the Vitest browser-mode
   gotchas, is in `AGENTS.md` "Tests".
@@ -64,8 +64,8 @@ already ships it.
 
 ## Licensing
 
-Contributions are accepted under the repository's MIT licence. Ports from AI Elements keep
-the Apache-2.0 header; the licence copy is `licenses/APACHE-2.0-ai-elements.txt` and
+Contributions are accepted under the repository's MIT license. Ports from AI Elements keep
+the Apache-2.0 header; the license copy is `licenses/APACHE-2.0-ai-elements.txt` and
 `NOTICE` records the modifications. Do not add another `LICENSE*` file at the repository
-root: GitHub's licence detector reads every one of them and would report the repository as
+root: GitHub's license detector reads every one of them and would report the repository as
 "Other" instead of MIT.

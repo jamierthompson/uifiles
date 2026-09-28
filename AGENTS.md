@@ -58,7 +58,7 @@ Use `pnpm` for everything (`pnpm add`, `pnpm dlx shadcn@latest ...`). Never `npm
 | `.github/workflows/`                                  | `ci.yml` (the gate plus e2e, above) and `upstream-diff.yml` (weekly drift check that files or comments on an `upstream` issue).                                                                                                                                                                               |
 | `public/r/`                                           | Build output. Never edit; never commit.                                                                                                                                                                                                                                                                       |
 | `skills/uifiles/`                                     | The skill consumers install with `pnpm dlx skills add jamiethompsondesign/uifiles`.                                                                                                                                                                                                                           |
-| `LICENSE`, `licenses/`, `NOTICE`                      | MIT for the repository. `licenses/APACHE-2.0-ai-elements.txt` is the Apache-2.0 copy the AI Elements ports require, kept out of the root because GitHub's licence detector scans every root `LICENSE*` file and reports "Other" when two match. `NOTICE` lists every third-party file set and vendored skill. |
+| `LICENSE`, `licenses/`, `NOTICE`                      | MIT for the repository. `licenses/APACHE-2.0-ai-elements.txt` is the Apache-2.0 copy the AI Elements ports require, kept out of the root because GitHub's license detector scans every root `LICENSE*` file and reports "Other" when two match. `NOTICE` lists every third-party file set and vendored skill. |
 | `docs/architecture.md`, `docs/porting-ai-elements.md` | Decisions, the AI Elements resolution table, intentional divergences and token departures; the per-file port checklist.                                                                                                                                                                                       |
 
 ## Rules for registry work
@@ -159,7 +159,7 @@ Use `pnpm` for everything (`pnpm add`, `pnpm dlx shadcn@latest ...`). Never `npm
   `disableTransitionOnChange` does, and restyles skipped `content-visibility: auto` subtrees
   (message scroller items) so none of them fades from light to dark under axe.
 - **Fixtures sit in `<main>`**; never disable the `region` or `color-contrast` rules. Scope with
-  `exclude` or fix the colour.
+  `exclude` or fix the color.
 - **Console must be clean.** `tests/setup.ts` runs before every browser test; a `console.error`
   or `console.warn` fails the test at its end with the messages (React act, key and hydration
   warnings included). A test that asserts a warning (an error boundary, an unknown-language
@@ -174,15 +174,15 @@ Use `pnpm` for everything (`pnpm add`, `pnpm dlx shadcn@latest ...`). Never `npm
   before it checks, so output logged on unmount belongs to the test that rendered it. Browser
   `console.log` is not forwarded to the terminal.
 - **Port upstream's tests first** (`packages/elements/__tests__/<name>.test.tsx` in AI
-  Elements), keep its names where the behaviour maps, skip only tests of APIs the port lacks
+  Elements), keep its names where the behavior maps, skip only tests of APIs the port lacks
   and say which, then cover every prop, every state in every union, controlled and uncontrolled
-  modes, keyboard interaction and error paths. Name tests by the behaviour they assert, never by
+  modes, keyboard interaction and error paths. Name tests by the behavior they assert, never by
   a bug or a review. No `test.skip`, no `retry`. A file must pass three runs in a row.
 - **Vitest browser facts.** Locators are exact by default (`getByText("Used 1")` does not match
   "Used 1 source"; pass `{ exact: false }` or a RegExp). Viewport 414×896, 15 s test timeout.
   `await screen.unmount()`: it returns a promise, and an un-awaited unmount inside a loop
   produces "overlapping act() calls". `expect.element(x).toHaveTextContent(y)` is an exact,
-  whitespace-normalised comparison that stringifies a RegExp; use `toMatchTextContent` or
+  whitespace-normalized comparison that stringifies a RegExp; use `toMatchTextContent` or
   `expect.poll(() => el.textContent).toContain(...)` for a substring.
 - **Pre-bundling.** Vite bundles `optimizeDeps.include` in `vitest.config.ts` once per cache
   (`node_modules/.vite`). A bare specifier outside the list is only bundled when Vite meets
@@ -225,7 +225,7 @@ Use `pnpm` for everything (`pnpm add`, `pnpm dlx shadcn@latest ...`). Never `npm
   (`scrollWidth` of `<html>` at most its `clientWidth`, at desktop and at 375 px: wide code,
   tables and formulas scroll in their own boxes). `/preview/branch` must serve its branch
   selector and count in the HTML, not only after hydration (a raw request: no page, so no
-  console and no colour scheme), and at 375 px, in light and dark with a clean console, the
+  console and no color scheme), and at 375 px, in light and dark with a clean console, the
   wide formula on `/preview/response` must overflow its own box while the page does not. A
   `NEXT_PUBLIC_BASE_URL` that is not an absolute URL (`uifiles.dev`) fails the specs that
   read the origin with the message `baseUrl()` gives the build, not a bare `Invalid URL`.

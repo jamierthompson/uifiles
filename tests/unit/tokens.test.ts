@@ -667,7 +667,7 @@ describe("class hygiene in registry sources", () => {
   const alphaText =
     /\btext-(foreground|muted-foreground|primary|primary-foreground|secondary-foreground|accent-foreground|card-foreground|popover-foreground|destructive|sidebar-foreground)\/\d+\b/
 
-  it("uses no palette classes or literal colours (AGENTS.md)", () => {
+  it("uses no palette classes or literal colors (AGENTS.md)", () => {
     expect(scanRegistry(palette)).toEqual([])
     expect(scanRegistry(literal)).toEqual([])
   })
@@ -945,7 +945,7 @@ describe("contrast (WCAG 2.x, gamma-space compositing)", () => {
     }
   })
 
-  it("light ring is the lightest grey step that clears 3:1 on every light surface", () => {
+  it("light ring is the lightest gray step that clears 3:1 on every light surface", () => {
     expect(light.ring).toBe("oklch(0.64 0 0)")
     for (const surface of [
       "background",

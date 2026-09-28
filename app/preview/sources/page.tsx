@@ -21,7 +21,7 @@ const sources = [
     href: "https://ui.shadcn.com/docs/registry",
     title: "shadcn/ui: Registry",
   },
-  // No title: the link is labelled with its hostname.
+  // No title: the link is labeled with its hostname.
   { href: "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a" },
 ]
 

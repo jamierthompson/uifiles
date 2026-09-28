@@ -17,7 +17,7 @@ the decisions that shape the repository and why they hold. The contributor rules
 | Distribution   | Hosted registry (the Next app on Vercel serves `/r/{name}.json` and `/r/registry.json`) plus the GitHub-registry path (`owner/repo/item#ref`) | Hosting is required for the MCP server and the shadcn directory. The GitHub path gives pinning by tag or SHA with no infrastructure, for items with no `@uifiles/*` dependency until the directory lists the namespace.                                                    |
 | Repo shape     | One Next 16 app: docs site, previews, registry host, `registry/` sources                                                                      | What every registry in the directory does. A workspace only becomes worth it when a second package moves in.                                                                                                                                                               |
 | Versioning     | Git tags and `CHANGELOG.md`; the registry itself is unversioned                                                                               | Registries are copied at install time. Consumers pin with `#v0.1.0` on the GitHub path or use `add --diff` on the hosted one.                                                                                                                                              |
-| Licensing      | MIT for the repository; Apache-2.0 kept on files derived from AI Elements, with `NOTICE` and a header comment on each                         | Apache-2.0 requires a copy of the licence (`licenses/APACHE-2.0-ai-elements.txt`), the notice, and marking modified files. The copy lives outside the root because GitHub's licence detector scans every root `LICENSE*` file and reports "Other" when two licences match. |
+| Licensing      | MIT for the repository; Apache-2.0 kept on files derived from AI Elements, with `NOTICE` and a header comment on each                         | Apache-2.0 requires a copy of the license (`licenses/APACHE-2.0-ai-elements.txt`), the notice, and marking modified files. The copy lives outside the root because GitHub's license detector scans every root `LICENSE*` file and reports "Other" when two licenses match. |
 
 Rejected: vendoring all of shadcn/ui (every primitive becomes a diff job against a fast-moving
 upstream, for no benefit until one diverges); consuming `@ai-elements/*` upstream (Radix-only
@@ -32,7 +32,7 @@ base item's tokens, validates every file with `shadcn registry validate`, and ru
 `shadcn build` into `public/r/` (gitignored, built on Vercel and in CI).
 
 - **`@uifiles/base`** (`registry:base`, `registry/base/`). The one-command setup: `config`
-  (style `base-nova`, lucide, neutral base colour, menu settings), `cssVars` (generated from
+  (style `base-nova`, lucide, neutral base color, menu settings), `cssVars` (generated from
   `app/globals.css` by `scripts/sync-tokens.ts`, so the site and the item cannot drift),
   `css` (the stylesheet's `@layer base` defaults and reduced-motion guard, kept by hand;
   `tests/unit/tokens.test.ts` checks the guard against the stylesheet), and
@@ -70,9 +70,9 @@ AI Elements is Radix-only (33 `asChild` uses across 16 components, Radix-only Ho
 delay props and `onSelect`, six direct `@radix-ui/react-use-controllable-state` imports). Its
 Base UI pull request (#450) has been open since July 2026 with no maintainer response, and
 the last npm release predates that. Vendoring and porting is justified on staleness alone;
-the Apache-2.0 licence permits it with attribution.
+the Apache-2.0 license permits it with attribution.
 
-shadcn favours its own components when both exist. shadcn added a chat layer in 2026
+shadcn favors its own components when both exist. shadcn added a chat layer in 2026
 (`message`, `bubble`, `attachment`, `message-scroller`, `marker`, `questionnaire`, `spinner`,
 the `shimmer` utility), so the overlapping AI Elements items are dropped and only their unique
 parts are ported as new items.
@@ -99,7 +99,7 @@ be detected (§5).
 
 ### Intentional divergences from AI Elements
 
-The public API is upstream's; these are behaviour changes made on purpose, one line per item,
+The public API is upstream's; these are behavior changes made on purpose, one line per item,
 because the registry owns the consumer contract now. Each belongs in the item's `docs` too.
 
 - `code-block`: `aria-label` on `CodeBlock` names the scroll container, not the wrapper; a
@@ -178,7 +178,7 @@ because the registry owns the consumer contract now. Each belongs in the item's 
   sits in an error boundary that renders an inline alert instead of unmounting the chat;
   after an error the composer shows a plain Submit.
 - `prompt-input`: `onError` gains the code `screenshot` (capture failures other than a denied
-  or cancelled picker); `PromptInputTextarea` has `aria-label="Message"` by default; `accept`
+  or canceled picker); `PromptInputTextarea` has `aria-label="Message"` by default; `accept`
   understands `.ext`, `type/*` and `*/*` and reports partial rejections; `PromptInputSubmit` is a Stop button only when `onStop` is passed (without it a press submits, so while generating it keeps the Submit name and type and never shows the square: the spinner while submitted, the return glyph while streaming; upstream names it Stop and shows the square either way); Enter submits only
   through an enabled `button[type="submit"]`, so it does nothing while Stop is shown; a submit clears the text as it starts, also the provider's (upstream clears provider text only after `onSubmit` succeeds); a throwing or rejecting `onSubmit` restores the typed text unless the user typed since (so does one that returns `false`;
   a controlled textarea is left to its owner); an accepted submit clears only the attachments
@@ -202,7 +202,7 @@ because the registry owns the consumer contract now. Each belongs in the item's 
 - `checkpoint`: `CheckpointTrigger` mirrors its tooltip into a visually hidden
   `aria-describedby` description (Base UI tooltips carry no ARIA) unless it repeats the
   button's name.
-- `sources`: the trigger pluralises ("Used 1 source") and, with each row, is a 24 px target;
+- `sources`: the trigger pluralizes ("Used 1 source") and, with each row, is a 24 px target;
   `Source` without `href` renders a `<span>`; absolute URLs open in a new tab with
   `rel="noreferrer noopener"`, relative ones in the same tab; a missing or empty `title` falls
   back to the hostname (or the href) and empty `children` to the icon and title; `Sources`
@@ -273,7 +273,7 @@ palette classes, and never alpha-faded text for information-bearing content.
 ## 5. Quality: tests, gate, CI, drift
 
 - **Unit** (`tests/unit/`, Vitest, Node): the registry invariants (unique names, descriptions, the `@uifiles/` fork rule, one alias per primitive, `dependencies` that match the imports of every item that ships files, in both directions, with a `css` `@import` or `@plugin` key counting as a use, and no `css` rule repeated from an `@uifiles/*` dependency, whether or not an `@layer` wraps either copy), the site's contracts (`baseUrl()`,
-  the alias badge, `/llms.txt`, licence and doc accuracy) and the test tooling (the console
+  the alias badge, `/llms.txt`, license and doc accuracy) and the test tooling (the console
   guard, a Vitest pre-bundle list that names every bare specifier a browser test can reach,
   following local imports into the `app/` pages the tests render, and the Playwright origin
   helpers).
@@ -311,7 +311,7 @@ palette classes, and never alpha-faded text for information-bearing content.
   against what `elements.ai-sdk.dev` serves today, and each forked `registry/ui` file against
   `ui.shadcn.com`. It exits 0 when nothing changed, 1 when a source changed, 2 when nothing
   changed but a source could not be checked. The weekly `upstream-diff` workflow runs it and,
-  on exit 1, comments on the open GitHub issue labelled `upstream` or files one (creating the
+  on exit 1, comments on the open GitHub issue labeled `upstream` or files one (creating the
   label if needed); a maintainer re-ports per `docs/porting-ai-elements.md` and updates the
   lock.
 

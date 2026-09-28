@@ -67,7 +67,7 @@ async function settled<T>(read: () => T, expected: T, holdMs = 100) {
 }
 
 // A tap: touch pointer events (which Base UI's mouse-only hover ignores)
-// followed by the click the browser synthesises for it.
+// followed by the click the browser synthesizes for it.
 const tap = (element: HTMLElement) => {
   for (const type of ["pointerdown", "pointerup"]) {
     element.dispatchEvent(
@@ -1186,7 +1186,7 @@ describe("InlineCitationCarouselIndex", () => {
     const index = screen.getByTestId("index")
     await expect.element(index).toHaveTextContent("0/0")
 
-    // Removing the only slide re-initialises embla with an empty snap list,
+    // Removing the only slide re-initializes embla with an empty snap list,
     // where selectedScrollSnap() is still 0 and must not read as slide 1.
     await screen.rerender(
       <main>

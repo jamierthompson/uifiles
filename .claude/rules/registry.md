@@ -35,7 +35,7 @@ paths:
 - Cross-item dependencies inside this registry are `@uifiles/<name>`, never relative imports
   across items and never absolute URLs.
 - Ported AI Elements files start with the two-line header in
-  `docs/porting-ai-elements.md` §1 (upstream file, Apache-2.0, what was modified). The licence
+  `docs/porting-ai-elements.md` §1 (upstream file, Apache-2.0, what was modified). The license
   copy is `licenses/APACHE-2.0-ai-elements.txt`, never a root `LICENSE*` file. Each shipped
   item has an entry in `registry/ai/upstream.lock.json` (`source`, `sha256`, `fetchedAt`, and
   `upstream` when it was cut from a differently named file); update it on every port.

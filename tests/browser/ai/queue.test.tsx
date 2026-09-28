@@ -82,7 +82,7 @@ function rulesUnderMedia(el: Element, media: RegExp): CSSStyleRule[] {
 }
 
 /**
- * sRGB bytes of `fg` painted over an opaque `bg`, so a translucent colour is
+ * sRGB bytes of `fg` painted over an opaque `bg`, so a translucent color is
  * composited the way the page shows it. The canvas accepts oklch() like CSS.
  */
 function paintOver(fg: string, bg: string): [number, number, number] {
@@ -663,7 +663,7 @@ describe("QueueSection", () => {
     await expect.element(trigger).toHaveAttribute("aria-expanded", "false")
   })
 
-  it("honours defaultOpen={false} and a controlled open", async () => {
+  it("honors defaultOpen={false} and a controlled open", async () => {
     const screen = await render(
       <>
         <QueueSection defaultOpen={false}>

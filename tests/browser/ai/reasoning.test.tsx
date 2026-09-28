@@ -16,7 +16,7 @@ import "@/app/globals.css"
 
 const thought = "First I check the **cache headers**, then the origin."
 
-// The response preview's regularised logistic loss
+// The response preview's regularized logistic loss
 // (app/preview/response/page.tsx): about 500 px of formula, wider than a phone.
 const WIDE_FORMULA = String.raw`$$
 \mathcal{L}(\theta) = -\frac{1}{n} \sum_{i=1}^{n} \left[ y_i \log \sigma(\theta^\top x_i) + (1 - y_i) \log\left(1 - \sigma(\theta^\top x_i)\right) \right] + \lambda \lVert \theta \rVert_2^2
@@ -25,7 +25,7 @@ $$`
 const WIDE_TABLE = [
   "| Caching strategy | Freshness guarantee | Relative cost | Recommended for |",
   "| --- | --- | --- | --- |",
-  "| no-store | Always fresh | Highest | Personalised dashboards |",
+  "| no-store | Always fresh | Highest | Personalized dashboards |",
   "| force-cache | Until redeploy | Lowest | Reference data |",
 ].join("\n")
 
@@ -792,7 +792,7 @@ describe("reasoningContent markdown surfaces", () => {
     )
   }
 
-  it("scrolls the response preview's regularised logistic loss inside a named Math tab stop at 375 px instead of leaving an unreachable scroll region", async () => {
+  it("scrolls the response preview's regularized logistic loss inside a named Math tab stop at 375 px instead of leaving an unreachable scroll region", async () => {
     await page.viewport(375, 800)
     await render(<OpenReasoning markdown={WIDE_FORMULA} />)
     await expect.poll(() => mathDisplays().length).toBe(1)
@@ -848,7 +848,7 @@ describe("reasoningContent markdown surfaces", () => {
   it("highlights a code fence with the high-contrast GitHub pair and scrolls a line wider than a phone inside a named Code tab stop", async () => {
     await page.viewport(375, 800)
     await render(<OpenReasoning markdown={WIDE_CODE} />)
-    // Shiki writes each token's light and dark colours as custom properties.
+    // Shiki writes each token's light and dark colors as custom properties.
     const keywordColors = () => {
       const token = [
         ...document.querySelectorAll<HTMLElement>(

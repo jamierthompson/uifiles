@@ -483,15 +483,15 @@ SOFTWARE.`
     expect(text).toContain("registry/ai/")
   })
 
-  it("keeps LICENSE as the only licence-like file at the root, so GitHub detects MIT rather than Other", () => {
-    // licensee scores every root file named LICENSE*, LICENCE*, COPYING* as a
-    // licence and reports "Other" when two of them match different licences.
-    const licenceLike = readdirSync(root).filter(
+  it("keeps LICENSE as the only license-like file at the root, so GitHub detects MIT rather than Other", () => {
+    // licensee scores every root file named LICENSE*, LICENCE*, COPYING* as a (spelling-ok)
+    // license and reports "Other" when two of them match different licenses.
+    const licenseLike = readdirSync(root).filter(
       (name) =>
         /^(licen[sc]e|copying)/i.test(name) &&
         statSync(join(root, name)).isFile()
     )
-    expect(licenceLike).toEqual(["LICENSE"])
+    expect(licenseLike).toEqual(["LICENSE"])
   })
 
   it("NOTICE names every directory that holds third-party files and each vendored skill's source", () => {
@@ -507,7 +507,7 @@ SOFTWARE.`
     expect(notice).toContain("https://github.com/vercel/ai-elements")
   })
 
-  it("README's licence section matches NOTICE and both point at the Apache-2.0 copy", () => {
+  it("README's license section matches NOTICE and both point at the Apache-2.0 copy", () => {
     const readme = read("README.md")
     expect(readme).toContain("components/ui/")
     expect(readme).toContain("registry/ai/")

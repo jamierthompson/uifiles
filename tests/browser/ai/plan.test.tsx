@@ -111,7 +111,7 @@ describe("plan", () => {
     expect(slot("plan")?.hasAttribute("data-closed")).toBe(true)
   })
 
-  it("passes (open, eventDetails) to onOpenChange and honours a read-only open", async () => {
+  it("passes (open, eventDetails) to onOpenChange and honors a read-only open", async () => {
     const onOpenChange = vi.fn()
     const screen = await render(
       <Plan onOpenChange={onOpenChange} open>

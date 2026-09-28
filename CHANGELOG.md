@@ -116,7 +116,7 @@ design, so releases are Git tags that consumers can pin on the GitHub install pa
 - `sources` falls back to the hostname for an empty `title` and to the icon and title for
   empty `children`. `CheckpointTrigger` exposes its tooltip as an accessible description
   unless it repeats the button's name (its `aria-label`, or else the text its children
-  render); `ConfirmationRejected` renders in the destructive colour; `Suggestion` scrolls
+  render); `ConfirmationRejected` renders in the destructive color; `Suggestion` scrolls
   itself fully into view on focus.
 - `PromptInputTextarea` has `aria-label="Message"` by default; `PromptInputButton` tooltips
   open immediately and are exposed as accessible descriptions unless they repeat the button's

@@ -103,7 +103,7 @@ describe("settle()", () => {
     expect(getComputedStyle(text).color).toBe("rgb(255, 0, 0)")
   })
 
-  it("waits for the transition that replaces one cancelled mid-flight", async () => {
+  it("waits for the transition that replaces one canceled mid-flight", async () => {
     const screen = await render(
       <main>
         <p style={{ color: "rgb(0, 0, 0)", transition: "color 300ms" }}>
@@ -118,7 +118,7 @@ describe("settle()", () => {
     expect(first?.playState).toBe("running")
     const settled = settle()
     // A new target mid-flight cancels the running transition, whose
-    // `finished` rejects, and starts another from the current colour.
+    // `finished` rejects, and starts another from the current color.
     await new Promise((resolve) => setTimeout(resolve, 100))
     text.style.color = "rgb(0, 0, 255)"
     expect(first?.playState).toBe("idle")
@@ -203,8 +203,8 @@ describe("withDark()", () => {
       .toBe(false)
     await withDark(async () => {
       await settle()
-      // axe reads the colour like this; before the fix the read started a
-      // transition that stayed frozen at the light colour.
+      // axe reads the color like this; before the fix the read started a
+      // transition that stayed frozen at the light color.
       expect(getComputedStyle(text).color).not.toBe(light)
       expect(text.getAnimations()).toEqual([])
     })

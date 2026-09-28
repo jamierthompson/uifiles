@@ -10,7 +10,7 @@ docs site or in `/r/*.json` that could mislead an installer.
 Use GitHub's private vulnerability reporting for this repository:
 https://github.com/jamiethompsondesign/uifiles/security/advisories/new
 
-Do not open a public issue for security reports. You will get an acknowledgement within seven
+Do not open a public issue for security reports. You will get an acknowledgment within seven
 days and a fix or a decision within thirty.
 
 ## Supported versions
